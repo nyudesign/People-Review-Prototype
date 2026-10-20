@@ -27,9 +27,9 @@
 
   <main>
     <header class="topbar">
-      <p class="crumbs">Pengelolaan Kinerja • PWTT • End Year People Review • <span>Evaluee</span></p>
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
       <div class="topbar-right">
-        <div class="flow-pill">Evaluee - End Year People Review <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <div class="flow-pill">Evaluee - Tahapan Utama People Review <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
         <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
       </div>
     </header>
@@ -47,6 +47,7 @@
     <section class="board-wrap" id="boardView">
       <div class="board-head">
         <h1>Sasaran Kerja</h1>
+        <button type="button" class="btn-outline msg-btn" data-msg hidden>Lihat Pesan</button>
         <span class="chip chip-warn status-chip" id="boardStatus" hidden>Menunggu Persetujuan</span>
         <span class="chip chip-blue chip-icon">KPI Non-Budget Holder <i data-icon="material-symbols:info-outline-rounded"></i></span>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="search" type="search" placeholder="Cari sasaran kerja" aria-label="Cari"></label>
@@ -60,6 +61,7 @@
     <section class="board-wrap" id="rekapView" hidden>
       <div class="board-head">
         <h1>Rekap Realisasi Sasaran Kerja</h1>
+        <button type="button" class="btn-outline msg-btn" data-msg hidden>Lihat Pesan</button>
         <span class="chip chip-warn status-chip" id="rekapStatus" hidden>Menunggu Persetujuan</span>
       </div>
       <div class="rekap-body">
@@ -67,6 +69,14 @@
         <article class="rk-card rk-kpi" id="rkKpi"></article>
       </div>
     </section>
+    <!-- Mode Evaluator (Figma "Review & Approve Realisasi Target"): satu footer untuk board & rekap -->
+    <div class="footer-bar review-foot" id="reviewFooter" hidden>
+      <span class="review-nav">
+        <a class="btn-outline" id="rvBack" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Realisasi Sasaran Kerja</a>
+        <a class="btn" id="rvToRekap" href="#rekap">Menuju Rekap Realisasi Sasaran Kerja <i data-icon="tabler:arrow-right"></i></a>
+      </span>
+      <span class="review-decide" id="rvDecide"></span>
+    </div>
     <div class="footer-bar rekap-foot" id="rekapFooter" hidden>
       <a class="btn-outline" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Realisasi Sasaran Kerja</a>
       <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
@@ -137,6 +147,52 @@
     </form>
   </dialog>
 
+  <!-- Mode Evaluator: setuju / tidak setuju -->
+  <dialog id="approveDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Anda yakin untuk menyetujui realisasi ini?</h2>
+      <p class="muted">Jika Anda setuju, maka nilai realisasi ini akan tersimpan dan terkunci</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+  <dialog id="rejectDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Anda yakin untuk tidak menyetujui realisasi ini?</h2>
+      <p class="muted">Revisi Realisasi Target ini akan disampaikan kepada Evaluee</p>
+      <button value="yes" class="btn-outline danger">Ya</button>
+      <button value="no" class="btn">Tidak</button>
+    </form>
+  </dialog>
+  <dialog id="reasonDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:chat-rounded"></i></div>
+      <h2>Berikan alasan Anda</h2>
+      <label class="reason"><textarea id="reasonInput" maxlength="200" rows="3" placeholder="Isi alasan Anda (opsional)" aria-label="Alasan tidak menyetujui"></textarea><small id="reasonCount">0/200</small></label>
+      <button value="send" class="btn-outline danger"><i data-icon="material-symbols:send-rounded"></i>Kirim</button>
+      <button value="back" class="btn">Kembali</button>
+    </form>
+  </dialog>
+  <!-- Pesan revisi dari Evaluator (Figma "Desktop - 1663" → Lihat Pesan) -->
+  <dialog id="msgDialog" class="msg-dialog" aria-labelledby="msgFrom">
+    <form method="dialog">
+      <div class="msg-from"><img src="../assets/avatar-oka.png" alt="" width="36" height="36"><div><b id="msgFrom">Oka Fitrio</b><small>1905416</small></div></div>
+      <p class="msg-text" id="msgText"></p>
+      <button value="ok" class="btn">OK</button>
+    </form>
+  </dialog>
+  <dialog id="decidedDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2 id="decidedTitle"></h2>
+      <p class="muted">Silakan untuk melanjutkan ke Behavior Survey</p>
+      <button value="survey" class="btn">Lanjut ke Behavior Survey</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
   <!-- Detail realisasi -->
   <dialog id="detailDialog">
     <div class="dlg-head"><h2 id="detailTitle">Detail</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
@@ -149,7 +205,7 @@
       <div id="dProject" hidden>
         <div id="dProjPeriods"></div>
         <div class="actions"><button type="button" id="seeProcess" class="btn">Lihat Proses</button></div>
-        <h4>Upload Evidence</h4>
+        <h4 id="dEvTitle">Upload Evidence</h4>
         <div id="dEvidence"></div>
       </div>
       <form id="realForm">
@@ -182,6 +238,7 @@
           <p class="muted small">atau</p>
           <button type="button" id="pickFile" class="btn">Pilih File</button>
         </div>
+        <p id="noFile" class="muted small" hidden>Belum ada evidence yang diunggah</p>
         <div id="dropFile" hidden>
           <div class="file-ico"><i data-icon="line-md:file-twotone"></i></div>
           <p id="fileName" class="link small"></p>
@@ -204,6 +261,7 @@
   </div>
 
   <script src="icons.js"></script>
+  <script src="../review.js"></script>
   <script src="app.js"></script>
   <script src="../profile.js"></script>
 </body>

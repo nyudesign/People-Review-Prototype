@@ -664,10 +664,10 @@ function renderRekap() {
         <div class="table-scroll"><table class="hsse-table">${head('Jenis/Keterangan')}<tbody>${rekapRows(items) || none}</tbody></table></div>
       </details>`).join('');
 
-  $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + `<span class="foot-actions">
+  $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : `<span class="foot-actions">
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : ''}
-    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`;
+    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
   altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
     rekapAlt = v;
     store.set('hsse.rekapAlt', v);
@@ -683,7 +683,7 @@ $('#rekapSearch').addEventListener('input', () => renderRekap());
 
 /* ---------- Routing: #mandatory, #non-mandatory, #pilih, #rekap ---------- */
 function route() {
-  const h = location.hash.slice(1) || 'mandatory';
+  const h = REVIEW ? 'rekap' : location.hash.slice(1) || 'mandatory';
   if (h === 'rekap' && !(mandatoryDone() && nonMandatoryDone())) return location.replace('#non-mandatory');
   const view = h === 'pilih' ? 'pilih' : h === 'rekap' ? 'rekap' : 'real';
   $('#viewReal').hidden = view !== 'real';
@@ -707,6 +707,23 @@ $('#toggleFlow').addEventListener('click', () => {
   $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
   $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
 });
+
+// Mode evaluator: rekap read-only berisi data contoh (Figma "HSSE Objective + Evidence").
+// shortcut: data contoh tetap, bukan isian Heru; perlu disimpan bersama seperti Individual Goal bila alurnya dipakai sungguhan.
+if (REVIEW) {
+  const demoAct = (jenis = '') => {
+    const file = new File(['Evidence demo'], 'evidence-demo.pdf', { type: 'application/pdf' });
+    return { ...newAct(), jenis, tanggal: '2025-06-10', lokasi: 'Jakarta', file, url: URL.createObjectURL(file) };
+  };
+  mandatory.forEach((it) => { it.acts = [demoAct(it.id === 'observasi' ? '5' : '0')]; it.poin = poinNow(it); });
+  nonMandatory = ['nm-5', 'nm-7'].map((id) => {
+    const c = findCatalog(id);
+    const it = { ...c, type: 'non', poin_per: c.poin, acts: [demoAct(), demoAct()], open: false, poin: null, editing: false, dirty: false };
+    return Object.assign(it, { poin: poinNow(it) });
+  });
+  initReviewUI('Review HSSE Objective');
+  $('#viewRekap .back').href = IG_URL;
+}
 
 window.addEventListener('hashchange', route);
 route();

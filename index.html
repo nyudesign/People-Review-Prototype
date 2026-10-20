@@ -29,8 +29,8 @@
 
   <main>
     <header class="topbar">
-      <div id="homeHead"><p class="greet">Semangat Pagi,</p><h1>Heru Kautsar!</h1></div>
-      <p class="crumbs" id="pwttHead" hidden>Pengelolaan Kinerja • <span>PWTT</span></p>
+      <div id="homeHead"><p class="greet">Semangat Pagi,</p><h1 id="greetName">Heru Kautsar!</h1></div>
+      <p class="crumbs" id="pwttHead" hidden></p>
       <div class="topbar-right">
         <span class="flow-pill" id="pwttPill" hidden>Pengukuran Kinerja Pegawai Waktu Tidak Tertentu (PWTT)</span>
         <button type="button" class="icon-btn bell" id="bellBtn" aria-label="Notifikasi" aria-expanded="false" aria-controls="notifPop"><i data-icon="mdi:bell-outline"></i></button>
@@ -45,7 +45,13 @@
     <!-- Beranda -->
     <section class="home" id="viewHome">
       <article class="eypr">
-        <h2>End Year People Review</h2>
+        <div class="eypr-head">
+          <h2>Tahapan Utama People Review</h2>
+          <!-- shortcut: pilihan periode belum mengubah data (prototype tanpa data per tahun). -->
+          <label class="periode">Periode Penilaian
+            <select id="periode"><option>2025</option><option>2026</option><option>2027</option></select>
+          </label>
+        </div>
         <ol class="steps" id="steps"></ol>
       </article>
       <div class="home-grid">
@@ -56,12 +62,14 @@
             <button type="button" role="tab" class="htab dot" data-tab="bes" aria-selected="false">Penilaian BeS 360</button>
           </div>
           <div class="hpanel" id="tab-diri">
-            <div class="box me"><b>Heru Kautsar</b><span class="muted">19050193 • Sr Analyst II Performance &amp; Competency Mgt</span></div>
+            <div class="box me" id="meBox"></div>
             <h3>Evaluator Anda</h3>
             <div class="box evaluator">
-              <div><b class="name">Oka Fitrio</b><span class="muted">1905416</span><small>Manager Performance &amp; Competency Mgt</small></div>
+              <div id="evalBox"></div>
               <div class="ev-right"><small class="link">Evaluator tidak sesuai dengan organisasi Anda?</small><button type="button" class="btn-outline" id="ubahEval">Ubah Evaluator<i data-icon="tabler:arrow-right"></i></button></div>
             </div>
+            <h3 id="myEvalueesHead" hidden>Evaluee Anda</h3>
+            <div class="evaluees" id="myEvaluees" hidden></div>
           </div>
           <div class="hpanel people-grid" id="tab-nominee" hidden></div>
           <div class="hpanel people-grid" id="tab-bes" hidden></div>
@@ -71,7 +79,7 @@
           <div id="icList"></div>
           <h2>Project Progress</h2>
           <div class="proj">
-            <div class="stat wide"><i data-icon="mingcute:task-2-line"></i><span>Total Project</span><b id="pTotal">0</b></div>
+            <div class="stat wide"><i data-icon="mingcute:task-2-line"></i><span id="pLabel">Total Project</span><b id="pTotal">0</b></div>
             <div class="stat"><i data-icon="lets-icons:check-ring-round"></i><span>Completed</span><b id="pDone">0</b></div>
             <div class="stat"><i data-icon="tabler:clock"></i><span>On Progress</span><b id="pProg">0</b></div>
           </div>
@@ -98,10 +106,26 @@
       </div>
       <div class="role-foot"><button type="button" class="btn" id="roleNext" disabled>Selanjutnya<i data-icon="tabler:arrow-right"></i></button></div>
     </section>
+
+    <!-- PWTT → Tahapan Utama → Evaluator: pilih evaluee -->
+    <section class="role-card" id="viewEvaluee" hidden>
+      <div class="ev-tabs" role="tablist">
+        <button type="button" role="tab" class="ev-tab" aria-selected="true">Penilaian Evaluee</button>
+        <button type="button" role="tab" class="ev-tab" aria-selected="false" data-missing>Rekapitulasi Sintesis Evaluator</button>
+      </div>
+      <div class="ev-body">
+        <div class="ev-top">
+          <h2>Pilih Evaluee</h2>
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="evSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+        </div>
+        <div class="ev-list" id="evList"></div>
+        <nav class="pager" id="evPager" aria-label="Halaman"></nav>
+      </div>
+    </section>
   </main>
 
   <script src="icons.js"></script>
-  <script src="app.js"></script>
   <script src="profile.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

@@ -35,6 +35,9 @@ $('#devTotal').innerHTML = `
   </div>
   <div class="dev-legend"><span class="dot"></span>Realisasi Development <span><b class="big">${realisasi.value}</b><small class="muted">/${realisasi.max} %</small></span></div>`;
 
+// Mode evaluator: halaman sama (read-only), hanya header evaluator.
+if (REVIEW) { initReviewUI('Review Development Commitment'); $('#foot').hidden = false; }
+
 $('#toggleFlow').addEventListener('click', () => {
   const hidden = $('#stepper').classList.toggle('hidden');
   $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];

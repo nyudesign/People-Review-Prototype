@@ -71,6 +71,55 @@ console.assert(periodValue({ processes: [{ target: 20, value: 25 }, { target: 30
 console.assert(periodValue({ processes: [{ target: 20, value: null }] }) === null, 'periode kosong');
 
 const findItem = (id) => columns.flatMap((c) => c.items).find((i) => i.id === id);
+
+/* ---------- Status realisasi bersama Evaluee (Heru) ↔ Evaluator (Oka) ---------- */
+// shortcut: tanpa backend, isian & status realisasi per pemilik disimpan di localStorage browser ini; ganti dengan API saat ada.
+// Mode review (lihat ../review.js) membaca milik Heru; selain itu milik user yang login.
+// Bukan query ?evaluee=…: sebagian server lokal (live-server) membalas 404 untuk URL ber-query.
+const STORE_KEY = `pr-realisasi-${REVIEW ? 'heru' : LOGIN}`;
+const ME_NAME = LOGIN === 'oka' ? 'Oka Fitrio' : 'Heru Kautsar';
+let review = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })(); // { status, reason, data }
+// Terkunci untuk Evaluator, dan untuk Evaluee selama menunggu persetujuan / sudah disetujui.
+const locked = () => REVIEW || ['waiting', 'approved'].includes(review?.status);
+const fileMeta = (f) => f && { name: f.name, size: f.size };
+function snapshot() {
+  return {
+    cols: columns.map((c) => fileMeta(c.file)),
+    items: Object.fromEntries(columns.flatMap((c) => c.items).map((it) => [it.id, {
+      file: fileMeta(it.file), saved: it.saved, comments: it.comments, activity: it.activity,
+      periods: it.periods.map((p) => ({ value: p.value, processes: p.processes?.map((pr) => pr.value) })),
+    }])),
+  };
+}
+function restore(d) {
+  columns.forEach((c, i) => { if ('file' in c) c.file = d.cols[i]; });
+  Object.entries(d.items).forEach(([id, s]) => {
+    const it = findItem(id);
+    if (!it) return;
+    Object.assign(it, { saved: s.saved, comments: s.comments, activity: s.activity });
+    if ('file' in it) it.file = s.file;
+    s.periods.forEach((p, i) => {
+      it.periods[i].value = p.value;
+      p.processes?.forEach((v, j) => { it.periods[i].processes[j].value = v; });
+    });
+  });
+}
+function saveStore(patch) {
+  review = { ...review, ...patch, data: snapshot() };
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(review)); } catch {}
+}
+const STATUS = { waiting: ['chip-warn', 'Menunggu Persetujuan'], approved: ['chip-ok', 'Disetujui'], revision: ['chip-danger', 'Revisi'] };
+function statusChip(el) {
+  // Figma Evaluator: chip baru muncul setelah memutuskan.
+  const s = !(REVIEW && review?.status === 'waiting') && STATUS[review?.status];
+  el.hidden = !s;
+  // Pesan revisi Evaluator bisa dibuka lewat "Lihat Pesan" di samping chip.
+  el.parentNode.querySelector('.msg-btn').hidden = !(review?.status === 'revision' && review.reason);
+  if (!s) return;
+  el.className = `chip ${s[0]} status-chip`;
+  el.textContent = s[1];
+  el.title = review.status === 'revision' && review.reason ? `Alasan: ${review.reason}` : '';
+}
 const fmt = (n) => (n == null ? 0 : n).toLocaleString('id-ID');
 const personCard = (p) => `<div class="person"><span class="avatar">${esc(initials(p.name))}</span><div><b>${esc(p.name)}</b><small>${p.nip}</small></div></div>`;
 const avatarsHTML = (people) => people.slice(0, 3).map((p) => `<span class="avatar">${esc(initials(p.name))}</span>`).join('')
@@ -148,10 +197,9 @@ function cardHTML(it) {
         <div class="perf"><span class="with-ico">Performa Anda <button type="button" class="info-btn" data-info aria-label="Info performa" aria-controls="perfTip" aria-expanded="false">${icon('material-symbols:info-outline-rounded', 'info')}</button></span><span><b>${p}</b><small>/100 %</small></span></div>
         <div class="bar"><i style="width:${p}%"></i>${p > 10 && p < 100 ? `<em style="left:${p}%">${p}%</em>` : ''}<span${p >= 95 ? ' style="color:#fff"' : ''}>${p >= 100 ? '100%' : 100}</span></div>
         <button class="toggle" data-toggle="${it.id}">Lihat ${it.periods.length} Realisasi Per Periode ${icon(open.has(it.id) ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
-        ${open.has(it.id) ? `<ul class="periods">${it.periods.map((pr) =>
-          `<li><span>${pr.label}</span><span><b>${fmt(pr.value)}</b>/${fmt(pr.target)} ${it.unit}</span></li>`).join('')}</ul>` : ''}
       </div>
-      <div class="card-foot"><button class="btn" data-detail="${it.id}">Lihat Detail Realisasi</button></div>
+      <div class="card-foot">${open.has(it.id) ? `<ul class="periods">${it.periods.map((pr) =>
+          `<li><span>${pr.label}</span><span><b>${fmt(pr.value)}</b><small>/${fmt(pr.target)} ${it.unit}</small></span></li>`).join('')}</ul>` : ''}<button class="btn" data-detail="${it.id}">Lihat ${REVIEW && it.href ? 'Data' : 'Detail'} Realisasi</button></div>
     </article>`;
 }
 
@@ -194,12 +242,10 @@ window.addEventListener('resize', hideTip);
 
 // Syarat tombol Menuju Rekap (Figma): semua evidence yang diwajibkan sudah terlampir.
 const evidenceOk = () => columns.every((col) => (!col.evidence || col.file) && col.items.every((it) => !('file' in it) || it.file));
-let submitted = false; // sudah Submit rekap → status "Menunggu Persetujuan"
-
 function render() {
   hideTip();
   $('#toRekap').disabled = !evidenceOk();
-  $('#boardStatus').hidden = !submitted;
+  statusChip($('#boardStatus'));
   const q = $('#search').value.trim().toLowerCase();
   const [cats] = boardFilter.applied;
   $('#board').innerHTML = columns.map((col, ci) => {
@@ -209,7 +255,7 @@ function render() {
       <section class="column">
         <div class="col-head"><h2>${col.title}</h2><span class="chip chip-warn">${col.badge}</span></div>
         ${col.evidence ? `<div class="col-tools">
-          <button class="btn-outline" data-upload="${ci}">${icon('akar-icons:plus')}Upload Evidence</button>${evidenceChip(col.file)}</div>` : ''}
+          <button class="btn-outline" data-upload="${ci}">${locked() ? `${icon('mdi:eye')}Lihat` : `${icon('akar-icons:plus')}Upload`} Evidence</button>${evidenceChip(col.file)}</div>` : ''}
         ${items.length ? items.map(cardHTML).join('') : `<p class="empty">Tidak ada ${q ? 'hasil pencarian' : 'proyek yang ditambahkan'} di sini</p>`}
       </section>`;
   }).join('');
@@ -220,7 +266,7 @@ const boardFilter = makeFilter($('#boardFilter'), [{ name: 'Kategori', options: 
 /* ---------- Detail realisasi ---------- */
 let current = null;
 let tab = 'comments';
-const hiddenRes = new Set(); // periode yang baris "Realisasi Anda"-nya ditutup: `${itemId}:${index}`
+const shownRes = new Set(); // periode yang baris "Realisasi Anda"-nya dibuka (default tertutup): `${itemId}:${index}`
 
 function renderDetail() {
   const it = current;
@@ -246,11 +292,12 @@ function renderDetail() {
     $('#dPeriods').innerHTML = it.periods.map((p, i) => `
       <div class="period-row">
         <label class="period-input"><span class="chip chip-blue">${p.label}</span>
-          <input type="number" min="0" step="any" name="p${i}" value="${p.value ?? ''}" placeholder="Isi angka realisasi anda" ${it.saved ? 'disabled' : ''}>
-          ${it.unit}<button type="button" class="icon-btn res-toggle" data-res="${i}" aria-expanded="${!hiddenRes.has(`${it.id}:${i}`)}" aria-label="Tampilkan/sembunyikan realisasi ${p.label}">${icon(hiddenRes.has(`${it.id}:${i}`) ? 'mdi:chevron-down' : 'tabler:chevron-up')}</button></label>
-        ${hiddenRes.has(`${it.id}:${i}`) ? '' : `<div class="period-result"><span>Realisasi Anda</span><span><span class="big">${fmt(p.value)}</span><small>/${fmt(p.target)} ${it.unit}</small></span></div>`}
+          <input type="number" min="0" step="any" name="p${i}" value="${p.value ?? ''}" placeholder="Isi angka realisasi anda" ${it.saved || locked() ? 'disabled' : ''}>
+          ${it.unit}<button type="button" class="icon-btn res-toggle" data-res="${i}" aria-expanded="${shownRes.has(`${it.id}:${i}`)}" aria-label="Tampilkan/sembunyikan realisasi ${p.label}">${icon(shownRes.has(`${it.id}:${i}`) ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button></label>
+        ${shownRes.has(`${it.id}:${i}`) ? `<div class="period-result"><span>Realisasi${REVIEW ? '' : ' Anda'}</span><span><span class="big">${fmt(p.value)}</span><small>/${fmt(p.target)} ${it.unit}</small></span></div>` : ''}
       </div>`).join('');
-    $('#editBtn').hidden = !it.saved;
+    $('#editBtn').hidden = !it.saved || locked();
+    $('#saveBtn').hidden = locked();
     $('#saveBtn').disabled = it.saved;
   }
   renderFeed();
@@ -273,7 +320,7 @@ $('#realForm').addEventListener('submit', (e) => {
   if (values.some((v) => v !== '' && !(Number(v) >= 0))) return alert('Realisasi harus berupa angka ≥ 0');
   values.forEach((v, i) => { current.periods[i].value = v === '' ? null : Number(v); });
   current.saved = true;
-  current.activity.unshift({ who: 'Heru Kautsar', when: 'Baru saja', text: `Menyimpan realisasi (performa ${performa(current)}%)` });
+  current.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi (performa ${performa(current)}%)` });
   renderDetail();
   render();
 });
@@ -283,7 +330,7 @@ $('#dPeriods').addEventListener('click', (e) => {
   if (!b) return;
   e.preventDefault(); // tombol ada di dalam label: jangan sampai fokus pindah ke input
   const key = `${current.id}:${b.dataset.res}`;
-  hiddenRes.has(key) ? hiddenRes.delete(key) : hiddenRes.add(key);
+  shownRes.has(key) ? shownRes.delete(key) : shownRes.add(key);
   renderDetail();
 });
 
@@ -294,7 +341,8 @@ $('#commentForm').addEventListener('submit', (e) => {
   e.preventDefault();
   const text = $('#commentInput').value.trim();
   if (!text) return;
-  current.comments.push({ who: 'Heru Kautsar', when: 'Baru saja', text });
+  current.comments.push({ who: ME_NAME, when: 'Baru saja', text });
+  if (review) saveStore({}); // komentar ikut terlihat oleh pihak lain
   $('#commentInput').value = '';
   renderFeed();
   $('#feed').scrollTop = $('#feed').scrollHeight;
@@ -316,8 +364,12 @@ function attachUpload(target, host) {
 
 function renderUpload() {
   const f = uploadTarget.file;
-  $('#uploadTitle').textContent = `Upload Evidence ${uploadTarget.title}`;
-  $('#dropEmpty').hidden = !!f;
+  const ro = locked();
+  $('#uploadTitle').textContent = `${ro ? 'Evidence' : 'Upload Evidence'} ${uploadTarget.title}`;
+  $('#dEvTitle').textContent = ro ? 'Evidence' : 'Upload Evidence';
+  $('#dropEmpty').hidden = !!f || ro;
+  $('#noFile').hidden = !!f || !ro;
+  $('#changeFile').hidden = $('#removeFile').hidden = ro;
   $('#dropFile').hidden = !f;
   if (f) {
     $('#fileName').textContent = f.name;
@@ -327,7 +379,7 @@ function renderUpload() {
 
 function setFile(f) {
   $('#uploadError').hidden = true;
-  if (!f) return;
+  if (!f || locked()) return;
   if (!/\.(pdf|jpe?g)$/i.test(f.name) || f.size > MAX) {
     $('#uploadError').textContent = 'File harus .pdf/.jpg dan maksimal 2MB';
     $('#uploadError').hidden = false;
@@ -343,7 +395,9 @@ function setFile(f) {
 $('#pickFile').addEventListener('click', () => $('#fileInput').click());
 $('#changeFile').addEventListener('click', () => $('#fileInput').click());
 $('#fileInput').addEventListener('change', (e) => { setFile(e.target.files[0]); e.target.value = ''; });
-$('#viewFile').addEventListener('click', () => window.open(uploadTarget.url, '_blank'));
+// File dari localStorage hanya berupa nama & ukuran, jadi tampilkan file pengganti.
+$('#viewFile').addEventListener('click', () => window.open(uploadTarget.url
+  || URL.createObjectURL(new Blob([`Evidence: ${uploadTarget.file.name} (contoh prototype)`], { type: 'text/plain' })), '_blank'));
 $('#removeFile').addEventListener('click', () => {
   URL.revokeObjectURL(uploadTarget.url);
   uploadTarget.file = uploadTarget.url = null;
@@ -378,7 +432,7 @@ function renderProcess() {
       .filter(({ pr }) => (!procs.size || procs.has(pr.name)) && pr.name.toLowerCase().includes(q));
     return `
       <details class="period" data-period="${pi}"${closedPeriods.has(pi) ? '' : ' open'}>
-        <summary><b>${p.label}</b><span>Total Realisasi Anda Per Periode <span class="big">${fmt(p.value)}</span><small>/${p.target} %</small></span>${icon('tabler:chevron-up', 'caret')}</summary>
+        <summary><b>${p.label}</b><span>Total Realisasi${REVIEW ? '' : ' Anda'} Per Periode<span class="big">${fmt(p.value)}</span><small>/${p.target} %</small></span>${icon('tabler:chevron-up', 'caret')}</summary>
         <div class="table-scroll"><table>
           <thead><tr><th>Nama Proses</th><th>Deskripsi</th><th>PIC</th><th>Target</th><th>Realisasi</th></tr></thead>
           <tbody>${rows.map(({ pr, ri }) => `
@@ -388,7 +442,7 @@ function renderProcess() {
               <td><div class="pic">${pr.pic.map(personCard).join('')}</div></td>
               <td>${pr.target} %</td>
               <td><input type="number" min="0" step="any" data-proc="${pi}-${ri}" value="${pr.draft ?? pr.value ?? ''}"
-                placeholder="Isi angka realisasi anda" aria-label="Realisasi ${esc(pr.name)} ${p.label}" ${proj.saved ? 'disabled' : ''}>
+                placeholder="Isi angka realisasi anda" aria-label="Realisasi ${esc(pr.name)} ${p.label}" ${proj.saved || locked() ? 'disabled' : ''}>
                 <small>Satuan Target: %</small></td>
             </tr>`).join('') || '<tr><td colspan="5" class="empty">Tidak ada proses yang cocok</td></tr>'}
           </tbody>
@@ -400,7 +454,8 @@ function renderProcess() {
 
 function renderProcessFooter() {
   $('#pTotal').innerHTML = `${performa(proj)}<small>/100 %</small>`;
-  $('#pEdit').hidden = !proj.saved;
+  $('#pEdit').hidden = !proj.saved || locked();
+  $('#pSave').hidden = locked();
   $('#pSave').disabled = proj.saved || !isDirty();
 }
 
@@ -437,7 +492,7 @@ $('#confirmDialog form').addEventListener('submit', (e) => {
     p.value = periodValue(p);
   });
   proj.saved = true;
-  proj.activity.unshift({ who: 'Heru Kautsar', when: 'Baru saja', text: `Menyimpan realisasi proses (performa ${performa(proj)}%)` });
+  proj.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi proses (performa ${performa(proj)}%)` });
   renderProcess();
 });
 
@@ -450,9 +505,17 @@ function route() {
   const target = id && findItem(id);
   if (proj) allProcs().forEach((pr) => delete pr.draft);
   proj = target?.project ? target : null;
-  $('#boardView').hidden = $('#boardFooter').hidden = !!proj || rekap;
+  $('#boardView').hidden = !!proj || rekap;
+  $('#boardFooter').hidden = REVIEW || !!proj || rekap;
   $('#processView').hidden = $('#processFooter').hidden = !proj;
-  $('#rekapView').hidden = $('#rekapFooter').hidden = !rekap;
+  $('#rekapView').hidden = !rekap;
+  $('#rekapFooter').hidden = REVIEW || !rekap;
+  $('#reviewFooter').hidden = !REVIEW || !!proj;
+  if (REVIEW) {
+    disableLink($('#rvBack'), !rekap);
+    disableLink($('#rvToRekap'), rekap || !evidenceOk());
+    renderDecide();
+  }
   if (rekap) {
     renderRekap();
   } else if (proj) {
@@ -507,8 +570,8 @@ console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { tar
 function renderRekap() {
   const groups = rekapGroups();
   const total = sum(groups.flatMap((g) => g.items.map(weighted)));
-  $('#rekapStatus').hidden = !submitted;
-  $('#rkSubmit').disabled = submitted;
+  statusChip($('#rekapStatus'));
+  $('#rkSubmit').disabled = locked();
   $('#rkPerforma').innerHTML = `<h2>Performa Anda</h2><div class="rk-scroll">${groups.map(({ col, items }) => `
     <div class="rk-group">
       <div class="rk-group-head"><h3>${col.title}</h3><span class="chip chip-blue">Bobot: ${sum(items.map((i) => i.weight))}%</span></div>
@@ -549,7 +612,7 @@ $('#toRekap').addEventListener('click', () => { location.hash = 'rekap'; });
 $('#rkSubmit').addEventListener('click', () => { $('#submitDialog').showModal(); });
 $('#submitDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value !== 'yes') return;
-  submitted = true;
+  saveStore({ status: 'waiting', reason: '' });
   renderRekap();
   $('#doneDialog').showModal();
 });
@@ -558,8 +621,61 @@ $('#doneDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value === 'self') alert('Halaman Self Review belum tersedia di prototype ini.');
 });
 
+/* ---------- Mode Evaluator: setuju / tidak setuju ---------- */
+const disableLink = (a, off) => {
+  a.classList.toggle('is-disabled', off);
+  a.setAttribute('aria-disabled', off);
+  a.tabIndex = off ? -1 : 0;
+};
+function renderDecide() {
+  $('#rvDecide').innerHTML = review.status === 'waiting'
+    ? `<button type="button" class="btn-outline danger" data-decide="reject">${icon('material-symbols:close-rounded')}Tidak Setuju</button>
+       <button type="button" class="btn-outline ok" data-decide="approve">${icon('material-symbols:check-rounded')}Setuju</button>`
+    // Ubah Persetujuan = alur Tidak Setuju (konfirmasi → alasan → revisi terkirim).
+    : `<button type="button" class="btn-outline danger" data-decide="reject">${icon('material-symbols:close-rounded')}Ubah Persetujuan</button>`;
+}
+const refresh = () => { renderDecide(); location.hash === '#rekap' ? renderRekap() : render(); };
+function decided(title) {
+  refresh();
+  $('#decidedTitle').textContent = title;
+  $('#decidedDialog').showModal();
+}
+$('#rvDecide').addEventListener('click', (e) => {
+  const d = e.target.closest('[data-decide]')?.dataset.decide;
+  if (d === 'approve') $('#approveDialog').showModal();
+  else if (d === 'reject') $('#rejectDialog').showModal();});
+$('#approveDialog form').addEventListener('submit', (e) => {
+  if (e.submitter?.value !== 'yes') return;
+  saveStore({ status: 'approved', reason: '' });
+  decided('Realisasi Target sudah disetujui!');
+});
+$('#rejectDialog form').addEventListener('submit', (e) => {
+  if (e.submitter?.value !== 'yes') return;
+  $('#reasonInput').value = '';
+  $('#reasonCount').textContent = '0/200';
+  $('#reasonDialog').showModal();
+});
+document.querySelectorAll('[data-msg]').forEach((b) => b.addEventListener('click', () => {
+  $('#msgText').textContent = review.reason;
+  $('#msgDialog').showModal();
+}));
+$('#reasonInput').addEventListener('input', (e) => { $('#reasonCount').textContent = `${e.target.value.length}/200`; });
+$('#reasonDialog form').addEventListener('submit', (e) => {
+  if (e.submitter?.value !== 'send') return;
+  saveStore({ status: 'revision', reason: $('#reasonInput').value.trim() });
+  decided('Revisi Realisasi Target sudah dikirim!');
+});
+$('#decidedDialog form').addEventListener('submit', (e) => {
+  // shortcut: halaman Behavior Survey belum ada di prototype.
+  if (e.submitter?.value === 'survey') alert('Halaman Behavior Survey belum tersedia di prototype ini.');
+});
+
 /* ---------- Shortcut demo: Enter 4x berturut-turut = semua sasaran terpenuhi & rekap aktif ---------- */
 function completeAll() {
+  fillDemo();
+  route();
+}
+function fillDemo() {
   const demoFile = () => {
     const file = new File(['Evidence demo'], 'evidence-demo.pdf', { type: 'application/pdf' });
     return { file, url: URL.createObjectURL(file) };
@@ -575,17 +691,19 @@ function completeAll() {
       it.saved = true;
     });
   });
-  route();
 }
 let enterCount = 0;
 let enterAt = 0;
 document.addEventListener('keydown', (e) => {
   // Enter di dalam isian/tombol punya fungsi sendiri, jadi tidak dihitung.
-  if (e.key !== 'Enter' || e.target.closest('input, textarea, select, button, a, dialog')) { enterCount = 0; return; }
+  if (locked() || e.key !== 'Enter' || e.target.closest('input, textarea, select, button, a, dialog')) { enterCount = 0; return; }
   enterCount = e.timeStamp - enterAt < 1000 ? enterCount + 1 : 1;
   enterAt = e.timeStamp;
   if (enterCount === 4) { enterCount = 0; completeAll(); }
 });
 
+if (review?.data) restore(review.data);
+else if (REVIEW) { fillDemo(); review = { status: 'waiting' }; } // Heru dianggap sudah submit (data contoh Figma)
+if (REVIEW) initReviewUI('Review Realisasi Target');
 window.addEventListener('hashchange', route);
 route();

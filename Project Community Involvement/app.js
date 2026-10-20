@@ -469,11 +469,13 @@ function renderRekap() {
         <div class="table-scroll"><table class="hsse-table">${head}<tbody>${rekapRows(list)}</tbody></table></div>
       </details>`).join('');
 
-  $('#foot').innerHTML = FOOT_ALT + totalsHTML() + `<span class="foot-actions">
+  $('#foot').innerHTML = FOOT_ALT + totalsHTML() + (REVIEW ? `<span class="foot-actions">
+    <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>
+    <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence</button></span>` : `<span class="foot-actions">
     <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence Anda</button>
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : ''}
-    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`;
+    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
   altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
     rekapAlt = v;
     store.set('pci.rekapAlt', v);
@@ -497,7 +499,7 @@ $('#foot').addEventListener('click', async (e) => {
 
 /* ---------- Routing: #isi, #pilih, #evidence, #rekap ---------- */
 function route() {
-  let h = location.hash.slice(1) || 'isi';
+  let h = REVIEW ? 'rekap' : location.hash.slice(1) || 'isi';
   // Langkah berikutnya hanya bisa dibuka bila langkah sebelumnya selesai.
   if ((h === 'evidence' || h === 'rekap') && !allDone()) return location.replace('#isi');
   if (h === 'rekap' && !evidence) return location.replace('#evidence');
@@ -518,6 +520,20 @@ $('#toggleFlow').addEventListener('click', () => {
   $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
   $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
 });
+
+// Mode evaluator: rekap read-only berisi data contoh (Figma "Project & Community Involvement + Evidence").
+// shortcut: data contoh tetap, bukan isian Heru; perlu disimpan bersama seperti Individual Goal bila alurnya dipakai sungguhan.
+if (REVIEW) {
+  items = [['ci-1', 1], ['ci-2', 6], ['pi-1', 1]].map(([id, n]) => {
+    const c = findCatalog(id);
+    const acts = Array.from({ length: n }, () => ({ ...newAct(), tanggal: '2025-06-10', lokasi: 'Jakarta' }));
+    return { ...c, poin_per: c.poin, acts, open: false, poin: c.poin * n, editing: false, dirty: false };
+  });
+  const file = new File(['Evidence demo'], 'Project & Community Involvement.pdf', { type: 'application/pdf' });
+  evidence = { file, url: URL.createObjectURL(file) };
+  initReviewUI('Review Project & Community Involvement');
+  $('#viewRekap .back').href = IG_URL;
+}
 
 window.addEventListener('hashchange', route);
 route();
