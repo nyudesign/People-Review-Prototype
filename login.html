@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login – People Review</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="login.css">
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <img src="assets/logo-people-review.png" alt="People Review Pertamina" width="206" height="66">
+    <form id="loginForm" novalidate>
+      <div class="login-head">
+        <h1>Login</h1>
+        <p class="login-err" id="loginErr" role="alert" hidden><i data-icon="material-symbols:warning-outline-rounded"></i>Email dan Password Anda salah!</p>
+      </div>
+      <label class="lbl" for="email">Email</label>
+      <input class="field" id="email" type="email" autocomplete="username" placeholder="Johndoe@pertamina.com">
+      <div class="lbl pw-row">
+        <label for="password">Password</label>
+        <button type="button" class="toggle" id="pwToggle" aria-controls="password" aria-pressed="false"><i data-icon="mdi:eye"></i><span>Show</span></button>
+      </div>
+      <input class="field" id="password" type="password" autocomplete="current-password" placeholder="Isi password Anda">
+      <button class="login-btn">Log in</button>
+    </form>
+    <p class="or">Atau</p>
+    <a class="quick" href="./index.html"><img class="avatar" src="assets/avatar.png" alt="" width="32" height="32">Login sebagai Heru Kautsar (Evaluee)</a>
+    <a class="quick" href="./index.html"><img class="avatar" src="assets/avatar-oka.png" alt="" width="32" height="32">Login sebagai Oka Fitrio (Evaluator)</a>
+    <p class="foot">2026 Performance &amp; Competency Management - Entreprise IT</p>
+  </main>
+
+  <script src="icons.js"></script>
+  <script>
+    document.querySelectorAll('[data-icon]').forEach((el) => { el.classList.add('ico'); el.innerHTML = ICONS[el.dataset.icon]; });
+
+    const form = document.getElementById('loginForm');
+    const email = document.getElementById('email');
+    const pw = document.getElementById('password');
+    const err = document.getElementById('loginErr');
+    const toggle = document.getElementById('pwToggle');
+
+    toggle.addEventListener('click', () => {
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      toggle.setAttribute('aria-pressed', show);
+      toggle.querySelector('i').innerHTML = ICONS[show ? 'mdi:eye-off' : 'mdi:eye'];
+      toggle.querySelector('span').textContent = show ? 'Hide' : 'Show';
+    });
+
+    // shortcut: prototype tanpa backend, akun demo dengan satu password bersama; ganti saat ada API auth.
+    const ACCOUNTS = ['heru.kautsar@pertamina.com', 'oka.fitrio@pertamina.com'];
+    const DEMO_PASSWORD = 'pertamina123';
+    const setErr = (on) => { err.hidden = !on; form.classList.toggle('invalid', on); };
+    // Flag ini dicek profile.js di setiap halaman; hilang saat tab ditutup atau log out.
+    const signIn = () => { try { sessionStorage.setItem('pr-login', '1'); } catch {} };
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (ACCOUNTS.includes(email.value.trim().toLowerCase()) && pw.value === DEMO_PASSWORD) { signIn(); location.href = './index.html'; }
+      else setErr(true);
+    });
+    document.querySelectorAll('.quick').forEach((a) => a.addEventListener('click', signIn));
+    form.addEventListener('input', () => setErr(false));
+  </script>
+</body>
+</html>
