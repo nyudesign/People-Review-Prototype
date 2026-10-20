@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Individual Goal – People Review</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../Homepage+Flow%20Start/index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../Homepage+Flow%20Start/index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • End Year People Review • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Evaluee - End Year People Review <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="done"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="current"><i data-icon="mingcute:target-fill"></i>Realisasi Target</li>
+      <li><i data-icon="material-symbols:person-rounded"></i>Self Review</li>
+      <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
+      <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
+    </ol>
+
+    <section class="board-wrap" id="boardView">
+      <div class="board-head">
+        <h1>Sasaran Kerja</h1>
+        <span class="chip chip-warn status-chip" id="boardStatus" hidden>Menunggu Persetujuan</span>
+        <span class="chip chip-blue chip-icon">KPI Non-Budget Holder <i data-icon="material-symbols:info-outline-rounded"></i></span>
+        <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="search" type="search" placeholder="Cari sasaran kerja" aria-label="Cari"></label>
+        <div class="filter-wrap" id="boardFilter"></div>
+      </div>
+      <div class="board" id="board"></div>
+    </section>
+    <div class="footer-bar" id="boardFooter"><button type="button" class="btn" id="toRekap" disabled>Menuju Rekap Realisasi Sasaran Kerja Anda <i data-icon="tabler:arrow-right"></i></button></div>
+
+    <!-- Rekap realisasi (Figma section "Finalisasi Hasil KPI") -->
+    <section class="board-wrap" id="rekapView" hidden>
+      <div class="board-head">
+        <h1>Rekap Realisasi Sasaran Kerja</h1>
+        <span class="chip chip-warn status-chip" id="rekapStatus" hidden>Menunggu Persetujuan</span>
+      </div>
+      <div class="rekap-body">
+        <article class="rk-card" id="rkPerforma"></article>
+        <article class="rk-card rk-kpi" id="rkKpi"></article>
+      </div>
+    </section>
+    <div class="footer-bar rekap-foot" id="rekapFooter" hidden>
+      <a class="btn-outline" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Realisasi Sasaran Kerja</a>
+      <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+    </div>
+
+    <!-- Halaman proses Project Control -->
+    <section class="board-wrap" id="processView" hidden>
+      <div class="board-head">
+        <a href="#" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
+        <h1 id="pTitle"></h1>
+        <span id="pAvatars" class="avatars"></span>
+        <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="pSearch" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari proses"></label>
+        <div class="filter-wrap" id="processFilter"></div>
+      </div>
+      <form id="processForm" class="process-list"></form>
+    </section>
+    <div class="footer-bar process-foot" id="processFooter" hidden>
+      <span>Total Realisasi <b id="pTotal" class="big"></b></span>
+      <span>
+        <button type="button" id="pEdit" class="btn-outline" hidden><i data-icon="mdi:pencil"></i>Edit</button>
+        <button type="submit" form="processForm" id="pSave" class="btn">Simpan Data Realisasi</button>
+      </span>
+    </div>
+  </main>
+
+  <template id="filterTpl">
+    <button type="button" class="btn-outline filter-btn" aria-expanded="false"><i data-icon="ion:filter"></i><span>Filter</span></button>
+    <div class="filter-pop" hidden>
+      <h2>Filter</h2>
+      <div class="filter-tabs"></div>
+      <div class="filter-search"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" placeholder="Ketik di sini untuk mencari" aria-label="Cari pilihan filter"></label></div>
+      <ul class="filter-list"></ul>
+      <div class="filter-foot">
+        <button type="button" class="link-danger" data-clear>Hapus Semua Pilihan</button>
+        <button type="button" class="btn" data-apply>Terapkan</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Konfirmasi simpan -->
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda ingin menyimpan data realisasi?</h2>
+      <p class="muted">Data realisasi akan berubah menjadi yang terbaru</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+
+  <!-- Submit rekap -->
+  <dialog id="submitDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda sudah selesai dengan pengisian Realisasi Anda?</h2>
+      <p class="muted">Realisasi ini akan dikirimkan kepada Evaluator untuk proses approval</p>
+      <button value="yes" class="btn">Submit</button>
+      <button value="no" class="btn-outline">Tidak, Saya Ingin Cek Kembali</button>
+    </form>
+  </dialog>
+  <dialog id="doneDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2>Realisasi Anda sudah tersubmit</h2>
+      <p class="muted">Silakan untuk melanjutkan ke tahap Self Review</p>
+      <button value="self" class="btn">Menuju ke Self Review</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
+  <!-- Detail realisasi -->
+  <dialog id="detailDialog">
+    <div class="dlg-head"><h2 id="detailTitle">Detail</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-body">
+      <h3 id="dName" class="link"></h3>
+      <p id="dDesc" class="muted small"></p>
+      <div id="dMeta" class="meta"></div>
+      <div id="dTeam"></div>
+      <div class="total"><b>Total Realisasi</b><span id="dTotal"></span></div>
+      <div id="dProject" hidden>
+        <div id="dProjPeriods"></div>
+        <div class="actions"><button type="button" id="seeProcess" class="btn">Lihat Proses</button></div>
+        <h4>Upload Evidence</h4>
+        <div id="dEvidence"></div>
+      </div>
+      <form id="realForm">
+        <div id="dPeriods"></div>
+        <div class="actions">
+          <button type="button" id="editBtn" class="btn-outline" hidden><i data-icon="mdi:pencil"></i>Edit</button>
+          <button type="submit" id="saveBtn" class="btn">Simpan Data Realisasi</button>
+        </div>
+      </form>
+    </div>
+    <div class="dlg-foot">
+      <div class="tabs"><button class="tab active" data-tab="comments">Komentar</button><button class="tab" data-tab="activity">Aktivitas</button></div>
+      <ul id="feed" class="feed"></ul>
+      <form id="commentForm" class="comment-form">
+        <input id="commentInput" placeholder="Isi komentar Anda" required>
+        <button class="send" aria-label="Kirim"><i data-icon="material-symbols:send-rounded"></i></button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Upload evidence -->
+  <dialog id="uploadDialog">
+    <div class="dlg-head"><h2 id="uploadTitle">Upload Evidence</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-body" id="uploadHost">
+      <div id="drop" class="drop">
+        <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" hidden>
+        <div id="dropEmpty">
+          <img src="assets/upload-illustration.svg" alt="" width="66" height="64">
+          <p class="link small">Tarik dan lepaskan file yang Anda ingin unggah<br>(.pdf/.jpg max. 2MB)</p>
+          <p class="muted small">atau</p>
+          <button type="button" id="pickFile" class="btn">Pilih File</button>
+        </div>
+        <div id="dropFile" hidden>
+          <div class="file-ico"><i data-icon="line-md:file-twotone"></i></div>
+          <p id="fileName" class="link small"></p>
+          <p id="fileSize" class="muted small"></p>
+          <div class="file-actions">
+            <button type="button" id="viewFile" class="btn-outline"><i data-icon="mdi:eye"></i>Lihat File</button>
+            <button type="button" id="changeFile" class="btn-outline"><i data-icon="iconamoon:swap-bold"></i>Ubah File</button>
+            <button type="button" id="removeFile" class="btn-outline danger"><i data-icon="mdi:trash"></i>Hapus File</button>
+          </div>
+        </div>
+      </div>
+      <p id="uploadError" class="error" hidden></p>
+    </div>
+  </dialog>
+
+  <!-- Tooltip info "Performa Anda" -->
+  <div id="perfTip" class="tip" role="tooltip" hidden>
+    <p>Capaian performa diukur berdasarkan realisasi terhadap target individual goal/project control yang sedang berjalan.</p>
+    <button type="button" class="x" id="perfTipClose" aria-label="Tutup info"><i data-icon="material-symbols:close-rounded"></i></button>
+  </div>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+  <script src="../Homepage+Flow%20Start/profile.js"></script>
+</body>
+</html>
