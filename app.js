@@ -1,6 +1,6 @@
 // Dari desain Figma section "Halaman Utama", "Notification", "Log Out" dan "Flow Start".
 // Rute: #  = Beranda, #pwtt = Pengelolaan Kinerja → PWTT (Pilih Role).
-const IG = '../Individual%20Goal/index.html';
+const IG = './Individual%20Goal/index.html';
 const steps = [
   { label: 'Settings Evaluator', icon: 'material-symbols-light:frame-person-rounded' },
   { label: 'Individual Goal Setting', icon: 'tabler:award-filled' },
@@ -12,9 +12,9 @@ const steps = [
   { label: 'CoPI Feedback', icon: 'mdi:speak' },
 ];
 const contributory = [
-  { name: 'HSSE Objective', value: 20, max: 150, unit: 'Poin', href: '../HSSE%20Objective/index.html' },
-  { name: 'Development Commitment', value: 20, max: 150, unit: '%', href: '../Development%20Commitment/index.html' },
-  { name: 'Project & Community Involvement', value: 20, max: 150, unit: 'Poin', href: '../Project%20Community%20Involvement/index.html' },
+  { name: 'HSSE Objective', value: 20, max: 150, unit: 'Poin', href: './HSSE%20Objective/index.html' },
+  { name: 'Development Commitment', value: 20, max: 150, unit: '%', href: './Development%20Commitment/index.html' },
+  { name: 'Project & Community Involvement', value: 20, max: 150, unit: 'Poin', href: './Project%20Community%20Involvement/index.html' },
 ];
 const nominees = [
   { name: 'Jamaludin Ahmad', nip: '29231284', done: false },

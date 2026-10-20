@@ -1,5 +1,5 @@
 // Kartu profil + dialog Log Out (Figma section "Log Out"), dipakai semua halaman lewat
-// <script src="../Homepage+Flow%20Start/profile.js">. Menempel pada tombol ••• di blok .user sidebar.
+// <script src="./profile.js">. Menempel pada tombol ••• di blok .user sidebar.
 (() => {
   const base = new URL('.', document.currentScript.src).href;
   const EXIT = '<svg viewBox="0 0 24 24" width="1em" height="1em" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 4.001H5v14a2 2 0 0 0 2 2h8m1-5l3-3m0 0l-3-3m3 3H9"/></svg>';
