@@ -8,7 +8,7 @@ const steps = [
   { label: 'CSB', icon: 'tabler:award-filled', hidden: true }, // disembunyikan atas permintaan
   { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid' },
   { label: 'Realisasi Target', icon: 'mingcute:target-fill', href: IG },
-  { label: 'Self Review', icon: 'material-symbols:person-rounded' },
+  { label: 'Self Review', icon: 'material-symbols:person-rounded', href: './Self%20Review/index.html' },
   { label: 'Survey', icon: 'ri:survey-fill' },
   { label: 'CoPI Feedback', icon: 'mdi:speak' },
 ];

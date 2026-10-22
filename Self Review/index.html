@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Self Review – People Review</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Evaluee - Tahapan Utama People Review <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="done"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
+      <li class="current" id="selfStep"><i data-icon="material-symbols:person-rounded"></i>Self Review<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
+      <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
+      <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
+    </ol>
+
+    <!-- 1. Intro -->
+    <section class="board-wrap" id="viewIntro" hidden>
+      <div class="board-head"><h1>Penilaian Behavior Survey untuk Anda</h1></div>
+      <div class="sr-body intro">
+        <img class="wave wave-left" src="assets/wave-left.svg" alt="">
+        <img class="wave wave-right" src="assets/wave-right.svg" alt="">
+        <img src="assets/intro-illustration.svg" alt="" width="249" height="203">
+        <h2>Penilaian Perilaku Berbasis Situasi</h2>
+        <p class="muted">Pada bagian ini, Anda akan membaca beberapa skenario kerja sehari-hari.<br>
+          Pilih tindakan yang paling sesuai dengan kondisi nyata Anda.<br>Klik tombol di bawah untuk memulai penilaian.</p>
+        <a class="btn" href="#soal-1">Mulai Penilaian <i data-icon="tabler:arrow-right"></i></a>
+      </div>
+    </section>
+
+    <!-- 2. Soal -->
+    <div class="survey" id="viewSoal" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><h1>Penilaian Behavior Survey untuk Anda</h1></div>
+        <div class="sr-body question">
+          <img class="wave wave-right" src="assets/wave-right.svg" alt="">
+          <h2 id="qText"></h2>
+          <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+        </div>
+        <div class="sr-foot" id="qFoot"></div>
+      </section>
+      <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
+        <p class="nav-title">Behavior Survey</p>
+        <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+        <div class="progress"><i id="navBar"></i></div>
+        <div class="nav-grid" id="navGrid"></div>
+      </aside>
+    </div>
+
+    <!-- 3. Upload evidence -->
+    <div id="viewEvidence" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><a href="#" class="back" id="evBack" aria-label="Kembali ke penilaian"><i data-icon="tabler:arrow-left"></i></a>
+          <div class="head-title"><h1>Self Review</h1><small>Upload Evidence</small></div></div>
+        <div class="sr-body evidence">
+          <h2 class="label">Evidence Anda</h2>
+          <div class="drop big" id="drop"></div>
+          <p class="error" id="fileError" hidden></p>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" href="#" id="evBack2"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian Self Review</a>
+        <span id="evNext"></span>
+      </div>
+    </div>
+
+    <!-- 4. Konfirmasi -->
+    <div id="viewKonfirmasi" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><a href="#evidence" class="back" aria-label="Kembali ke upload evidence"><i data-icon="tabler:arrow-left"></i></a>
+          <h1>Konfirmasi Penilaian Tentang Diri Anda</h1></div>
+        <div class="sr-body confirm-grid">
+          <ol class="answers" id="answerList"></ol>
+          <div class="evidence-box"><h2 class="label">Evidence Anda</h2><div class="drop big" id="evidenceView"></div></div>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" href="#evidence"><i data-icon="tabler:arrow-left"></i>Kembali ke Upload Evidence</a>
+        <span class="foot-actions" id="kfActions"></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Konfirmasi (simpan / submit) -->
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2 id="confirmTitle"></h2>
+      <p class="muted" id="confirmText"></p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+
+  <!-- Sukses submit -->
+  <dialog id="successDialog" class="confirm">
+    <form method="dialog">
+      <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2>Self Review Anda sudah terkirim!</h2>
+      <p class="muted">Silakan untuk melanjutkan ke tahap Survey Website People Review</p>
+      <button value="survey" class="btn">Menuju ke Survey</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
+  <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" hidden>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>
