@@ -330,8 +330,11 @@ $('#dPeriods').addEventListener('click', (e) => {
   if (!b) return;
   e.preventDefault(); // tombol ada di dalam label: jangan sampai fokus pindah ke input
   const key = `${current.id}:${b.dataset.res}`;
+  // renderDetail() menulis ulang input dari nilai tersimpan; bawa ketikan yang belum disimpan.
+  const typed = [...$('#dPeriods').querySelectorAll('input')].map((inp) => inp.value);
   shownRes.has(key) ? shownRes.delete(key) : shownRes.add(key);
   renderDetail();
+  $('#dPeriods').querySelectorAll('input').forEach((inp, i) => { inp.value = typed[i]; });
 });
 
 $('#editBtn').addEventListener('click', () => { current.saved = false; renderDetail(); });

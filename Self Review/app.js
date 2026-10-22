@@ -114,7 +114,8 @@ function renderSoal() {
   let right;
   if (!isLast()) right = `<a class="btn" href="#soal-${current + 2}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
   else if (saved) {
-    right = `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>
+    // Setelah submit, Edit di sini disabled; membuka kembali penilaian hanya lewat Edit di layar Konfirmasi.
+    right = `<button type="button" class="btn-outline" data-edit ${submitted ? 'disabled title="Penilaian sudah dikirim. Gunakan Edit di halaman Konfirmasi."' : ''}>${icon('mdi:pencil')}Edit</button>
       <button type="button" class="btn" disabled>${icon('fa-solid:save')}Simpan</button>
       <a class="btn" href="#evidence">Menuju Upload Evidence ${icon('tabler:arrow-right')}</a>`;
   } else {
@@ -137,8 +138,7 @@ $('#navGrid').addEventListener('click', (e) => {
 $('#qFoot').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
-  // Edit membuka kembali penilaian; bila sudah di-submit, status submit ikut dibatalkan (perlu Simpan & Submit ulang).
-  if ('edit' in b.dataset) { saved = submitted = false; persist(); syncSelfStep(); return renderSoal(); }
+  if ('edit' in b.dataset && !submitted) { saved = false; persist(); return renderSoal(); }
   if ('save' in b.dataset && allAnswered()) {
     if (!await confirmBox('Apakah Anda ingin menyimpan jawaban ini?', 'Jawaban akan tersimpan dan Anda dapat melanjutkan ke tahap lampiran evidence')) return;
     saved = true;

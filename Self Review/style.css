@@ -89,6 +89,7 @@ main { flex: 1; min-width: 0; height: 100vh; padding: 40px 40px 24px; display: f
 .btn { background: var(--primary); color: #fff; border: 0; border-radius: 6px; padding: 10px 16px; font-weight: 500; }
 .btn:hover:not(:disabled) { background: var(--primary-dark); }
 .btn:disabled { background: #a7b6cc; cursor: not-allowed; }
+.btn-outline:disabled { color: #a7b6cc; border-color: #a7b6cc; cursor: not-allowed; }
 .btn-outline { background: #fff; color: var(--primary); border: 1px solid var(--primary); border-radius: 6px; padding: 8px 14px; font-weight: 500; }
 .btn-outline.danger { color: var(--danger); border-color: var(--danger); }
 a.btn, a.btn-outline { text-decoration: none; }
