@@ -36,7 +36,6 @@ const validStore = Array.isArray(stored?.answers) && stored.answers.length === Q
 
 const answers = validStore ? stored.answers : QUESTIONS.map(() => null); // index pilihan per soal
 let current = 0;
-let saved = validStore && !!stored.saved;          // jawaban sudah disimpan (terkunci)
 let submitted = validStore && !!stored.submitted;  // penilaian sudah dikirim ke Evaluator
 let file = (validStore && stored.file) || null;    // { name, size, type, data (data URL) }
 let fileUrl = null;
@@ -44,7 +43,7 @@ let fileUrl = null;
 // true bila tersimpan; false bila localStorage penuh/diblokir.
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ answers, saved, submitted, file }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ answers, submitted, file }));
     return true;
   } catch { return false; }
 }
@@ -100,7 +99,7 @@ function renderSoal() {
   const q = QUESTIONS[current];
   $('#qText').textContent = q.text;
   $('#qOptions').innerHTML = q.options.map((o, i) => `
-    <button type="button" class="option" role="radio" aria-checked="${answers[current] === i}" data-opt="${i}" ${saved ? 'disabled' : ''}>
+    <button type="button" class="option" role="radio" aria-checked="${answers[current] === i}" data-opt="${i}" ${submitted ? 'disabled' : ''}>
       <b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`).join('');
 
   $('#navPos').textContent = answeredCount(); // jumlah soal yang sudah dijawab, bukan nomor halaman
@@ -113,20 +112,15 @@ function renderSoal() {
   const prev = current > 0 ? `<a class="btn-outline" href="#soal-${current}">${icon('tabler:arrow-left')}Sebelumnya</a>` : '';
   let right;
   if (!isLast()) right = `<a class="btn" href="#soal-${current + 2}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
-  else if (saved) {
-    // Setelah submit, Edit di sini disabled; membuka kembali penilaian hanya lewat Edit di layar Konfirmasi.
-    right = `<button type="button" class="btn-outline" data-edit ${submitted ? 'disabled title="Penilaian sudah dikirim. Gunakan Edit di halaman Konfirmasi."' : ''}>${icon('mdi:pencil')}Edit</button>
-      <button type="button" class="btn" disabled>${icon('fa-solid:save')}Simpan</button>
-      <a class="btn" href="#evidence">Menuju Upload Evidence ${icon('tabler:arrow-right')}</a>`;
-  } else {
-    right = `<button type="button" class="btn" data-save ${allAnswered() ? '' : 'disabled title="Jawab semua soal terlebih dahulu"'}>${icon('fa-solid:save')}Simpan</button>`;
-  }
+  // Figma Desktop 1690/1691: tanpa langkah Simpan; Upload Evidence aktif setelah semua soal terjawab.
+  else if (allAnswered()) right = `<a class="btn" href="#evidence">Menuju Upload Evidence ${icon('tabler:arrow-right')}</a>`;
+  else right = `<button type="button" class="btn" disabled title="Jawab semua soal terlebih dahulu">Menuju Upload Evidence ${icon('tabler:arrow-right')}</button>`;
   $('#qFoot').innerHTML = `${prev}<span class="spacer"></span>${right}`;
 }
 
 $('#qOptions').addEventListener('click', (e) => {
   const b = e.target.closest('[data-opt]');
-  if (!b || saved) return;
+  if (!b || submitted) return;
   answers[current] = Number(b.dataset.opt);
   persist();
   renderSoal();
@@ -134,17 +128,6 @@ $('#qOptions').addEventListener('click', (e) => {
 $('#navGrid').addEventListener('click', (e) => {
   const b = e.target.closest('[data-go]');
   if (b) location.hash = `soal-${Number(b.dataset.go) + 1}`;
-});
-$('#qFoot').addEventListener('click', async (e) => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  if ('edit' in b.dataset && !submitted) { saved = false; persist(); return renderSoal(); }
-  if ('save' in b.dataset && allAnswered()) {
-    if (!await confirmBox('Apakah Anda ingin menyimpan jawaban ini?', 'Jawaban akan tersimpan dan Anda dapat melanjutkan ke tahap lampiran evidence')) return;
-    saved = true;
-    persist();
-    renderSoal();
-  }
 });
 
 /* ---------- Upload evidence ---------- */
@@ -235,7 +218,7 @@ $('#kfActions').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   if ('edit' in b.dataset) {
-    submitted = saved = false;
+    submitted = false;
     persist();
     location.hash = 'soal-1';
     return;
@@ -255,8 +238,8 @@ function route() {
   const n = Number(h.match(/^soal-(\d+)$/)?.[1]);
   let view = 'intro';
   if (n >= 1 && n <= QUESTIONS.length) { view = 'soal'; current = n - 1; }
-  if (h === 'evidence') view = saved ? 'evidence' : 'soal';
-  if (h === 'konfirmasi') view = saved && file ? 'konfirmasi' : (saved ? 'evidence' : 'soal');
+  if (h === 'evidence') view = allAnswered() ? 'evidence' : 'soal';
+  if (h === 'konfirmasi') view = allAnswered() && file ? 'konfirmasi' : (allAnswered() ? 'evidence' : 'soal');
   // Halaman yang belum boleh dibuka diarahkan ke langkah yang masih harus diselesaikan.
   if (h && view !== h.replace(/-\d+$/, '')) return location.replace(view === 'soal' ? `#soal-${QUESTIONS.length}` : `#${view}`);
 

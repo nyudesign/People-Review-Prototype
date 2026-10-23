@@ -3,7 +3,7 @@ const MAX_MANDATORY = 100;
 const MAX_NON_MANDATORY = 100;
 const MAX_MANDATORY_ACTS = 1; // batas aktivitas Mandatory sudah standar, jadi Tambah & Hapus Aktivitas di-disable
 const MAX_FILE = 2 * 1024 * 1024;
-const IG_URL = '../Individual%20Goal/index.html';
+const IG_URL = BACK.url;
 
 const newAct = () => ({ jenis: '', periode: '2025', tanggal: '', lokasi: '', ket: '', file: null, url: null });
 const mandatoryItem = (o) => ({ type: 'mandatory', max: MAX_MANDATORY_ACTS, acts: [newAct()], open: false, poin: null, editing: false, dirty: false, ...o });
@@ -664,9 +664,9 @@ function renderRekap() {
         <div class="table-scroll"><table class="hsse-table">${head('Jenis/Keterangan')}<tbody>${rekapRows(items) || none}</tbody></table></div>
       </details>`).join('');
 
-  $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : `<span class="foot-actions">
+  $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : `<span class="foot-actions">
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
-      <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : ''}
+      <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
     <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
   altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
     rekapAlt = v;

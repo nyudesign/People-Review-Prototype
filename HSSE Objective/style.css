@@ -83,7 +83,9 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--ink-2); color: #fff; display: grid; place-items: center; font-size: 11px; flex-shrink: 0; }
 
 /* Main */
-main { flex: 1; min-width: 0; height: 100vh; padding: 40px 40px 24px; display: flex; flex-direction: column; gap: 16px; }
+/* Figma (1920×1024): padding 48 atas/bawah/kiri, 52 kanan, jarak antarbagian 20; mengecil mengikuti layar. */
+main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
+  flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) var(--pad-r) var(--pad-y) var(--pad-l); display: flex; flex-direction: column; gap: var(--gap); }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .crumbs { margin: 0; }
 .crumbs span { color: var(--primary); }
@@ -97,7 +99,7 @@ main { flex: 1; min-width: 0; height: 100vh; padding: 40px 40px 24px; display: f
 .stepper.hidden { display: none; }
 
 .board-wrap { flex: 1; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
-.board-head { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: #f6fafa; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
+.board-head { display: flex; align-items: center; gap: clamp(12px, 1.04vw, 20px); padding: clamp(8px, 1.17vh, 12px) clamp(16px, 1.25vw, 24px); border-bottom: 1px solid var(--line); background: #f6fafa; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
 .board-head h1 { font-size: clamp(16px, 1.25vw, 20px); flex: 1; }
 .search { display: flex; align-items: center; gap: 8px; width: min(420px, 100%); padding: 0 12px; background: #fff; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-2); }
 /* Di header: search menyusut dulu (min 160px, maks 420px) sebelum Filter turun ke baris baru. */
@@ -267,6 +269,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 
 /* Yang di-scroll cukup daftarnya, bukan halaman. */
 .hsse-list { padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; overflow-y: auto; }
+.hsse-list:has(> .empty-state) { background: #feffff; border-radius: 0 0 12px 12px; } /* latar empty state "Kategori Aktivitas Anda Kosong" */
 .hsse-item { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 .hi-head { padding: 16px 20px; display: flex; flex-direction: column; gap: 8px; }
 .hi-head .chips { padding-right: 90px; align-items: center; }
@@ -321,7 +324,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 .totals .big { font-size: clamp(16px, 1.25vw, 20px); }
 .totals small { color: var(--muted); }
 /* Footer menempel di bawah layar; margin negatif menutup padding main supaya latar putih selebar konten. */
-.hsse-foot { justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; bottom: 0; z-index: 5; background: #fff; border-top: 1px solid var(--line); margin: 0 -40px -24px; padding: 12px 40px; }
+.hsse-foot { justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; bottom: 0; z-index: 5; background: #fff; margin: 0 calc(-1 * var(--pad-r)) calc(-1 * var(--pad-y)) calc(-1 * var(--pad-l)); padding: 0 var(--pad-r) var(--pad-y) var(--pad-l); } /* tanpa garis, 20px di bawah konten */
 .foot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 /* Alternatif UI di tengah footer (footer sticky jadi acuan posisinya). */
 #footAlt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }

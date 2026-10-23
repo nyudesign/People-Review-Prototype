@@ -2,7 +2,7 @@
 // Alurnya sama dengan Non-Mandatory di HSSE Objective, bedanya evidence diunggah sekali untuk semua aktivitas (langkah Upload Evidence).
 const MAX_TOTAL = 200;
 const MAX_FILE = 2 * 1024 * 1024;
-const IG_URL = '../Individual%20Goal/index.html';
+const IG_URL = BACK.url;
 
 const newAct = () => ({ periode: '2025', tanggal: '', lokasi: '', ket: '' });
 
@@ -470,11 +470,11 @@ function renderRekap() {
       </details>`).join('');
 
   $('#foot').innerHTML = FOOT_ALT + totalsHTML() + (REVIEW ? `<span class="foot-actions">
-    <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>
+    <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>
     <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence</button></span>` : `<span class="foot-actions">
     <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence Anda</button>
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
-      <a class="btn" href="${IG_URL}">Kembali ke Realisasi Target</a>` : ''}
+      <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
     <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
   altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
     rekapAlt = v;

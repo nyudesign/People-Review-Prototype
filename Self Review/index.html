@@ -59,22 +59,25 @@
     </section>
 
     <!-- 2. Soal -->
-    <div class="survey" id="viewSoal" hidden>
-      <section class="board-wrap">
-        <div class="board-head"><h1>Penilaian Behavior Survey untuk Anda</h1></div>
-        <div class="sr-body question">
-          <img class="wave wave-right" src="assets/wave-right.svg" alt="">
-          <h2 id="qText"></h2>
-          <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
-        </div>
-        <div class="sr-foot" id="qFoot"></div>
-      </section>
-      <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
-        <p class="nav-title">Behavior Survey</p>
-        <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
-        <div class="progress"><i id="navBar"></i></div>
-        <div class="nav-grid" id="navGrid"></div>
-      </aside>
+    <div id="viewSoal" hidden>
+      <div class="survey">
+        <section class="board-wrap">
+          <div class="board-head"><h1>Penilaian Behavior Survey untuk Anda</h1></div>
+          <div class="sr-body question">
+            <img class="wave wave-right" src="assets/wave-right.svg" alt="">
+            <h2 id="qText"></h2>
+            <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+          </div>
+        </section>
+        <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
+          <p class="nav-title">Behavior Survey</p>
+          <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+          <div class="progress"><i id="navBar"></i></div>
+          <div class="nav-grid" id="navGrid"></div>
+        </aside>
+      </div>
+      <!-- Figma Desktop 1685–1691: footer di luar kartu soal, seperti footer Upload Evidence -->
+      <div class="footer-bar split" id="qFoot"></div>
     </div>
 
     <!-- 3. Upload evidence -->
