@@ -17,11 +17,12 @@ const processes = () => [
 
 const columns = [
   { title: 'Individual Contributory', badge: '20%', items: [
-    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, periods: [{ label: 'Annual', target: 100, value: null }],
+    // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
+    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: 300, value: null }],
       href: '../HSSE%20Objective/index.html' }),
-    item({ id: 'pci', file: null, name: 'Project & Community Involvement', weight: 7, periods: [{ label: 'Annual', target: 100, value: null }],
+    item({ id: 'pci', file: null, name: 'Project & Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: 80, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
-    item({ id: 'dev', name: 'Development Commitment', weight: 5, periods: [{ label: 'Annual', target: 100, value: 100 }],
+    item({ id: 'dev', name: 'Development Commitment', weight: 5, periods: [{ label: 'Year End', target: 100, value: 100 }],
       href: '../Development%20Commitment/index.html' }),
   ] },
   { title: 'Cascading KPI', badge: '80/80%', evidence: true, file: null, items: [
@@ -53,20 +54,34 @@ const hydrateIcons = (root) => root.querySelectorAll('[data-icon]').forEach((el)
 hydrateIcons(document);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const sum = (a) => a.reduce((x, y) => x + y, 0);
+const fmt = (n) => (n == null ? 0 : n).toLocaleString('id-ID');
 const initials = (name) => name.split(' ').map((w) => w[0]).join('');
 
-// Performa = realisasi (dibatasi target per periode) / total target, dalam persen.
+// Performa (rumus sistem lama, per periode): realisasi tiap periode dihitung maksimal sebesar targetnya (kelebihan di satu
+// periode tidak menutup kekurangan periode lain), lalu Σ ÷ Σ target × 100%, maksimal 100%.
+// Polaritas MIN (makin kecil makin baik): skor tiap periode = Target ÷ Realisasi (maks 100%; realisasi 0 = 100%),
+// dihitung dari periode yang sudah diisi, dirata-rata tertimbang target.
+const PERF_MAX = 100;
 function performa(it) {
-  const total = sum(it.periods.map((p) => p.target));
-  const got = sum(it.periods.map((p) => Math.min(p.value || 0, p.target)));
-  return total ? Math.round((got / total) * 100) : 0;
+  const min = it.polarity === 'MIN';
+  const filled = it.periods.filter((p) => p.value != null);
+  const ps = min ? filled : it.periods;
+  // realisasi yang dihitung per periode, dalam satuan target (maks sebesar target)
+  const got = ps.map((p) => (min ? (p.value ? Math.min(1, p.target / p.value) : 1) * p.target : Math.min(p.value || 0, p.target)));
+  const target = sum(ps.map((p) => p.target));
+  return filled.length && target ? Math.min(PERF_MAX, Math.round((sum(got) / target) * 100)) : 0;
 }
+console.assert(performa({ periods: [{ target: 50, value: 80 }, { target: 50, value: 20 }] }) === 70, 'kelebihan periode tidak menutup periode lain');
+console.assert(performa({ periods: [{ target: 50, value: 60 }, { target: 100, value: 115 }] }) === 100, 'maks 100%');
+console.assert(performa({ periods: [{ target: 50, value: 50 }, { target: 50, value: null }] }) === 50, 'periode kosong dihitung 0');
+console.assert(performa({ periods: [{ target: 50, value: 40 }, { target: 100, value: 60 }] }) === 67, 'Σ realisasi ÷ Σ target');
+console.assert(performa({ polarity: 'MIN', periods: [{ target: 10, value: 20 }, { target: 10, value: null }] }) === 50, 'MIN: target ÷ realisasi periode terisi');
+console.assert(performa({ polarity: 'MIN', periods: [{ target: 50, value: 60 }, { target: 50, value: 40 }] }) === 92, 'MIN per periode (maks 100%), rata-rata tertimbang target');
+console.assert(performa({ polarity: 'MIN', periods: [{ target: 10, value: 0 }] }) === 100 && performa({ polarity: 'MIN', periods: [{ target: 10, value: null }] }) === 0, 'MIN: realisasi 0 = 100%, kosong = 0');
 // Realisasi periode project = jumlah realisasi proses apa adanya (boleh melebihi target); null jika belum ada yang diisi.
 function periodValue(p) {
   return p.processes.every((pr) => pr.value == null) ? null : sum(p.processes.map((pr) => pr.value || 0));
 }
-console.assert(performa({ periods: [{ target: 50, value: 50 }, { target: 50, value: null }] }) === 50, 'performa 50%');
-console.assert(performa({ periods: [{ target: 50, value: 80 }, { target: 50, value: 50 }] }) === 100, 'performa dibatasi target');
 console.assert(periodValue({ processes: [{ target: 20, value: 25 }, { target: 30, value: 30 }] }) === 55, 'realisasi periode tidak dibatasi target');
 console.assert(periodValue({ processes: [{ target: 20, value: null }] }) === null, 'periode kosong');
 
@@ -120,7 +135,6 @@ function statusChip(el) {
   el.textContent = s[1];
   el.title = review.status === 'revision' && review.reason ? `Alasan: ${review.reason}` : '';
 }
-const fmt = (n) => (n == null ? 0 : n).toLocaleString('id-ID');
 const personCard = (p) => `<div class="person"><span class="avatar">${esc(initials(p.name))}</span><div><b>${esc(p.name)}</b><small>${p.nip}</small></div></div>`;
 const avatarsHTML = (people) => people.slice(0, 3).map((p) => `<span class="avatar">${esc(initials(p.name))}</span>`).join('')
   + (people.length > 3 ? `<span class="avatar more">${people.length - 3}+</span>` : '');
@@ -318,11 +332,14 @@ $('#realForm').addEventListener('submit', (e) => {
   const fd = new FormData(e.target);
   const values = current.periods.map((_, i) => fd.get(`p${i}`));
   if (values.some((v) => v !== '' && !(Number(v) >= 0))) return alert('Realisasi harus berupa angka ≥ 0');
-  values.forEach((v, i) => { current.periods[i].value = v === '' ? null : Number(v); });
-  current.saved = true;
-  current.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi (performa ${performa(current)}%)` });
-  renderDetail();
-  render();
+  askSave(() => {
+    values.forEach((v, i) => { current.periods[i].value = v === '' ? null : Number(v); });
+    current.saved = true;
+    current.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi (performa ${performa(current)}%)` });
+    saveStore({}); // tersimpan di localStorage: tetap ada setelah refresh
+    renderDetail();
+    render();
+  });
 });
 
 $('#dPeriods').addEventListener('click', (e) => {
@@ -479,24 +496,34 @@ $('#processForm').addEventListener('submit', (e) => {
   if (allProcs().some((pr) => pr.draft !== undefined && pr.draft !== '' && !(Number(pr.draft) >= 0))) {
     return alert('Realisasi harus berupa angka ≥ 0');
   }
-  $('#confirmDialog').returnValue = '';
-  $('#confirmDialog').showModal();
+  askSave(() => {
+    proj.periods.forEach((p) => {
+      p.processes.forEach((pr) => {
+        if (pr.draft === undefined) return;
+        pr.value = pr.draft === '' ? null : Number(pr.draft);
+        delete pr.draft;
+      });
+      p.value = periodValue(p);
+    });
+    proj.saved = true;
+    proj.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi proses (performa ${performa(proj)}%)` });
+    saveStore({});
+    renderProcess();
+  });
 });
 
+// Konfirmasi simpan (Figma "Apakah Anda ingin menyimpan data realisasi?"), dipakai modal Detail & Project Control.
+let onConfirmSave = null;
+function askSave(save) {
+  onConfirmSave = save;
+  $('#confirmDialog').returnValue = '';
+  $('#confirmDialog').showModal();
+}
 // submit (bukan close): event close tidak selalu terpicu ulang saat dialog dibuka-tutup berkali-kali di Chrome.
 $('#confirmDialog form').addEventListener('submit', (e) => {
-  if (e.submitter?.value !== 'yes') return;
-  proj.periods.forEach((p) => {
-    p.processes.forEach((pr) => {
-      if (pr.draft === undefined) return;
-      pr.value = pr.draft === '' ? null : Number(pr.draft);
-      delete pr.draft;
-    });
-    p.value = periodValue(p);
-  });
-  proj.saved = true;
-  proj.activity.unshift({ who: ME_NAME, when: 'Baru saja', text: `Menyimpan realisasi proses (performa ${performa(proj)}%)` });
-  renderProcess();
+  const save = onConfirmSave;
+  onConfirmSave = null;
+  if (e.submitter?.value === 'yes') save?.();
 });
 
 $('#pEdit').addEventListener('click', () => { proj.saved = false; renderProcess(); });
@@ -705,8 +732,21 @@ document.addEventListener('keydown', (e) => {
   if (enterCount === 4) { enterCount = 0; completeAll(); }
 });
 
-if (review?.data) restore(review.data);
+// Evaluator hanya melihat data yang sudah disubmit; draft Evaluee (tanpa status) tidak ditampilkan.
+if (review?.data && (!REVIEW || review.status)) restore(review.data);
 else if (REVIEW) { fillDemo(); review = { status: 'waiting' }; } // Heru dianggap sudah submit (data contoh Figma)
+// Poin yang disimpan halaman HSSE / PCI (`pr-hsse-…` / `pr-pci-…`, ringkasan `summary`) = realisasi Year End kartunya.
+function loadPoin() {
+  ['hsse', 'pci'].forEach((id) => {
+    let sm = null;
+    try { sm = JSON.parse(localStorage.getItem(`pr-${id}-${REVIEW ? 'heru' : LOGIN}`))?.summary; } catch {}
+    if (!sm) return;
+    const it = findItem(id);
+    it.periods[0].value = sm.total;
+    it.file = sm.evidence; // { name, size } atau null
+  });
+}
+loadPoin();
 if (REVIEW) initReviewUI('Review Realisasi Target');
 window.addEventListener('hashchange', route);
 route();

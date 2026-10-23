@@ -17,7 +17,7 @@ function initReviewUI(title) {
   const q = (s) => document.querySelector(s);
   document.title = `${title} – People Review`;
   q('.crumbs').innerHTML = 'Pengelolaan Kinerja • PWTT • <span>Evaluator</span>';
-  q('.flow-pill').firstChild.textContent = 'Evaluator - Tahapan Utama People Review ';
+  q('.flow-pill').firstChild.textContent = 'Alur Evaluator ';
   q('.topbar-right').insertAdjacentHTML('afterbegin', '<span class="flow-pill evaluee-pill">Heru Kautsar - 19050193</span>');
   q('#stepper').innerHTML = [
     ['tabler:award-filled', 'Approve Individual Goal Setting', 'done'],

@@ -27,10 +27,10 @@ const mandatory = [
   mandatoryItem({ id: "observasi", kategori: "HSSE Participation", name: "Melakukan observasi HSSE (unsafe act / unsafe condition) dan/atau Near Miss",
     evidence: "Dibuktikan dengan bukti pelaporan dalam aplikasi P- HORSE",
     jenis: [
-      { label: "Kurang dari 12 setahun", poin: 5, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
+      { label: "Kurang dari 12 observasi setahun", poin: 5, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
       { label: "Sebanyak 12-24 observasi setahun", poin: 10, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
       { label: "25-48 observasi setahun", poin: 15, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
-      { label: "Lebih dari 48 setahun", poin: 20, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
+      { label: "Lebih dari 48 observasi setahun", poin: 20, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
       { label: "Lebih dari 24 setahun, dengan adanya kelengkapan penilaian risk impact terhadap temuan, causes/penyebab, CLSR, dll (minimal 25% dari temuan yang dilaporkan)", poin: 20, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
       { label: "Lebih dari 48 setahun, dengan adanya kelengkapan penilaian risk impact terhadap temuan, causes/penyebab, CLSR, dll (minimal 25% dari temuan yang dilaporkan)", poin: 30, desc: "Melaporkan observasi aspek HSSE melalui mekanisme pelaporan P-HORSE" },
     ] }),
@@ -179,7 +179,11 @@ function poinNow(it) {
   return isMandatory(it) ? sum(it.acts.map((a) => jenisOf(it, a)?.poin || 0)) : it.poin_per * it.acts.length;
 }
 const locked = (it) => it.poin !== null && !it.editing;
-const complete = (it) => locked(it) && !it.dirty && it.acts.length > 0;
+// Simpan baru aktif bila minimal satu aktivitas punya isian selain Periode (Jenis/Tanggal/Lokasi/Keterangan/file evidence) — sama dengan PCI.
+const filled = (it) => it.acts.some((a) => [a.jenis, a.tanggal, a.lokasi, a.ket].some((v) => v && String(v).trim()) || !!a.file);
+console.assert(!filled({ acts: [{ jenis: '', periode: '2025', tanggal: '', lokasi: ' ', ket: '', file: null }] })
+  && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '', file: null }, { jenis: '0', tanggal: '', lokasi: '', ket: '', file: null }] })
+  && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '', file: { name: 'a.pdf' } }] }), 'Simpan aktif bila salah satu aktivitas terisi (kecuali Periode)');
 const missingFields = (it, a) => [isMandatory(it) && a.jenis === '' && 'jenis', !a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi', !a.file && 'file'].filter(Boolean);
 
 function totals() {
@@ -187,12 +191,9 @@ function totals() {
   const n = Math.min(MAX_NON_MANDATORY, sum(nonMandatory.map((i) => i.poin || 0)));
   return { m, n, all: m + n };
 }
-const mandatoryDone = () => mandatory.every(complete);
-const nonMandatoryDone = () => nonMandatory.length > 0 && nonMandatory.every(complete);
 
 console.assert(poinNow({ type: 'mandatory', jenis: [{ poin: 25 }, { poin: 15 }], acts: [{ jenis: '0' }, { jenis: '1' }, { jenis: '' }] }) === 40, 'poin mandatory = jumlah poin jenis');
 console.assert(poinNow({ type: 'non', poin_per: 10, acts: [{}, {}] }) === 20, 'poin non-mandatory = poin × aktivitas');
-console.assert(!complete({ poin: 25, editing: false, dirty: true, acts: [{}] }), 'belum simpan = belum lengkap');
 
 /* ---------- Komponen bersama ---------- */
 function makeFilter(wrap, tabs, onApply) {
@@ -282,9 +283,9 @@ const totalsHTML = ({ m, n, all }) => `
     <div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Realisasi Non-Mandatory</span></div>
     <div><span><b class="big">${all}</b><small>/200 Poin</small></span><span>Total Realisasi Semua</span></div>
   </div>`;
-const nextLink = (href, enabled) => enabled
-  ? `<a class="btn" href="${href}">Selanjutnya ${icon('tabler:arrow-right')}</a>`
-  : `<button class="btn" disabled>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
+const nextLink = (href, why = '') => why
+  ? `<button class="btn" disabled title="${why}">Selanjutnya ${icon('tabler:arrow-right')}</button>`
+  : `<a class="btn" href="${href}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
 
 /* ---------- 1. Pengisian realisasi ---------- */
 let tab = 'mandatory';
@@ -293,7 +294,33 @@ const realFilter = makeFilter($('#realFilter'), [
   { name: 'Kategori', options: () => [...new Set(tabItems().map((i) => i.kategori))] },
 ], () => renderReal());
 
-const jenisText = (it, a) => { const j = jenisOf(it, a); return j ? esc(`${j.label} — ${j.poin} Poin`) : ''; };
+// Dropdown Kriteria Pencapaian: judul singkat (tebal) + deskripsi lengkap dari Excel.
+const JENIS_SHORT = {
+  mcu: ['Pemeriksaan MCU TW I', 'Pemeriksaan MCU TW II', 'Pemeriksaan MCU tidak tepat waktu'],
+  followup: ['Tidak perlu follow up MCU', 'Follow up maks. 3 bulan (TW III)', 'Follow up lebih dari 3 bulan'],
+  observasi: ['Kurang dari 12 observasi', '12–24 observasi', '25–48 observasi', 'Lebih dari 48 observasi', 'Lebih dari 24 observasi + kelengkapan', 'Lebih dari 48 observasi + kelengkapan'],
+  training: ['Realisasi training ≥ 50%', 'Realisasi training < 50%', 'Tidak mengikuti training'],
+};
+mandatory.forEach((it) => it.jenis.forEach((j, i) => { j.short = JENIS_SHORT[it.id]?.[i] || j.label; }));
+const jenisDetail = (j) => (j.label !== j.short ? j.label : j.desc); // label Excel; bila label = judul singkat, pakai deskripsi
+console.assert(mandatory.every((it) => it.jenis.every((j) => j.short && jenisDetail(j))), 'setiap kriteria punya judul singkat & deskripsi');
+
+// Pesan error per aktivitas, ringkas: hanya menyebut isian wajib yang masih kosong (sama dengan PCI).
+const FIELD_LABEL = { jenis: 'Kriteria', tanggal: 'Tanggal', lokasi: 'Lokasi', file: 'Evidence' };
+const actError = (miss) => {
+  const n = miss.map((f) => FIELD_LABEL[f]);
+  return n.length ? `${n.length > 1 ? `${n.slice(0, -1).join(', ')} & ${n.at(-1)}` : n[0]} wajib diisi` : '';
+};
+console.assert(actError(['tanggal', 'lokasi']) === 'Tanggal & Lokasi wajib diisi' && actError(['jenis', 'tanggal', 'lokasi', 'file']) === 'Kriteria, Tanggal, Lokasi & Evidence wajib diisi'
+  && actError(['file']) === 'Evidence wajib diisi' && actError([]) === '', 'pesan error aktivitas');
+
+// Nama file panjang dipotong "…" tapi ekstensi (.pdf) tetap terlihat; nama lengkap di tooltip.
+const fileName = (name) => {
+  const dot = name.lastIndexOf('.');
+  const [base, ext] = dot > 0 ? [name.slice(0, dot), name.slice(dot)] : [name, ''];
+  return `<b class="fname" title="${esc(name)}"><span class="fname-base">${esc(base)}</span><span class="fname-ext">${esc(ext)}</span></b>`;
+};
+console.assert(fileName('a_b.c.pdf').includes('>a_b.c</span><span class="fname-ext">.pdf<') && fileName('README').includes('fname-ext"></span>'), 'nama file dipisah dari ekstensi');
 
 function actHTML(it, a, i) {
   const dis = locked(it) ? 'disabled' : '';
@@ -301,17 +328,19 @@ function actHTML(it, a, i) {
   const inv = (f) => (miss.includes(f) ? ' aria-invalid="true"' : '');
   // Label opsi dari Excel bisa sangat panjang: dropdown dibuat selebar kartu + teks lengkap pilihan ditampilkan di bawahnya.
   const jenisRow = isMandatory(it)
-    ? `<label class="full">Jenis <select data-field="jenis" ${dis}${inv('jenis')}>
-        <option value="">Pilih Jenis</option>
-        ${it.jenis.map((j, ji) => `<option value="${ji}"${String(ji) === a.jenis ? ' selected' : ''}>${esc(j.label)} (${j.poin} Poin)</option>`).join('')}
-      </select><small class="jenis-full" data-jenis-full>${jenisText(it, a)}</small></label>`
+    ? `<label class="full">Kriteria Pencapaian<select data-field="jenis" ${dis}${inv('jenis')}>
+        <option value="">Pilih kriteria pencapaian</option>
+        ${it.jenis.map((j, ji) => `<option value="${ji}" data-desc="${esc(jenisDetail(j))}"${String(ji) === a.jenis ? ' selected' : ''}>${esc(j.short)} (${j.poin} Poin)</option>`).join('')}
+      </select></label>`
     : '';
   const file = a.file
     ? `<div class="file-box">${icon('line-md:file-twotone', 'file-ico')}
-        <div class="file-meta"><b>${esc(a.file.name)}</b><small>${(a.file.size / 1024 / 1024).toFixed(1)} MB</small></div>
-        <button type="button" class="btn" data-view>${icon('mdi:eye')}Lihat File</button>
-        ${locked(it) ? '' : `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
-        <button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
+        <div class="file-meta">${fileName(a.file.name)}<small>${(a.file.size / 1024 / 1024).toFixed(1)} MB</small></div>
+        <span class="fb-actions">
+          <button type="button" class="btn" data-view>${icon('mdi:eye')}Lihat File</button>
+          ${locked(it) ? '' : `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
+          <button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
+        </span>
       </div>`
     : `<div class="drop-inline${miss.includes('file') ? ' invalid' : ''}" data-drop>
         <img src="assets/upload-illustration.svg" alt="" width="40" height="39">
@@ -321,6 +350,7 @@ function actHTML(it, a, i) {
   return `
     <div class="act" data-act="${i}">
       <div class="act-head"><span class="chip chip-blue">Aktivitas ${i + 1}</span>${isMandatory(it) ? '' : `<span class="chip chip-blue">${it.poin_per} Poin</span>`}
+        <span class="act-error" role="alert" data-act-error>${actError(miss)}</span>
         <button type="button" class="link-danger" data-del-act ${dis || (isMandatory(it) ? 'disabled' : '')}>${icon('ic:round-delete')}Hapus</button></div>
       ${jenisRow}
       <div class="act-grid">
@@ -340,8 +370,8 @@ function itemHTML(it) {
   const canAdd = !lock && it.acts.length < it.max;
   return `
     <article class="hsse-item" data-item="${it.id}">
-      <span class="ribbon">${ribbon} Poin</span>
       <div class="hi-head">
+        <span class="ribbon">${ribbon} Poin</span>
         <div class="chips">
           <span class="chip chip-blue">${esc(it.kategori)}</span>
           <span class="chip chip-blue">Evidence: ${esc(it.evidence)}</span>
@@ -358,7 +388,7 @@ function itemHTML(it) {
           <div><h3>${esc(it.name)}</h3>${isMandatory(it) ? '' : `<p class="muted small">${esc(it.desc)}</p>`}</div>
           <div class="hi-actions">
             ${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
-            <button type="button" class="btn" data-save ${lock || !it.dirty ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>
+            <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
           </div>
         </div>
@@ -390,8 +420,14 @@ function renderReal() {
 }
 
 function renderRealFoot() {
-  const done = tab === 'mandatory' ? mandatoryDone() : nonMandatoryDone();
-  $('#foot').innerHTML = totalsHTML(totals()) + nextLink(tab === 'mandatory' ? '#non-mandatory' : '#rekap', done);
+  // Selanjutnya nonaktif selama ada aktivitas di tab ini (semua kategori) yang belum tersimpan, atau Non-Mandatory belum dipilih sama sekali.
+  // Rekap tetap bisa dibuka langsung.
+  const unsaved = (tab === 'mandatory' ? mandatory : nonMandatory).some((it) => !locked(it) || it.dirty);
+  const why = tab === 'mandatory' ? (unsaved ? 'Simpan semua aktivitas Mandatory terlebih dahulu' : '')
+    : !nonMandatory.length ? 'Pilih dan simpan aktivitas Non-Mandatory terlebih dahulu'
+    : unsaved ? 'Simpan aktivitas Non-Mandatory terlebih dahulu' : '';
+  $('#foot').innerHTML = totalsHTML(totals()) + nextLink(tab === 'mandatory' ? '#non-mandatory' : '#rekap', why);
+  persist(); // footer dirender ulang setiap perubahan (termasuk saat mengetik) → titik simpan yang lengkap
 }
 
 let fileTarget = null;
@@ -456,8 +492,7 @@ $('#realList').addEventListener('click', async (e) => {
   if ('save' in btn.dataset) {
     const incomplete = it.acts.some((x) => missingFields(it, x).length);
     it.showErrors = incomplete || !it.acts.length;
-    it.error = !it.acts.length ? 'Tambahkan minimal 1 aktivitas sebelum menyimpan.'
-      : 'Lengkapi isian yang ditandai merah (Jenis, Tanggal Pelaksanaan, Lokasi, dan Upload Evidence) pada setiap aktivitas.';
+    it.error = !it.acts.length ? 'Tambahkan minimal 1 aktivitas sebelum menyimpan.' : ''; // isian kosong: pesan per aktivitas (actError)
     if (it.showErrors) { it.open = true; return renderReal(); }
     if (!await confirmBox('Apakah Anda ingin menyimpan data realisasi?', 'Data realisasi akan berubah menjadi yang terbaru')) return;
     it.poin = poinNow(it);
@@ -476,11 +511,18 @@ function onField(e) {
   a[field] = e.target.value;
   it.dirty = true;
   if (e.target.value.trim()) e.target.removeAttribute('aria-invalid');
-  if (field === 'jenis') e.target.parentElement.querySelector('[data-jenis-full]').innerHTML = jenisText(it, a);
-  e.target.closest('[data-item]').querySelector('[data-save]').disabled = false;
+  if (it.showErrors) e.target.closest('[data-act]').querySelector('[data-act-error]').textContent = actError(missingFields(it, a));
+  e.target.closest('[data-item]').querySelector('[data-save]').disabled = !filled(it);
   renderRealFoot();
 }
+// Seluruh kepala kartu bisa diklik untuk buka/tutup (bukan hanya chevron), kecuali tombol, menu, isian, atau saat memblok teks.
+$('#realList').addEventListener('click', (e) => {
+  const head = e.target.closest('.hi-head');
+  if (!head || e.target.closest('button, a, input, select, textarea, .menu-wrap') || getSelection().toString()) return;
+  head.querySelector('[data-toggle]').click();
+});
 $('#realList').addEventListener('input', onField);
+
 $('#realList').addEventListener('change', onField);
 
 $('#realList').addEventListener('dragover', (e) => { const z = e.target.closest('[data-drop]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
@@ -533,8 +575,8 @@ function pickCardHTML(c, { removable = false } = {}) {
       <p class="muted small">${esc(c.desc)}</p>
       <div class="pick-foot">
         <div><b class="ev-label">Evidence</b><p class="small">${esc(c.evidence)}</p></div>
-        <div class="pick-count"><b>${esc(c.kriteria)}</b>${stepperHTML(c)}<small class="muted">Maks. ${c.max} aktivitas</small>
-          ${removable ? `<button type="button" class="btn-outline danger" data-unpick="${c.id}">${icon('ic:round-delete')}Hapus</button>` : ''}</div>
+        <div class="pick-count"><b>${esc(c.kriteria)}</b>${stepperHTML(c)}<small class="muted">Maks. ${c.max} aktivitas</small></div>
+        ${removable ? `<button type="button" class="btn-outline danger" data-unpick="${c.id}">${icon('ic:round-delete')}Hapus</button>` : ''}
       </div>
     </article>`;
 }
@@ -544,6 +586,12 @@ function renderPilih() {
   const [kats] = pilihFilter.applied;
   const list = catalog.filter((c) => (!kats.size || kats.has(c.kategori)) && `${c.name} ${c.kategori} ${c.desc}`.toLowerCase().includes(q));
   const empty = '<p class="empty">Tidak ada aktivitas yang cocok</p>';
+  // Alt. 3: cari & filter pindah ke judul kolom "Pilih Aktivitas" (Figma Two-Menus); jaga fokus/kursor & scroll panel saat render ulang.
+  const search = $('#pilihSearch'), tools = [search.closest('.search'), $('#pilihFilter')];
+  const typing = document.activeElement === search, caret = search.selectionStart;
+  const scrolls = [...$('#pilihList').querySelectorAll('.pick-stack')].map((el) => el.scrollTop);
+  $('#viewPilih .board-head').append(...tools);
+  search.placeholder = pilihAlt === '3' ? 'Cari Kategori/Aktivitas' : 'Cari kategori aktivitas yang sesuai dengan Anda';
 
   if (pilihAlt === '1') {
     $('#pilihList').innerHTML = list.length ? `<div class="pick-grid">${list.map((c) => pickCardHTML(c)).join('')}</div>` : empty;
@@ -562,11 +610,15 @@ function renderPilih() {
     const chosen = catalog.filter((c) => picks[c.id]);
     $('#pilihList').innerHTML = `
       <div class="two-col">
-        <section><h2 class="col-title">Pilih Aktivitas</h2><div class="pick-stack">${list.map((c) => pickCardHTML(c)).join('') || empty}</div></section>
-        <section><h2 class="col-title">Aktivitas Terpilih</h2><div class="pick-stack chosen">${chosen.map((c) => pickCardHTML(c, { removable: true })).join('')
+        <section><div class="col-head"><h2 class="col-title">Pilih Aktivitas</h2><div class="col-tools" id="pilihTools"></div></div>
+          <div class="pick-stack">${list.map((c) => pickCardHTML(c)).join('') || empty}</div></section>
+        <section><div class="col-head"><h2 class="col-title">Aktivitas Terpilih</h2></div><div class="pick-stack chosen">${chosen.map((c) => pickCardHTML(c, { removable: true })).join('')
           || '<p class="empty">Aktivitas Anda masih kosong<br>Silakan untuk memilih terlebih dahulu</p>'}</div></section>
       </div>`;
+    $('#pilihTools').append(...tools);
+    $('#pilihList').querySelectorAll('.pick-stack').forEach((el, i) => { el.scrollTop = scrolls[i] || 0; });
   }
+  if (typing) { search.focus(); search.setSelectionRange(caret, caret); }
   const n = pickedPoin();
   $('#foot').innerHTML = FOOT_ALT + `
     <div class="totals"><div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Poin Aktivitas Terpilih</span></div></div>
@@ -661,7 +713,7 @@ function renderRekap() {
     : groups.map(([g, items]) => `
       <details class="period" open>
         <summary><b>${g === 'Mandatory' ? 'Mandatory' : 'Non-Mandatory'}</b>${icon('tabler:chevron-up', 'caret')}</summary>
-        <div class="table-scroll"><table class="hsse-table">${head('Jenis/Keterangan')}<tbody>${rekapRows(items) || none}</tbody></table></div>
+        <div class="table-scroll"><table class="hsse-table">${head('Kriteria/Keterangan')}<tbody>${rekapRows(items) || none}</tbody></table></div>
       </details>`).join('');
 
   $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : `<span class="foot-actions">
@@ -673,6 +725,7 @@ function renderRekap() {
     store.set('hsse.rekapAlt', v);
     renderRekap();
   });
+  persist();
 }
 
 $('#rekapList').addEventListener('click', (e) => {
@@ -684,7 +737,6 @@ $('#rekapSearch').addEventListener('input', () => renderRekap());
 /* ---------- Routing: #mandatory, #non-mandatory, #pilih, #rekap ---------- */
 function route() {
   const h = REVIEW ? 'rekap' : location.hash.slice(1) || 'mandatory';
-  if (h === 'rekap' && !(mandatoryDone() && nonMandatoryDone())) return location.replace('#non-mandatory');
   const view = h === 'pilih' ? 'pilih' : h === 'rekap' ? 'rekap' : 'real';
   $('#viewReal').hidden = view !== 'real';
   $('#viewPilih').hidden = view !== 'pilih';
@@ -708,9 +760,39 @@ $('#toggleFlow').addEventListener('click', () => {
   $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
 });
 
-// Mode evaluator: rekap read-only berisi data contoh (Figma "HSSE Objective + Evidence").
-// shortcut: data contoh tetap, bukan isian Heru; perlu disimpan bersama seperti Individual Goal bila alurnya dipakai sungguhan.
-if (REVIEW) {
+/* ---------- Penyimpanan (localStorage per user login) ---------- */
+// shortcut: tanpa backend, isian aktivitas disimpan di localStorage browser ini (file evidence hanya nama & ukurannya); ganti dengan API saat ada.
+// `summary` dibaca halaman Individual Goal: total poin yang sudah disimpan = realisasi kartu HSSE Objective.
+const DATA_KEY = `pr-hsse-${REVIEW ? 'heru' : LOGIN}`;
+const fileMeta = (f) => f && { name: f.name, size: f.size };
+const packItem = (it) => ({ id: it.id, open: it.open, poin: it.poin, editing: it.editing, dirty: it.dirty,
+  acts: it.acts.map((a) => ({ ...a, file: fileMeta(a.file), url: null })) });
+function persist() {
+  if (REVIEW) return; // Evaluator hanya melihat
+  const saved = allItems().filter((i) => i.poin !== null && i.acts.length);
+  const files = saved.flatMap((i) => i.acts.map((a) => a.file));
+  const data = { mandatory: mandatory.map(packItem), nonMandatory: nonMandatory.map(packItem), rekapSaved,
+    summary: { total: totals().all, evidence: files.length && files.every(Boolean) ? fileMeta(files[0]) : null } };
+  try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* storage penuh/diblokir: tetap jalan tanpa simpan */ }
+}
+// File yang dipulihkan hanya nama & ukuran, jadi "Lihat File" membuka file pengganti (sama seperti Individual Goal).
+const placeholderUrl = (f) => URL.createObjectURL(new Blob([`Evidence: ${f.name} (contoh prototype)`], { type: 'text/plain' }));
+function restoreData() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DATA_KEY)); } catch { /* abaikan */ }
+  if (!d) return false;
+  const unpack = (s, it) => Object.assign(it, { open: s.open, poin: s.poin, editing: !!s.editing, dirty: !!s.dirty,
+    acts: s.acts.map((a) => ({ ...newAct(), ...a, url: a.file ? placeholderUrl(a.file) : null })) });
+  d.mandatory.forEach((s) => { const it = mandatory.find((m) => m.id === s.id); if (it) unpack(s, it); });
+  nonMandatory = d.nonMandatory.filter((s) => findCatalog(s.id))
+    .map((s) => unpack(s, { ...findCatalog(s.id), type: 'non', poin_per: findCatalog(s.id).poin }));
+  rekapSaved = !!d.rekapSaved;
+  return true;
+}
+const restored = restoreData();
+
+// Mode evaluator: rekap read-only berisi isian Heru yang tersimpan; bila belum ada, data contoh (Figma "HSSE Objective + Evidence").
+if (REVIEW && !restored) {
   const demoAct = (jenis = '') => {
     const file = new File(['Evidence demo'], 'evidence-demo.pdf', { type: 'application/pdf' });
     return { ...newAct(), jenis, tanggal: '2025-06-10', lokasi: 'Jakarta', file, url: URL.createObjectURL(file) };
@@ -721,6 +803,8 @@ if (REVIEW) {
     const it = { ...c, type: 'non', poin_per: c.poin, acts: [demoAct(), demoAct()], open: false, poin: null, editing: false, dirty: false };
     return Object.assign(it, { poin: poinNow(it) });
   });
+}
+if (REVIEW) {
   initReviewUI('Review HSSE Objective');
   $('#viewRekap .back').href = IG_URL;
 }

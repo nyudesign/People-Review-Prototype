@@ -101,7 +101,7 @@ main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --p
 .stepper.hidden { display: none; }
 
 .board-wrap { flex: 1; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
-.board-head { display: flex; align-items: center; gap: clamp(12px, 1.04vw, 20px); padding: clamp(8px, 1.17vh, 12px) clamp(16px, 1.25vw, 24px); border-bottom: 1px solid var(--line); background: #f6fafa; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
+.board-head { display: flex; align-items: center; gap: clamp(12px, 1.04vw, 20px); padding: clamp(8px, 1.17vh, 12px) clamp(16px, 1.25vw, 24px); border-bottom: 1px solid var(--line); background: #fcfefe; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
 .board-head h1 { font-size: clamp(16px, 1.25vw, 20px); flex: 1; white-space: nowrap; }
 .search { display: flex; align-items: center; gap: 8px; width: min(420px, 100%); padding: 0 12px; background: #fff; border: 1px solid var(--line); border-radius: 8px; color: var(--ink-2); }
 /* Di header: search menyusut dulu (min 160px, maks 420px) sebelum Filter turun ke baris baru. */
@@ -147,6 +147,14 @@ main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --p
 .card-body { padding: 16px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
 .ribbon { position: absolute; top: -1px; right: -1px; background: var(--ribbon); color: #fff; font-size: clamp(11px, 0.812vw, 13px); padding: 4px 14px; border-radius: 0 10px 0 14px; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; padding-right: 80px; }
+/* Kartu sempit (chip + pita Bobot tidak muat sebaris): chip pindah ke bawah pita dan memakai lebar penuh, supaya tetap sejajar 1 baris. */
+.card { container: card / inline-size; }
+@container card (max-width: 380px) {
+  .chips { padding-right: 0; margin-top: 12px; flex-wrap: nowrap; }
+}
+@container card (max-width: 300px) {
+  .chips .chip { padding: 3px 8px; font-size: 10px; } /* ±1280px: sedikit dikecilkan supaya tetap muat */
+}
 .card h3 { font-size: clamp(11px, 0.875vw, 14px); font-weight: 500; }
 .library { background: var(--soft-blue); color: var(--primary-dark); font-size: 11px; padding: 6px 10px; border-radius: 6px; }
 .perf { display: flex; justify-content: space-between; align-items: baseline; font-size: clamp(11px, 0.75vw, 12px); font-weight: 400; }
@@ -246,8 +254,36 @@ h4 { margin: 16px 0 8px; font-size: clamp(11px, 0.875vw, 14px); font-weight: 500
 .period td input { width: 100%; min-width: 140px; height: 72px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
 .period td input:disabled { background: var(--panel); color: var(--ink); }
 .period td small { display: block; text-align: left; font-size: 11px; margin-top: 4px; }
+/* Project Control: jarak teks "Total Realisasi ... Per Periode" dengan angkanya (sebelumnya menempel). */
+#processForm .period td:nth-child(4) { padding-bottom: calc(12px + 20px); } /* angka Target sejajar placeholder input Realisasi: kompensasi teks "Satuan Target" (~20px) di bawah input */
+#processForm .period summary > span > .big { margin-left: 8px; } /* jarak hanya sebelum angka; "0/50 %" tetap rapat */
+/* Logika scroll sama dengan Alt. 2 HSSE/PCI: header periode menempel 12px di bawah header papan, sudut bawah kartu dipotong rounded. */
+#processForm .period { clip-path: inset(-20px 0 0 0 round 0 0 10px 10px); }
+#processForm .period[open] > summary { position: sticky; top: -4px; /* -4px + padding .process-list 16px = 12px */ z-index: 3; background: #fff; border-radius: 9px 9px 0 0; box-shadow: 0 1px 0 var(--line); container-type: scroll-state; }
+/* Hanya saat menempel: tutup celah 12px di atasnya + sudut atas rounded (Chrome/Edge 133+). */
+@container scroll-state(stuck: top) {
+  #processForm .period[open] > summary > b::before { content: ''; position: absolute; left: -1px; right: -1px; top: -12px; height: 22px; pointer-events: none;
+    background: radial-gradient(circle at 100% 100%, transparent 9.5px, var(--panel) 10px) left bottom / 10px 10px no-repeat,
+                radial-gradient(circle at 0 100%, transparent 9.5px, var(--panel) 10px) right bottom / 10px 10px no-repeat,
+                linear-gradient(var(--panel), var(--panel)) top / 100% 12px no-repeat; }
+  #processForm .period[open] > summary > b::after { content: ''; position: absolute; left: -1px; right: -1px; top: 0; height: 10px; pointer-events: none;
+    border: 1px solid var(--line); border-bottom: 0; border-radius: 10px 10px 0 0; }
+}
+/* Judul kolom menempel di bawah header periode dan masuk ke bawahnya saat ujung tabel lewat (>=1280px; di bawahnya tabel perlu gulir samping). */
+@media (min-width: 1280px) {
+  #processForm { --sum-h: clamp(52px, 3.02vw, 58px); }
+  #processForm .table-scroll { overflow-x: clip; }
+  #processForm .period > summary { box-sizing: border-box; height: var(--sum-h); padding-block: 0; }
+  #processForm .period[open] > summary { box-shadow: none; }
+  #processForm .period[open] thead th { position: sticky; top: calc(var(--sum-h) - 4px); z-index: 2; background: #fff; border-block: 0; /* border-collapse: garis tak ikut menempel */ box-shadow: inset 0 1px 0 var(--line), inset 0 -1px 0 var(--line); }
+}
 .process-foot { justify-content: space-between; align-items: center; }
 .process-foot > span { display: flex; gap: 8px; align-items: baseline; }
+/* Total realisasi bertumpuk (Figma Desktop 1551): angka di atas, label di bawah — sama dengan blok total di HSSE/PCI. */
+.totals { display: flex; gap: 40px; flex-wrap: wrap; }
+.totals > div { display: flex; flex-direction: column; align-items: center; font-weight: 500; }
+.totals .big { font-size: clamp(16px, 1.25vw, 20px); }
+.totals small { color: var(--muted); font-size: clamp(11px, 0.75vw, 12px); }
 
 /* Konfirmasi */
 dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan dialog log out (profile.css) */
@@ -284,26 +320,26 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .rekap-body { flex: 1; min-height: 0; display: flex; gap: 24px; padding: 32px 40px; }
 @media (max-width: 1600px) {
   .rekap-body { gap: 16px; padding: 24px; }
-  .rk-card { padding: 24px; }
   .rk-kpi .dev-legend { flex-direction: column; gap: 2px; padding: 12px 20px; }
   .rk-kpi .dev-legend .dot { display: none; }
 }
-.rk-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 32px; display: flex; flex-direction: column; min-height: 0; }
+/* Ukuran Figma Desktop 925 (nilai = ukuran di 1920px, mengecil mengikuti lebar layar). */
+.rk-card { background: #feffff; border: 1px solid var(--line); border-radius: clamp(12px, 1.04vw, 20px); padding: clamp(16px, 1.25vw, 24px) clamp(20px, 1.67vw, 32px); display: flex; flex-direction: column; min-height: 0; }
 .rk-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 12px; margin-right: -12px; }
 .rk-card h2 { font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
 .rk-card h3 { font-size: clamp(14px, 1.125vw, 18px); font-weight: 500; }
-#rkPerforma { flex: 1 1 0; min-width: 0; }
+#rkPerforma { flex: 1 1 0; min-width: 0; padding-bottom: 8px; } /* Figma: bawah 8px, daftar ter-scroll sampai dekat tepi */
 .rk-group { margin-bottom: 28px; }
 #rkPerforma h2 { margin-bottom: 20px; }
 .rk-group-head { display: flex; justify-content: space-between; align-items: center; }
-.rk-group-head .chip, .rk-item .chip { font-size: clamp(11px, 0.75vw, 12px); padding: 6px 10px; }
+.rk-group-head .chip, .rk-item .chip { font-size: clamp(11px, 0.68vw, 13px); font-weight: 500; padding: clamp(5px, 0.42vw, 8px) clamp(8px, 0.63vw, 12px); border-radius: clamp(8px, 0.63vw, 12px); }
 .rk-item { margin-top: 20px; }
 .rk-item-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
 .rk-item-head > div { flex: 1 0 auto; }
 .rk-item-head > div > span { white-space: nowrap; }
 .rk-item-head p { margin: 0 0 4px; font-size: clamp(13px, 1vw, 16px); }
-.rk-item-head .big { font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
-.rk-item-head small { color: var(--muted); margin-right: 12px; }
+.rk-item-head .big { font-size: clamp(16px, 1.04vw, 20px); font-weight: 700; }
+.rk-item-head small { color: var(--muted); font-size: clamp(11px, 0.73vw, 14px); margin-right: 12px; }
 .rk-item .bar { height: 12px; }
 /* shortcut: status evidence di rekap disembunyikan sementara atas permintaan; hapus `display: none` untuk menampilkan lagi. */
 .rk-ev { display: none !important; }
@@ -311,17 +347,26 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .rk-ev .ico { font-size: clamp(11px, 0.875vw, 14px); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--warn-bg); }
 .rk-ev.ok { color: var(--ok-ink); }
 .rk-ev.ok .ico { background: #22a447; color: #fff; }
-.rk-kpi { flex: 1.6 1 0; min-width: 0; flex-direction: row; gap: 32px; align-items: stretch; }
+.rk-kpi { flex: 1.24 1 0; /* Figma 615 : 765 */ min-width: 0; flex-direction: row; gap: 32px; align-items: stretch; }
 .rk-kpi-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.rk-kpi-main > p { margin: 8px 0 8px; font-size: clamp(11px, 0.75vw, 12px); }
+.rk-kpi-main > p { margin: 4px 0 8px; font-size: clamp(11px, 0.68vw, 13px); }
 .rk-kpi-group { padding: 20px 0 16px; }
 .rk-kpi-group + .rk-kpi-group { border-top: 1px solid var(--line); }
 .rk-kpi-group > b { display: block; margin-top: 12px; font-weight: 500; }
-.rk-calc { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-top: 8px; }
+.rk-calc { color: #466386; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-top: 8px; }
 .rk-calc > span:last-child { white-space: nowrap; margin-left: auto; }
+.rk-calc .muted { color: inherit; }
+.rk-total > span:last-child { font-size: clamp(13px, 0.83vw, 16px); }
 .rk-total { display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--line); font-size: clamp(14px, 1.125vw, 18px); font-weight: 500; }
 .rk-kpi-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
-.rk-kpi-side .donut { width: clamp(150px, 13vw, 300px); }
+.rk-kpi-side .donut { width: clamp(140px, 24vw - 157px, 304px); } /* 304px di 1920 (Figma) -> 150px di 1280: kolom perhitungan tetap muat */
+.rk-kpi-side .donut b { font-size: clamp(18px, 1.2vw, 23px); }
+.rk-kpi .dev-legend { padding: clamp(12px, 0.83vw, 16px); border-radius: clamp(12px, 0.83vw, 16px); background: #fdfdfd; color: #466386; font-size: clamp(12px, 0.73vw, 14px); }
+.rk-kpi .dev-legend .big { color: var(--ink); }
+/* Layar < 1600px: kartu KPI sedikit lebih lebar dari rasio Figma supaya baris "Hasil Performa Pembobotan … = nilai" tetap 1 baris. */
+@media (max-width: 1600px) {
+  .rk-kpi { flex-grow: 1.5; gap: clamp(16px, 1.67vw, 32px); }
+}
 .donut { position: relative; width: 300px; aspect-ratio: 1; display: grid; place-items: center; }
 .donut svg { position: absolute; inset: 0; transform: rotate(-90deg); }
 .donut circle { fill: none; stroke-width: 12; }

@@ -1,0 +1,22 @@
+/* Dropdown standar People Review (dipakai semua halaman; lihat dropdown.js).
+   Tombol: chevron Figma (tabler chevron-down 24px, garis 2px #060F13, 12px dari kanan).
+   Daftar: kotak putih radius 12 + bayangan; opsi = judul tebal + deskripsi opsional. */
+.dd { position: relative; min-width: 0; }
+.dd > select { display: none !important; }
+.dd-btn { width: 100%; min-height: 38px; text-align: left; font: inherit; font-weight: 400; color: #193a4d; padding: 8px 44px 8px 10px;
+  border: 1px solid #dee5ed; border-radius: 8px; cursor: pointer;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23060f13' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9l6 6l6-6'/%3E%3C/svg%3E") no-repeat right 12px center / 24px; }
+.dd-btn[aria-expanded="true"] { border-color: #3c8dbc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='none' stroke='%23060f13' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 15l6-6l6 6'/%3E%3C/svg%3E"); }
+.dd-btn:focus-visible { outline: 2px solid #3c8dbc; outline-offset: -1px; }
+.dd-btn:disabled { cursor: default; }
+.dd-ph { color: #7996b9; }
+.dd-list { box-sizing: border-box; position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; max-height: min(360px, 50vh); overflow-y: auto;
+  display: flex; flex-direction: column; padding: 8px 0; background: #fff; border: 1px solid #dee5ed; border-radius: 12px; box-shadow: 0 8px 24px rgba(25, 58, 77, .12); }
+.dd-list[hidden] { display: none; }
+.dd-up > .dd-list { top: auto; bottom: calc(100% + 6px); } /* dibuka ke atas bila ruang bawah sempit (lihat place() di dropdown.js) */
+.dd-list [role="option"] { display: flex; flex-direction: column; gap: 4px; text-align: left; font: inherit; padding: 10px 16px; border: 0; background: none; cursor: pointer; }
+.dd-list [role="option"] b { color: #193a4d; font-weight: 500; font-size: clamp(13px, 0.94vw, 16px); }
+.dd-list [role="option"] span { color: #466386; font-weight: 400; font-size: clamp(12px, 0.83vw, 14px); line-height: 1.5; } /* 400: jangan ikut tebal dari <label> */
+.dd-list [role="option"]:hover, .dd-list [role="option"]:focus-visible { background: #ecf4f9; outline: none; }
+.dd-list [role="option"][aria-selected="true"] { background: #e3eff6; }

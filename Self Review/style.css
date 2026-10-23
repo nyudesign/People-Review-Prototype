@@ -82,7 +82,7 @@ main { --pad-y: clamp(24px, 4.7vh, 48px); flex: 1; min-width: 0; height: 100vh; 
 .stepper.hidden { display: none; }
 
 .board-wrap { flex: 1; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
-.board-head { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: #f6fafa; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
+.board-head { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); background: #fcfefe; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
 .board-head h1 { font-size: clamp(16px, 1.25vw, 20px); flex: 1; white-space: nowrap; }
 .back { font-size: clamp(19px, 1.5vw, 24px); color: var(--ink); text-decoration: none; display: inline-flex; }
 
