@@ -1,5 +1,7 @@
 // Dimuat sebelum app.js halaman Realisasi Target; butuh ICONS dari icons.js halaman itu.
 const LOGIN = (() => { try { return sessionStorage.getItem('pr-login') || 'heru'; } catch { return 'heru'; } })();
+// Target Year End poin Individual Contributory (sistem lama): dipakai kartu Realisasi Target & label "/target Poin" HSSE / PCI.
+const YEAR_END_TARGET = { hsse: 300, pci: 80 };
 // Mode evaluator: Oka me-review Realisasi Target milik Heru secara read-only. Aktif hanya bila halaman dibuka
 // dari jalur Evaluator di beranda (link data-review → sessionStorage 'pr-review'); jalur Evaluee membuka milik sendiri.
 // Halaman Individual Contributory: tombol kembali ke asal (Beranda bila dibuka dari kartu Beranda, selain itu Realisasi Target).

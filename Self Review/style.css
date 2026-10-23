@@ -66,7 +66,7 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 
 /* Main */
 /* Jarak atas = bawah: 48px di 1920×1024 (Figma), mengecil di layar pendek supaya tetap muat tanpa scroll. */
-main { --pad-y: clamp(24px, 4.7vh, 48px); flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) 40px; display: flex; flex-direction: column; gap: 16px; }
+main { --pad-y: clamp(16px, 2.35vh, 24px); flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) 40px; display: flex; flex-direction: column; gap: 16px; }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .crumbs { margin: 0; flex: 1 1 240px; min-width: 0; } /* breadcrumb yang mengalah (turun baris), bukan pill & notifikasi */
 .crumbs span { color: var(--primary); }

@@ -1,6 +1,4 @@
 // Tampilan dari desain Figma section "HSSE Objective - New Alternative UI - March 2026 - 4"; daftar aktivitas dari Excel (lihat di bawah).
-const MAX_MANDATORY = 100;
-const MAX_NON_MANDATORY = 100;
 const MAX_MANDATORY_ACTS = 1; // batas aktivitas Mandatory sudah standar, jadi Tambah & Hapus Aktivitas di-disable
 const MAX_FILE = 2 * 1024 * 1024;
 const IG_URL = BACK.url;
@@ -186,9 +184,10 @@ console.assert(!filled({ acts: [{ jenis: '', periode: '2025', tanggal: '', lokas
   && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '', file: { name: 'a.pdf' } }] }), 'Simpan aktif bila salah satu aktivitas terisi (kecuali Periode)');
 const missingFields = (it, a) => [isMandatory(it) && a.jenis === '' && 'jenis', !a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi', !a.file && 'file'].filter(Boolean);
 
+// Poin tidak dibatasi (sesuai sistem lama): total = jumlah poin aktivitas yang sudah disimpan; "/target" = target Year End, hanya acuan (boleh lebih, mis. 345/300).
 function totals() {
-  const m = Math.min(MAX_MANDATORY, sum(mandatory.map((i) => i.poin || 0)));
-  const n = Math.min(MAX_NON_MANDATORY, sum(nonMandatory.map((i) => i.poin || 0)));
+  const m = sum(mandatory.map((i) => i.poin || 0));
+  const n = sum(nonMandatory.map((i) => i.poin || 0));
   return { m, n, all: m + n };
 }
 
@@ -281,7 +280,7 @@ const totalsHTML = ({ m, n, all }) => `
   <div class="totals">
     <div><span><b class="big">${m}</b><small> Poin</small></span><span>Total Realisasi Mandatory</span></div>
     <div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Realisasi Non-Mandatory</span></div>
-    <div><span><b class="big">${all}</b><small>/200 Poin</small></span><span>Total Realisasi Semua</span></div>
+    <div><span><b class="big">${all}</b><small>/${YEAR_END_TARGET.hsse} Poin</small></span><span>Total Realisasi Semua</span></div>
   </div>`;
 const nextLink = (href, why = '') => why
   ? `<button class="btn" disabled title="${why}">Selanjutnya ${icon('tabler:arrow-right')}</button>`
@@ -366,12 +365,11 @@ function actHTML(it, a, i) {
 
 function itemHTML(it) {
   const lock = locked(it);
-  const ribbon = isMandatory(it) ? (it.poin ?? 0) : poinNow(it);
   const canAdd = !lock && it.acts.length < it.max;
   return `
     <article class="hsse-item" data-item="${it.id}">
       <div class="hi-head">
-        <span class="ribbon">${ribbon} Poin</span>
+        <span class="ribbon">${poinNow(it)} Poin</span>
         <div class="chips">
           <span class="chip chip-blue">${esc(it.kategori)}</span>
           <span class="chip chip-blue">Evidence: ${esc(it.evidence)}</span>
@@ -510,6 +508,8 @@ function onField(e) {
   const a = it.acts[Number(e.target.closest('[data-act]').dataset.act)];
   a[field] = e.target.value;
   it.dirty = true;
+  // Poin di ribbon langsung mengikuti Kriteria Pencapaian yang dipilih (total di footer tetap dari poin yang sudah disimpan).
+  if (field === 'jenis') e.target.closest('[data-item]').querySelector('.ribbon').textContent = `${poinNow(it)} Poin`;
   if (e.target.value.trim()) e.target.removeAttribute('aria-invalid');
   if (it.showErrors) e.target.closest('[data-act]').querySelector('[data-act-error]').textContent = actError(missingFields(it, a));
   e.target.closest('[data-item]').querySelector('[data-save]').disabled = !filled(it);
@@ -684,6 +684,16 @@ const rekapFilter = makeFilter($('#rekapFilter'), [
   { name: 'Kategori', options: () => [...new Set(allItems().map((i) => i.kategori))] },
 ], () => renderRekap());
 
+// Satu file → tombol "Lihat File"; beberapa file → tombol menu "Lihat File" berisi Aktivitas 1, 2, 3 (Alt. 1 & Alt. 2).
+function fileCell(i) {
+  const files = i.acts.map((a, ai) => [a, ai]).filter(([a]) => a.url);
+  if (files.length < 2) return files.map(([, ai]) => `<button type="button" class="btn-outline" data-open="${i.id}:${ai}">${icon('mdi:eye')}Lihat File</button>`).join('');
+  return `<span class="menu-wrap file-menu">
+    <button type="button" class="btn-outline" data-file-menu aria-haspopup="menu" aria-expanded="false">${icon('mdi:eye')}Lihat File${icon('mdi:chevron-down')}</button>
+    <span class="menu" role="menu" hidden>${files.map(([, ai]) => `<button type="button" role="menuitem" data-open="${i.id}:${ai}">Aktivitas ${ai + 1}</button>`).join('')}</span>
+  </span>`;
+}
+
 function rekapRows(items) {
   return items.filter((i) => i.poin !== null && i.acts.length).map((i) => `
     <tr>
@@ -691,8 +701,7 @@ function rekapRows(items) {
       <td>${esc(i.name)}</td>
       <td>${esc(isMandatory(i) ? [...new Set(i.acts.map((a) => jenisOf(i, a)?.desc).filter(Boolean))].join('; ') : i.desc)}</td>
       <td>${esc(i.evidence)}</td>
-      <td><div class="file-btns">${i.acts.map((a, ai) => (a.url
-        ? `<button type="button" class="btn-outline" data-open="${i.id}:${ai}">${icon('mdi:eye')}Lihat File${i.acts.length > 1 ? ` ${ai + 1}` : ''}</button>` : '')).join('')}</div></td>
+      <td><div class="file-btns">${fileCell(i)}</div></td>
       <td>${i.acts.length}</td>
       <td>${i.poin} Poin</td>
     </tr>`).join('');
@@ -728,10 +737,29 @@ function renderRekap() {
   persist();
 }
 
-$('#rekapList').addEventListener('click', (e) => {
-  const [id, ai] = (e.target.closest('[data-open]')?.dataset.open || '').split(':');
-  if (id) window.open(findItem(id).acts[Number(ai)].url, '_blank');
+const closeFileMenus = () => document.querySelectorAll('.file-menu .menu:not([hidden])').forEach((m) => {
+  m.hidden = true;
+  m.previousElementSibling.setAttribute('aria-expanded', 'false');
 });
+$('#rekapList').addEventListener('click', (e) => {
+  const toggle = e.target.closest('[data-file-menu]');
+  if (toggle) {
+    const menu = toggle.nextElementSibling, open = menu.hidden;
+    closeFileMenus();
+    if (!open) return;
+    menu.hidden = false;
+    toggle.setAttribute('aria-expanded', 'true');
+    // fixed: tidak terpotong area tabel yang bisa di-scroll; buka ke atas bila ruang bawah tidak cukup
+    const r = toggle.getBoundingClientRect();
+    const up = r.bottom + 4 + menu.offsetHeight > innerHeight - 8;
+    menu.style.top = `${up ? r.top - 4 - menu.offsetHeight : r.bottom + 4}px`;
+    menu.style.left = `${Math.min(r.left, innerWidth - menu.offsetWidth - 8)}px`;
+    return;
+  }
+  const [id, ai] = (e.target.closest('[data-open]')?.dataset.open || '').split(':');
+  if (id) { closeFileMenus(); window.open(findItem(id).acts[Number(ai)].url, '_blank'); }
+});
+document.addEventListener('scroll', closeFileMenus, true); // posisi fixed: tutup saat area di-scroll
 $('#rekapSearch').addEventListener('input', () => renderRekap());
 
 /* ---------- Routing: #mandatory, #non-mandatory, #pilih, #rekap ---------- */
@@ -754,11 +782,7 @@ function route() {
   scrollTo(0, 0);
 }
 
-$('#toggleFlow').addEventListener('click', () => {
-  const hidden = $('#stepper').classList.toggle('hidden');
-  $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
-  $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
-});
+// Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
 /* ---------- Penyimpanan (localStorage per user login) ---------- */
 // shortcut: tanpa backend, isian aktivitas disimpan di localStorage browser ini (file evidence hanya nama & ukurannya); ganti dengan API saat ada.
@@ -772,7 +796,8 @@ function persist() {
   const saved = allItems().filter((i) => i.poin !== null && i.acts.length);
   const files = saved.flatMap((i) => i.acts.map((a) => a.file));
   const data = { mandatory: mandatory.map(packItem), nonMandatory: nonMandatory.map(packItem), rekapSaved,
-    summary: { total: totals().all, evidence: files.length && files.every(Boolean) ? fileMeta(files[0]) : null } };
+    summary: { total: totals().all, evidence: files.length && files.every(Boolean) ? fileMeta(files[0]) : null,
+      mandatoryDone: mandatory.every((i) => i.poin !== null && i.acts.length) } }; // false → kartu HSSE tidak boleh "Selesai"
   try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* storage penuh/diblokir: tetap jalan tanpa simpan */ }
 }
 // File yang dipulihkan hanya nama & ukuran, jadi "Lihat File" membuka file pengganti (sama seperti Individual Goal).

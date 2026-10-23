@@ -84,7 +84,7 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 
 /* Main */
 /* Figma (1920×1024): padding 48 atas/bawah/kiri, 52 kanan, jarak antarbagian 20; mengecil mengikuti layar. */
-main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
+main { --pad-y: clamp(16px, 2.35vh, 24px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
   flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) var(--pad-r) var(--pad-y) var(--pad-l); display: flex; flex-direction: column; gap: var(--gap); }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .crumbs { margin: 0; }
@@ -443,7 +443,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 .hsse-table tbody tr:nth-child(even) td { background: var(--panel); }
 .hsse-table tbody tr.selected td { background: #e3eff6; } /* tbody: harus sama spesifiknya dengan baris genap abu-abu */
 .hsse-table td:nth-child(2), .hsse-table td:nth-child(3) { max-width: 240px; }
-.hsse-table tr.group td { background: var(--ribbon); color: #fff; text-align: left; font-weight: 500; font-size: clamp(11px, 0.875vw, 14px); }
+.hsse-table tbody tr.group td { background: var(--ribbon); color: #fff; text-align: left; font-weight: 500; font-size: clamp(11px, 0.875vw, 14px); }
 .hsse-table.rekap { border-radius: 10px; overflow: hidden; }
 #rekapList > .table-scroll { background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 .file-btns { display: flex; flex-direction: column; gap: 6px; align-items: center; }

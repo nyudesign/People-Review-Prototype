@@ -18,9 +18,9 @@ const processes = () => [
 const columns = [
   { title: 'Individual Contributory', badge: '20%', items: [
     // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
-    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: 300, value: null }],
+    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
       href: '../HSSE%20Objective/index.html' }),
-    item({ id: 'pci', file: null, name: 'Project & Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: 80, value: null }],
+    item({ id: 'pci', file: null, name: 'Project & Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
     item({ id: 'dev', name: 'Development Commitment', weight: 5, periods: [{ label: 'Year End', target: 100, value: 100 }],
       href: '../Development%20Commitment/index.html' }),
@@ -200,7 +200,7 @@ function makeFilter(wrap, tabs, onApply) {
 /* ---------- Board ---------- */
 function cardHTML(it) {
   const p = performa(it);
-  const done = p >= 100;
+  const done = p >= 100 && !it.incomplete; // incomplete: HSSE dengan aktivitas Mandatory yang belum disimpan
   return `
     <article class="card">
       <span class="ribbon">Bobot ${it.weight}%</span>
@@ -584,11 +584,7 @@ document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('cli
 document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) d.close(); }));
 
 $('#search').addEventListener('input', render);
-$('#toggleFlow').addEventListener('click', () => {
-  const hidden = $('#stepper').classList.toggle('hidden');
-  $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
-  $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
-});
+// Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
 /* ---------- Rekap realisasi sasaran kerja ---------- */
 // Item berbobot 0 (mis. Extramiles) tidak ikut rekap, sesuai Figma.
@@ -744,6 +740,7 @@ function loadPoin() {
     const it = findItem(id);
     it.periods[0].value = sm.total;
     it.file = sm.evidence; // { name, size } atau null
+    it.incomplete = sm.mandatoryDone === false; // hanya HSSE yang mengirim mandatoryDone
   });
 }
 loadPoin();

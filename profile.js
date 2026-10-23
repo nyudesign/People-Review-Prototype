@@ -67,3 +67,22 @@
   Object.assign(css, { rel: 'stylesheet', href: `${base}profile.css` });
   document.head.append(css);
 })();
+
+// Tampilkan/Sembunyikan Alur (stepper): satu pilihan untuk semua halaman, diingat di localStorage 'pr-hide-flow'.
+(() => {
+  const btn = document.getElementById('toggleFlow'), stepper = document.getElementById('stepper');
+  if (!btn || !stepper) return;
+  const apply = (hidden) => {
+    stepper.classList.toggle('hidden', hidden);
+    btn.querySelector('i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
+    btn.querySelector('span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
+  };
+  let hidden = false;
+  try { hidden = localStorage.getItem('pr-hide-flow') === '1'; } catch {}
+  apply(hidden);
+  btn.addEventListener('click', () => {
+    hidden = !hidden;
+    apply(hidden);
+    try { localStorage.setItem('pr-hide-flow', hidden ? '1' : '0'); } catch {}
+  });
+})();

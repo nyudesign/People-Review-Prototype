@@ -84,7 +84,7 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 
 /* Main */
 /* Figma (1920×1024): padding 48 atas/bawah/kiri, 52 kanan, jarak antarbagian 20; mengecil mengikuti layar. */
-main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
+main { --pad-y: clamp(16px, 2.35vh, 24px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
   flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) var(--pad-r) var(--pad-y) var(--pad-l); display: flex; flex-direction: column; gap: var(--gap); }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .crumbs { margin: 0; }
@@ -379,6 +379,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 /* Kartu kategori memotong isinya (baris terakhir tabel & header yang menempel) mengikuti lengkung sudut BAWAH-nya. clip-path, bukan overflow:
    batas atas diperluas 20px supaya penutup celah di atas header yang menempel tidak ikut terpotong; tidak memblokir sticky. */
 :is(#pilihList, #rekapList) .period { clip-path: inset(-20px 0 0 0 round 0 0 10px 10px); }
+#rekapList .period:has(.file-menu .menu:not([hidden])) { clip-path: none; } /* menu "Lihat File" boleh keluar dari tepi kartu */
 /* Header kategori (dropdown) menempel 12px di bawah header papan saat daftar di-scroll (= gap antar-kategori). */
 :is(#pilihList, #rekapList) .period[open] > summary { position: sticky; top: -4px; /* -4px + padding .hsse-list 16px = 12px */ z-index: 3; background: #fff; border-radius: 9px 9px 0 0; /* sudut bawah dipotong kartu (overflow: clip) */ box-shadow: 0 1px 0 var(--line); container-type: scroll-state; }
 /* Hanya saat menempel: tutup celah 12px di atasnya supaya baris tabel tidak terlihat lewat (Chrome/Edge 133+; browser lain tanpa penutup). */
@@ -451,11 +452,13 @@ a.btn, a.btn-outline { text-decoration: none; }
 .hsse-table tbody tr:nth-child(even) td { background: var(--panel); }
 .hsse-table tbody tr.selected td { background: #e3eff6; } /* tbody: harus sama spesifiknya dengan baris genap abu-abu */
 .hsse-table td:nth-child(2), .hsse-table td:nth-child(3) { max-width: 240px; }
-.hsse-table tr.group td { background: var(--ribbon); color: #fff; text-align: left; font-weight: 500; font-size: clamp(11px, 0.875vw, 14px); }
+.hsse-table tbody tr.group td { background: var(--ribbon); color: #fff; text-align: left; font-weight: 500; font-size: clamp(11px, 0.875vw, 14px); }
 .hsse-table.rekap { border-radius: 10px; overflow: hidden; }
 #rekapList > .table-scroll { background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 .file-btns { display: flex; flex-direction: column; gap: 6px; align-items: center; }
 .file-btns .btn-outline { padding: 6px 12px; font-size: clamp(11px, 0.75vw, 12px); }
+.file-menu .menu { position: fixed; min-width: 140px; z-index: 20; } /* top/left diatur JS (lihat #rekapList click) */
+.file-menu .menu button { font-size: clamp(11px, 0.75vw, 12px); }
 
 @media (max-width: 900px) {
   .acts, .two-col { grid-template-columns: 1fr; }

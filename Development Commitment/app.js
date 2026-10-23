@@ -38,8 +38,4 @@ $('#devTotal').innerHTML = `
 // Mode evaluator: halaman sama (read-only), hanya header evaluator.
 if (REVIEW) { initReviewUI('Review Development Commitment'); $('#foot').hidden = false; }
 
-$('#toggleFlow').addEventListener('click', () => {
-  const hidden = $('#stepper').classList.toggle('hidden');
-  $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
-  $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
-});
+// Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).

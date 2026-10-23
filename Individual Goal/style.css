@@ -84,7 +84,7 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 
 /* Main */
 /* Figma Desktop 1484 (1920×1024): padding 48 atas/bawah/kiri, 52 kanan, jarak antarbagian 20; mengecil mengikuti layar. */
-main { --pad-y: clamp(24px, 4.7vh, 48px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
+main { --pad-y: clamp(16px, 2.35vh, 24px); --pad-l: clamp(24px, 2.5vw, 48px); --pad-r: clamp(24px, 2.71vw, 52px); --gap: clamp(12px, 1.95vh, 20px);
   flex: 1; min-width: 0; height: 100vh; padding: var(--pad-y) var(--pad-r) var(--pad-y) var(--pad-l); display: flex; flex-direction: column; gap: var(--gap); }
 .topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .crumbs { margin: 0; flex: 1 1 240px; min-width: 0; } /* breadcrumb yang mengalah (turun baris), bukan pill & notifikasi */

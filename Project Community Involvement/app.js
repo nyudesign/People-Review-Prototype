@@ -1,6 +1,5 @@
 // Tampilan dari desain Figma section "Project & Community Involvement - New Alternative UI - March 2026 - 3".
 // Alurnya sama dengan Non-Mandatory di HSSE Objective, bedanya evidence diunggah sekali untuk semua aktivitas (langkah Upload Evidence).
-const MAX_TOTAL = 200;
 const MAX_FILE = 2 * 1024 * 1024;
 const IG_URL = BACK.url;
 
@@ -54,7 +53,7 @@ const complete = (it) => locked(it) && !it.dirty && it.acts.length > 0;
 // Simpan baru aktif bila minimal satu aktivitas punya Tanggal/Lokasi/Keterangan terisi (Periode tidak dihitung: selalu punya nilai default).
 const filled = (it) => it.acts.some((a) => [a.tanggal, a.lokasi, a.ket].some((v) => v && v.trim()));
 const missingFields = (a) => [!a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi'].filter(Boolean);
-const total = () => Math.min(MAX_TOTAL, sum(items.map((i) => i.poin || 0)));
+const total = () => sum(items.map((i) => i.poin || 0)); // poin tidak dibatasi (sesuai sistem lama); "/target" = target Year End, hanya acuan
 const allDone = () => items.length > 0 && items.every(complete);
 
 console.assert(poinNow({ poin_per: 5, acts: [{}, {}] }) === 10, 'poin = poin × aktivitas');
@@ -144,7 +143,7 @@ function altSwitch(el, options, current, onPick) {
 }
 
 const totalsHTML = () => `
-  <div class="totals"><div><span><b class="big">${total()}</b><small>/${MAX_TOTAL} Poin</small></span><span>Total Realisasi</span></div></div>`;
+  <div class="totals"><div><span><b class="big">${total()}</b><small>/${YEAR_END_TARGET.pci} Poin</small></span><span>Total Realisasi</span></div></div>`;
 const nextLink = (href, enabled) => enabled
   ? `<a class="btn" href="${href}">Selanjutnya ${icon('tabler:arrow-right')}</a>`
   : `<button class="btn" disabled>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
@@ -545,11 +544,7 @@ function route() {
   document.querySelectorAll('.hsse-list').forEach((l) => { l.scrollTop = 0; });
 }
 
-$('#toggleFlow').addEventListener('click', () => {
-  const hidden = $('#stepper').classList.toggle('hidden');
-  $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
-  $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
-});
+// Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
 /* ---------- Penyimpanan (localStorage per user login) ---------- */
 // shortcut: tanpa backend, isian aktivitas disimpan di localStorage browser ini (file evidence hanya nama & ukurannya); ganti dengan API saat ada.

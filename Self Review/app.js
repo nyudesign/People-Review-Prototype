@@ -258,11 +258,7 @@ const backToLast = (e) => { e.preventDefault(); location.hash = `soal-${QUESTION
 $('#evBack').addEventListener('click', backToLast);
 $('#evBack2').addEventListener('click', backToLast);
 
-$('#toggleFlow').addEventListener('click', () => {
-  const hidden = $('#stepper').classList.toggle('hidden');
-  $('#toggleFlow i').innerHTML = ICONS[hidden ? 'mdi:eye' : 'mdi:eye-off'];
-  $('#toggleFlow span').textContent = hidden ? 'Tampilkan Alur' : 'Sembunyikan Alur';
-});
+// Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
 window.addEventListener('hashchange', route);
 route();
