@@ -15,7 +15,7 @@ const steps = [
 const contributory = [
   { name: 'HSSE Objective', value: 20, max: 150, unit: 'Poin', href: './HSSE%20Objective/index.html?from=beranda' },
   { name: 'Development Commitment', value: 20, max: 150, unit: '%', href: './Development%20Commitment/index.html?from=beranda' },
-  { name: 'Project & Community Involvement', value: 20, max: 150, unit: 'Poin', href: './Project%20Community%20Involvement/index.html?from=beranda' },
+  { name: 'Community Involvement', value: 20, max: 150, unit: 'Poin', href: './Project%20Community%20Involvement/index.html?from=beranda' },
 ];
 const nominees = [
   { name: 'Jamaludin Ahmad', nip: '29231284', done: false },

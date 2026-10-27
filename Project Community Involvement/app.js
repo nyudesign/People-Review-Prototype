@@ -584,7 +584,7 @@ if (REVIEW && !restored) {
   evidence = { file, url: URL.createObjectURL(file) };
 }
 if (REVIEW) {
-  initReviewUI('Review Project & Community Involvement');
+  initReviewUI('Review Community Involvement');
   $('#viewRekap .back').href = IG_URL;
 }
 
