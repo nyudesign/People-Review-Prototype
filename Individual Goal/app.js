@@ -20,7 +20,7 @@ const columns = [
     // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
     item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
       href: '../HSSE%20Objective/index.html' }),
-    item({ id: 'pci', file: null, name: 'Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
+    item({ id: 'pci', name: 'Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
     item({ id: 'dev', name: 'Development Commitment', weight: 5, periods: [{ label: 'Year End', target: 100, value: 100 }],
       href: '../Development%20Commitment/index.html' }),
@@ -739,7 +739,7 @@ function loadPoin() {
     if (!sm) return;
     const it = findItem(id);
     it.periods[0].value = sm.total;
-    it.file = sm.evidence; // { name, size } atau null
+    if ('file' in it) it.file = sm.evidence; // { name, size } atau null; PCI tanpa `file` karena evidence-nya opsional
     it.incomplete = sm.mandatoryDone === false; // hanya HSSE yang mengirim mandatoryDone
   });
 }

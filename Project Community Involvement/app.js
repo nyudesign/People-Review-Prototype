@@ -1,5 +1,5 @@
 // Tampilan dari desain Figma section "Project & Community Involvement - New Alternative UI - March 2026 - 3".
-// Alurnya sama dengan Non-Mandatory di HSSE Objective, bedanya evidence diunggah sekali untuk semua aktivitas (langkah Upload Evidence).
+// Alurnya sama dengan Non-Mandatory di HSSE Objective; evidence opsional per aktivitas lewat modal "Lihat Evidence" (Figma "Upload Evidence new version").
 const MAX_FILE = 2 * 1024 * 1024;
 const IG_URL = BACK.url;
 
@@ -23,7 +23,7 @@ const catalog = [
 
 let items = [];        // aktivitas yang dipilih user (dibuat dari katalog)
 let picks = {};        // draft jumlah aktivitas di layar Pemilihan: { catalogId: jumlah }
-let evidence = null;   // { file, url } — satu file untuk semua aktivitas
+let evItem = null;     // item yang modal evidence-nya sedang terbuka; file disimpan di item.ev = { file, url }
 let rekapSaved = false;
 
 const $ = (s) => document.querySelector(s);
@@ -42,7 +42,6 @@ const store = {
   set(k, v) { try { localStorage.setItem(k, v); } catch { /* abaikan */ } },
 };
 let pilihAlt = store.get('pci.pilihAlt', '1');
-let rekapAlt = store.get('pci.rekapAlt', 'tabel');
 
 /* ---------- Aturan poin & kelengkapan ---------- */
 const findCatalog = (id) => catalog.find((c) => c.id === id);
@@ -198,6 +197,7 @@ function itemHTML(it) {
         <div class="hi-title">
           <div><h3>${esc(it.name)}</h3><p class="muted small">${esc(it.desc)}</p></div>
           <div class="hi-actions">
+            <button type="button" class="btn-outline" data-evidence>Lihat Evidence</button>
             ${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
             <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
@@ -227,7 +227,10 @@ function renderReal() {
 }
 
 // persist(): footer dirender ulang setiap perubahan (termasuk saat mengetik) → titik simpan yang lengkap.
-const renderRealFoot = () => { $('#foot').innerHTML = totalsHTML() + nextLink('#evidence', allDone()); persist(); };
+const renderRealFoot = () => {
+  $('#foot').innerHTML = `<a class="btn-outline" href="${IG_URL}">${icon('tabler:arrow-left')}Sebelumnya</a><span class="foot-actions">${totalsHTML()}${nextLink('#rekap', allDone())}</span>`;
+  persist();
+};
 
 $('#realList').addEventListener('click', async (e) => {
   const card = e.target.closest('[data-item]');
@@ -238,6 +241,7 @@ $('#realList').addEventListener('click', async (e) => {
   const a = actEl && it.acts[Number(actEl.dataset.act)];
 
   if ('toggle' in btn.dataset) { it.open = !it.open; return renderReal(); }
+  if ('evidence' in btn.dataset) { evItem = it; renderEvidence(); return $('#evidenceDialog').showModal(); }
   if ('menu' in btn.dataset) {
     const menu = btn.nextElementSibling;
     menu.hidden = !menu.hidden;
@@ -403,7 +407,7 @@ $('#pilihSearch').addEventListener('input', () => renderPilih());
 // Terapkan pilihan: item yang sudah ada dipertahankan (isian tidak hilang), jumlah aktivitas disesuaikan.
 function commitPicks() {
   items = catalog.filter((c) => picks[c.id]).map((c) => {
-    const it = findItem(c.id) || { ...c, poin_per: c.poin, acts: [], open: true, poin: null, editing: false, dirty: false };
+    const it = findItem(c.id) || { ...c, poin_per: c.poin, acts: [], open: true, poin: null, editing: false, dirty: false, ev: null };
     const want = picks[c.id];
     if (it.acts.length !== want) {
       while (it.acts.length < want) it.acts.push(newAct());
@@ -417,16 +421,18 @@ function commitPicks() {
   location.hash = 'isi';
 }
 
-/* ---------- 3. Upload evidence ---------- */
+/* ---------- Evidence per aktivitas (modal, opsional) ---------- */
+// Isi modal sama dengan Upload Evidence di Self Review: dropzone; file terunggah tampil di tengah dropzone.
+// Setelah kartu disimpan, Hapus File disembunyikan (Figma "Upload Evidence new version - setelah simpan"); Ubah File tetap bisa.
 function renderEvidence() {
-  // Tampilan sama dengan Upload Evidence di Self Review: label + dropzone setinggi area; file terunggah tampil di tengah dropzone.
-  $('#evidenceBox').innerHTML = `<h2 class="ev-title">Evidence Anda</h2>` + (evidence
+  const ev = evItem.ev;
+  $('#evidenceBox').innerHTML = ev
     ? `<div class="drop">${icon('line-md:file-twotone', 'file-ico')}
-        <p class="file-name">${esc(evidence.file.name)}</p><p class="muted">${fileSize(evidence.file)}</p>
+        <p class="file-name">${esc(ev.file.name)}</p><p class="muted">${fileSize(ev.file)}</p>
         <div class="file-actions">
           <button type="button" class="btn-outline" data-view>${icon('mdi:eye')}Lihat File</button>
           <button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
-          <button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>
+          ${locked(evItem) ? '' : `<button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
         </div>
       </div>`
     : `<div class="drop" data-drop>
@@ -434,29 +440,29 @@ function renderEvidence() {
         <p class="link">Tarik dan lepaskan file yang Anda ingin unggah<br>(.pdf/.jpg max. 2MB)</p>
         <p class="muted">atau</p>
         <button type="button" class="btn" data-pick>Pilih File</button>
-      </div>`);
-  $('#foot').innerHTML = totalsHTML() + nextLink('#rekap', !!evidence);
+      </div>`;
   persist();
 }
 
 function setEvidence(f) {
   if (!f) return;
   if (!/\.(pdf|jpe?g)$/i.test(f.name) || f.size > MAX_FILE) return alert('File harus berformat PDF/JPG dan maksimal 2MB');
-  if (evidence) URL.revokeObjectURL(evidence.url);
-  evidence = { file: f, url: URL.createObjectURL(f) };
+  if (evItem.ev) URL.revokeObjectURL(evItem.ev.url);
+  evItem.ev = { file: f, url: URL.createObjectURL(f) };
   rekapSaved = false;
   renderEvidence();
 }
 
+$('#evidenceDialog [data-close]').addEventListener('click', () => $('#evidenceDialog').close());
 $('#evidenceBox').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   if ('pick' in b.dataset) return $('#fileInput').click();
-  if ('view' in b.dataset) return window.open(evidence.url, '_blank');
+  if ('view' in b.dataset) return window.open(evItem.ev.url, '_blank');
   if ('delFile' in b.dataset) {
     if (!await confirmBox('Apakah Anda ingin menghapus file evidence ini?', 'File evidence akan dihapus dan Anda harus melakukan upload kembali')) return;
-    URL.revokeObjectURL(evidence.url);
-    evidence = null;
+    URL.revokeObjectURL(evItem.ev.url);
+    evItem.ev = null;
     rekapSaved = false;
     renderEvidence();
   }
@@ -473,51 +479,45 @@ $('#fileInput').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
-/* ---------- 4. Rekap realisasi (Alt. 1 tabel, Alt. 2 dropdown) ---------- */
+/* ---------- 3. Rekap realisasi (per kategori, Figma "Summary New Version") ---------- */
 const rekapFilter = makeFilter($('#rekapFilter'), [
   { name: 'Kategori', options: () => [...new Set(items.map((i) => i.kategori))] },
 ], () => renderRekap());
 
 const rekapRows = (list) => list.map((i) => `
-  <tr><td>${esc(i.kategori)}</td><td>${esc(i.name)}</td><td>${esc(i.desc)}</td><td>${esc(i.evidence)}</td><td>${i.acts.length}</td><td>${i.poin} Poin</td></tr>`).join('');
+  <tr><td>${esc(i.kategori)}</td><td>${esc(i.name)}</td><td>${esc(i.desc)}</td><td>${esc(i.evidence)}</td>
+    <td>${i.ev ? `<button type="button" class="btn-outline" data-view-file="${i.id}">${icon('mdi:eye')}Lihat File</button>` : '-'}</td>
+    <td>${i.acts.length}</td><td>${i.poin} Poin</td></tr>`).join('');
 
 function renderRekap() {
   const q = $('#rekapSearch').value.trim().toLowerCase();
   const [kats] = rekapFilter.applied;
   const groups = KATEGORI.filter((k) => !kats.size || kats.has(k))
     .map((k) => [k, items.filter((i) => i.kategori === k && i.name.toLowerCase().includes(q))]).filter(([, list]) => list.length);
-  const head = '<thead><tr><th>Kategori</th><th>Daftar Aktivitas</th><th>Keterangan</th><th>Evidence</th><th>Jumlah Aktivitas Terisi</th><th>Total Poin</th></tr></thead>';
-  const none = '<p class="empty">Tidak ada aktivitas yang cocok</p>';
+  const head = '<thead><tr><th>Kategori</th><th>Daftar Aktivitas</th><th>Keterangan</th><th>Evidence</th><th>File Lampiran Evidence</th><th>Jumlah Aktivitas</th><th>Total Poin</th></tr></thead>';
 
-  $('#rekapList').innerHTML = !groups.length ? none : rekapAlt === 'tabel'
-    ? `<div class="table-scroll"><table class="hsse-table rekap">${head}<tbody>${rekapRows(groups.flatMap(([, list]) => list))}</tbody></table></div>`
-    : groups.map(([k, list]) => `
+  $('#rekapList').innerHTML = groups.map(([k, list]) => `
       <details class="period" open>
         <summary><b>${esc(k)}</b>${icon('tabler:chevron-up', 'caret')}</summary>
         <div class="table-scroll"><table class="hsse-table">${head}<tbody>${rekapRows(list)}</tbody></table></div>
-      </details>`).join('');
+      </details>`).join('') || '<p class="empty">Tidak ada aktivitas yang cocok</p>';
 
-  $('#foot').innerHTML = FOOT_ALT + totalsHTML() + (REVIEW ? `<span class="foot-actions">
-    <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>
-    <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence</button></span>` : `<span class="foot-actions">
-    <button type="button" class="btn-outline" data-view-evidence>${icon('mdi:eye')}Lihat File Evidence Anda</button>
+  $('#foot').innerHTML = totalsHTML() + (REVIEW ? `<span class="foot-actions"><a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a></span>` : `<span class="foot-actions">
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
     <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
-  altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
-    rekapAlt = v;
-    store.set('pci.rekapAlt', v);
-    renderRekap();
-  });
   persist();
 }
+$('#rekapList').addEventListener('click', (e) => {
+  const id = e.target.closest('[data-view-file]')?.dataset.viewFile;
+  if (id) window.open(findItem(id).ev.url, '_blank');
+});
 $('#rekapSearch').addEventListener('input', () => renderRekap());
 
 $('#foot').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   if ('commit' in b.dataset) return commitPicks();
-  if ('viewEvidence' in b.dataset) return window.open(evidence.url, '_blank');
   if ('rekapSave' in b.dataset) {
     if (!await confirmBox('Apakah Anda ingin menyimpan data realisasi?', 'Data realisasi akan berubah menjadi yang terbaru')) return;
     rekapSaved = true;
@@ -526,20 +526,17 @@ $('#foot').addEventListener('click', async (e) => {
   if ('rekapEdit' in b.dataset) { rekapSaved = false; location.hash = 'isi'; }
 });
 
-/* ---------- Routing: #isi, #pilih, #evidence, #rekap ---------- */
+/* ---------- Routing: #isi, #pilih, #rekap ---------- */
 function route() {
   let h = REVIEW ? 'rekap' : location.hash.slice(1) || 'isi';
   // Langkah berikutnya hanya bisa dibuka bila langkah sebelumnya selesai.
-  if ((h === 'evidence' || h === 'rekap') && !allDone()) return location.replace('#isi');
-  if (h === 'rekap' && !evidence) return location.replace('#evidence');
-  if (!['pilih', 'evidence', 'rekap'].includes(h)) h = 'isi';
+  if (h === 'rekap' && !allDone()) return location.replace('#isi');
+  if (!['pilih', 'rekap'].includes(h)) h = 'isi';
   $('#viewReal').hidden = h !== 'isi';
   $('#viewPilih').hidden = h !== 'pilih';
-  $('#viewEvidence').hidden = h !== 'evidence';
   $('#viewRekap').hidden = h !== 'rekap';
   if (h === 'isi') renderReal();
   else if (h === 'pilih') { picks = Object.fromEntries(items.map((i) => [i.id, i.acts.length])); renderPilih(); }
-  else if (h === 'evidence') renderEvidence();
   else renderRekap();
   document.querySelectorAll('.hsse-list').forEach((l) => { l.scrollTop = 0; });
 }
@@ -553,9 +550,9 @@ const DATA_KEY = `pr-pci-${REVIEW ? 'heru' : LOGIN}`;
 const fileMeta = (f) => f && { name: f.name, size: f.size };
 function persist() {
   if (REVIEW) return; // Evaluator hanya melihat
-  const data = { rekapSaved, evidence: fileMeta(evidence?.file),
-    items: items.map((it) => ({ id: it.id, open: it.open, poin: it.poin, editing: it.editing, dirty: it.dirty, acts: it.acts })),
-    summary: { total: total(), evidence: fileMeta(evidence?.file) } };
+  const data = { rekapSaved,
+    items: items.map((it) => ({ id: it.id, open: it.open, poin: it.poin, editing: it.editing, dirty: it.dirty, acts: it.acts, ev: fileMeta(it.ev?.file) })),
+    summary: { total: total() } }; // evidence opsional → tidak dikirim ke Individual Goal
   try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* storage penuh/diblokir: tetap jalan tanpa simpan */ }
 }
 function restoreData() {
@@ -564,10 +561,10 @@ function restoreData() {
   if (!d) return false;
   items = d.items.filter((s) => findCatalog(s.id)).map((s) => {
     const c = findCatalog(s.id);
-    return { ...c, poin_per: c.poin, open: s.open, poin: s.poin, editing: !!s.editing, dirty: !!s.dirty, acts: s.acts.map((a) => ({ ...newAct(), ...a })) };
+    // File yang dipulihkan hanya nama & ukuran, jadi "Lihat File" membuka file pengganti (sama seperti Individual Goal).
+    const ev = s.ev && { file: s.ev, url: URL.createObjectURL(new Blob([`Evidence: ${s.ev.name} (contoh prototype)`], { type: 'text/plain' })) };
+    return { ...c, poin_per: c.poin, open: s.open, poin: s.poin, editing: !!s.editing, dirty: !!s.dirty, acts: s.acts.map((a) => ({ ...newAct(), ...a })), ev };
   });
-  // File yang dipulihkan hanya nama & ukuran, jadi "Lihat File" membuka file pengganti (sama seperti Individual Goal).
-  if (d.evidence) evidence = { file: d.evidence, url: URL.createObjectURL(new Blob([`Evidence: ${d.evidence.name} (contoh prototype)`], { type: 'text/plain' })) };
   rekapSaved = !!d.rekapSaved;
   return true;
 }
@@ -578,10 +575,9 @@ if (REVIEW && !restored) {
   items = [['ci-1', 1], ['ci-2', 6], ['pi-1', 1]].map(([id, n]) => {
     const c = findCatalog(id);
     const acts = Array.from({ length: n }, () => ({ ...newAct(), tanggal: '2025-06-10', lokasi: 'Jakarta' }));
-    return { ...c, poin_per: c.poin, acts, open: false, poin: c.poin * n, editing: false, dirty: false };
+    const file = new File(['Evidence demo'], 'Evidence.pdf', { type: 'application/pdf' });
+    return { ...c, poin_per: c.poin, acts, open: false, poin: c.poin * n, editing: false, dirty: false, ev: { file, url: URL.createObjectURL(file) } };
   });
-  const file = new File(['Evidence demo'], 'Project & Community Involvement.pdf', { type: 'application/pdf' });
-  evidence = { file, url: URL.createObjectURL(file) };
 }
 if (REVIEW) {
   initReviewUI('Review Community Involvement');

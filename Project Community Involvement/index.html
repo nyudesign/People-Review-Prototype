@@ -69,20 +69,11 @@
       <div class="hsse-list" id="pilihList"></div>
     </section>
 
-    <!-- 3. Upload evidence (satu file untuk semua aktivitas) -->
-    <section class="board-wrap" id="viewEvidence" hidden>
-      <div class="board-head">
-        <a href="#isi" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
-        <div class="head-title"><h1>Community Involvement</h1><small>Upload Evidence</small></div>
-      </div>
-      <div class="hsse-list" id="evidenceBox"></div>
-    </section>
-
-    <!-- 4. Rekap realisasi (2 alternatif UI) -->
+    <!-- 3. Rekap realisasi -->
     <section class="board-wrap" id="viewRekap" hidden>
       <div class="board-head">
-        <a href="#evidence" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
-        <h1 class="head-title">Rekap Realisasi Community Involvement</h1>
+        <a href="#isi" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
+        <h1 class="head-title">Rekap Community Involvement</h1>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rekapSearch" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari aktivitas"></label>
         <div class="filter-wrap" id="rekapFilter"></div>
       </div>
@@ -115,6 +106,12 @@
       <button value="yes" class="btn">Ya</button>
       <button value="no" class="btn-outline">Tidak</button>
     </form>
+  </dialog>
+
+  <!-- Evidence per aktivitas (opsional) -->
+  <dialog id="evidenceDialog">
+    <div class="dlg-head"><h2>Evidence Aktivitas (Opsional)</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div id="evidenceBox"></div>
   </dialog>
 
   <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" hidden>

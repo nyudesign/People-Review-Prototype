@@ -246,9 +246,8 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 
 .drop { border: 2px dashed var(--muted); border-radius: 10px; background: var(--panel); text-align: center; padding: 32px 16px; }
 .drop.over { background: var(--soft-blue); }
-/* Upload Evidence (#evidenceBox) — disamakan dengan Upload Evidence Self Review. */
-#evidenceBox { display: flex; flex-direction: column; gap: 0; padding: 16px 24px; background: #fff; overflow: hidden; border-radius: 0 0 12px 12px; }
-#evidenceBox .ev-title { margin: 0 0 10px; font-size: clamp(11px, 0.875vw, 14px); }
+/* Modal evidence per aktivitas (#evidenceBox) — dropzone disamakan dengan Upload Evidence Self Review. */
+#evidenceBox { display: flex; flex-direction: column; padding: 16px 24px 24px; background: #fff; }
 #evidenceBox .drop { flex: 1; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 12px; border: 1px dashed #64a7ce; border-radius: 12px; background: var(--side); }
 #evidenceBox .drop.over { background: var(--soft-blue); }
 #evidenceBox .drop p { margin: 0; font-size: clamp(13px, 1vw, 16px); }
@@ -348,7 +347,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 .totals small { color: var(--muted); }
 /* Footer menempel di bawah layar; margin negatif menutup padding main supaya latar putih selebar konten. */
 .hsse-foot { justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; bottom: 0; z-index: 5; background: #fff; margin: 0 calc(-1 * var(--pad-r)) calc(-1 * var(--pad-y)) calc(-1 * var(--pad-l)); padding: 0 var(--pad-r) var(--pad-y) var(--pad-l); } /* tanpa garis, 20px di bawah konten */
-.foot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.foot-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 /* Alternatif UI di kolom tengah footer: total tetap kiri, tombol tetap kanan; bila sempit, isi switcher
    tersusun ke baris berikutnya di dalam kolomnya sendiri (tidak menimpa / mendorong elemen lain). */
 .hsse-foot:has(> #footAlt) { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; }
