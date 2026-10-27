@@ -197,8 +197,8 @@ function itemHTML(it) {
         <div class="hi-title">
           <div><h3>${esc(it.name)}</h3><p class="muted small">${esc(it.desc)}</p></div>
           <div class="hi-actions">
-            <button type="button" class="btn-outline" data-evidence>Lihat Evidence</button>
             ${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
+            <button type="button" class="btn-outline" data-evidence>Lihat Evidence</button>
             <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
           </div>
