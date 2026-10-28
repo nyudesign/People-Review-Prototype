@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nominate 360 – People Review</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../dropdown.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Alur Evaluee <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="done"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="current" id="nomStep"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
+      <li><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target</a></li>
+      <li><a href="../Self%20Review/index.html"><i data-icon="material-symbols:person-rounded"></i>Self Review</a></li>
+      <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
+      <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
+    </ol>
+
+    <!-- 1. Pemilihan Nominee 360 (Figma Desktop 1344/1343/1388/1356, sesudah submit 1396) -->
+    <div id="viewPilih" hidden>
+      <section class="board-wrap">
+        <div class="board-head">
+          <button type="button" class="view-switch" data-switch>Pemilihan Nominee 360 <i data-icon="mdi:chevron-down"></i></button>
+          <button type="button" class="pill" id="syaratBtn">Syarat Pemilihan <i data-icon="material-symbols:info-outline-rounded"></i></button>
+          <span class="spacer"></span>
+          <span class="badge waiting" id="pilihStatus" hidden>Menunggu Persetujuan</span>
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="pilihSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+        </div>
+        <div class="sr-body empty" id="pilihEmpty">
+          <img src="assets/search-illustration.svg" alt="" width="236" height="203">
+          <h2>Cari Penilai Anda dengan Tepat</h2>
+          <p class="muted">Klik tombol search di pojok kanan atas untuk<br>mencari dan memilih pekerja yang tepat</p>
+        </div>
+        <div class="sr-body table-body" id="pilihTableWrap" hidden><table class="grid" id="pilihTable"></table></div>
+      </section>
+      <div class="footer-bar split" id="pilihFoot">
+        <div class="counts" id="catCounts"></div>
+        <span class="foot-actions">
+          <button type="button" class="btn-outline" id="lihatBtn"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Lihat Pilihan 360 Saya</button>
+          <button type="button" class="btn" id="pilihSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+        </span>
+      </div>
+      <div class="footer-bar" id="pilihDoneFoot" hidden>
+        <span class="foot-text">Pilihan Anda sedang dilakukan proses approval dari Evaluator</span>
+        <button type="button" class="btn-outline" disabled title="Pilihan tidak bisa diubah selama menunggu persetujuan Evaluator"><i data-icon="mdi:pencil"></i>Edit</button>
+      </div>
+    </div>
+
+    <!-- 2. Konfirmasi pemilihan (Figma Desktop 1394) -->
+    <div id="viewKonfPilih" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><a href="#pilih" class="back" aria-label="Kembali ke Pemilihan Nominee 360"><i data-icon="tabler:arrow-left"></i></a>
+          <h1>Konfirmasi Pemilihan Penilaian 360 Anda</h1></div>
+        <div class="sr-body table-body"><table class="grid" id="konfPilihTable"></table></div>
+      </section>
+      <div class="footer-bar">
+        <span class="foot-text">Apakah Anda yakin untuk upload pemilihan ini ke Evaluator?</span>
+        <a class="btn-outline danger" href="#pilih"><i data-icon="material-symbols:close-rounded"></i>Tidak</a>
+        <button type="button" class="btn-outline ok" id="konfPilihYa"><i data-icon="material-symbols:check-rounded"></i>Ya</button>
+      </div>
+    </div>
+
+    <!-- 3. Penilaian 360: pekerja yang memilih Anda sebagai penilai (Figma Desktop 1363 / 1414) -->
+    <div id="viewPenilaian" hidden>
+      <section class="board-wrap">
+        <div class="board-head">
+          <button type="button" class="view-switch" data-switch>Penilaian 360 <i data-icon="mdi:chevron-down"></i></button>
+          <span class="spacer"></span>
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="nilaiSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+        </div>
+        <div class="sr-body table-body"><table class="grid" id="nilaiTable"></table></div>
+      </section>
+    </div>
+
+    <!-- 4. Soal (Figma Desktop 1401–1406; soal sama dengan Behavior Survey Self Review) -->
+    <div id="viewSoal" hidden>
+      <div class="survey">
+        <section class="board-wrap">
+          <div class="board-head"><a href="#penilaian" class="back" aria-label="Kembali ke Penilaian 360"><i data-icon="tabler:arrow-left"></i></a>
+            <div class="head-title"><h1 class="ratee-name"></h1><small class="ratee-sub"></small></div></div>
+          <div class="sr-body question">
+            <img class="wave wave-right" src="assets/wave-right.svg" alt="">
+            <h2 id="qText"></h2>
+            <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+          </div>
+        </section>
+        <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
+          <p class="nav-title">Servant Leadership Survey</p>
+          <p class="nav-count"><span>Survey Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+          <div class="progress"><i id="navBar"></i></div>
+          <div class="nav-grid" id="navGrid"></div>
+        </aside>
+      </div>
+      <div class="footer-bar split" id="qFoot"></div>
+    </div>
+
+    <!-- 5. Catatan Penilai (sama dengan Self Review) -->
+    <div id="viewCatatan" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><div class="head-title"><h1 class="ratee-name"></h1><small class="ratee-sub"></small></div><small class="head-note">Catatan Penilai</small></div>
+        <div class="sr-body notes">
+          <label for="noteKeep">Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteKeep" placeholder="Isi pendapat Anda"></textarea>
+          <label for="noteChange">Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteChange" placeholder="Isi pendapat Anda"></textarea>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" href="#" id="ctBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian</a>
+        <a class="btn" href="#" id="ctNext">Selanjutnya <i data-icon="tabler:arrow-right"></i></a>
+      </div>
+    </div>
+
+    <!-- 6. Konfirmasi / summary (Figma Desktop 1404, isi mengikuti Konfirmasi Self Review) -->
+    <div id="viewKonfirmasi" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><a href="#" class="back" id="kfBack" aria-label="Kembali ke catatan penilai"><i data-icon="tabler:arrow-left"></i></a>
+          <h1>Konfirmasi Penilaian Anda</h1></div>
+        <div class="sr-body confirm-grid">
+          <div>
+            <p class="ratee-bar"><b class="ratee-name"></b><span class="ratee-sub"></span></p>
+            <ol class="answers" id="answerList"></ol>
+          </div>
+          <div class="notes-box"><h2 class="label">Catatan Penilai</h2>
+            <p>Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata.</p><div class="note-view" id="viewKeep"></div>
+            <p>Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata.</p><div class="note-view" id="viewChange"></div>
+          </div>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" href="#" id="kfBackFoot"><i data-icon="tabler:arrow-left"></i>Kembali ke Catatan Penilai</a>
+        <span class="foot-actions" id="kfActions"></span>
+      </div>
+    </div>
+  </main>
+
+  <!-- Popover: ganti tampilan, syarat pemilihan, hubungan kerja -->
+  <ul class="pop menu" id="switchPop" popover>
+    <li><a href="#pilih" data-view="pilih">Pemilihan Nominee 360</a></li>
+    <li><a href="#penilaian" data-view="penilaian">Penilaian 360</a></li>
+  </ul>
+  <div class="pop syarat" id="syaratPop" popover>
+    <button type="button" class="icon-btn pop-close" popovertarget="syaratPop" popovertargetaction="hide" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button>
+    <ul>
+      <li>Pekerja yang dipilih sebagai Penilai 360 minimal 4 pekerja dan maksimal 6 pekerja, yang terdiri dari minimal: 1 Penilai dalam 1 Fungsi (Departemen), 1 Penilai dalam 1 Direktorat, 1 Penilai dari Direktorat lain &amp; 1 Penilai dari Entitas yang berbeda</li>
+      <li>Pekerja yang dapat dipilih sebagai Penilai adalah yang memiliki hubungan kerja selama periode penilaian (1 tahun terakhir), yang merupakan sebagai Peer (rekan kerja), atasan selain Evaluator, bawahan, maupun anggota tim</li>
+      <li>Evaluator tidak dapat dipilih sebagai "360"</li>
+    </ul>
+  </div>
+  <div class="pop rel" id="relPop" popover>
+    <p class="rel-head">Pilih Hubungan Kerja Anda
+      <button type="button" class="icon-btn" popovertarget="relPop" popovertargetaction="hide" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></p>
+    <div id="relOptions"></div>
+  </div>
+
+  <!-- Penilai 360 terpilih (Figma Desktop 1350 / 1391–1393 / 1351–1353) -->
+  <dialog id="pickDialog" class="picks">
+    <div class="picks-head">
+      <h2>Penilai 360</h2>
+      <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="pickSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+      <form method="dialog"><button class="icon-btn close" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></form>
+    </div>
+    <div class="picks-body" id="pickList"></div>
+  </dialog>
+
+  <!-- Konfirmasi (submit survey / hapus pekerja) -->
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2 id="confirmTitle"></h2>
+      <p class="muted" id="confirmText"></p>
+      <button value="yes" class="btn" id="confirmYes">Ya</button>
+      <button value="no" class="btn-outline" id="confirmNo">Tidak</button>
+    </form>
+  </dialog>
+
+  <!-- Nominee belum lengkap / melebihi batas (Figma Desktop 1358) -->
+  <dialog id="infoDialog" class="confirm">
+    <form method="dialog">
+      <div class="err-ico"><i data-icon="material-symbols:close-rounded"></i></div>
+      <h2 id="infoTitle"></h2>
+      <p class="muted" id="infoText"></p>
+      <button value="ok" class="btn">OK</button>
+    </form>
+  </dialog>
+
+  <!-- Sukses (Figma Desktop 1395 nominee / 1411 survey) -->
+  <dialog id="successDialog" class="confirm">
+    <form method="dialog">
+      <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2 id="successTitle"></h2>
+      <p class="muted" id="successText"></p>
+      <button value="go" class="btn" id="successGo"></button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
+  <script src="icons.js"></script>
+  <script src="../behavior-survey.js"></script>
+  <script src="app.js"></script>
+  <script src="../dropdown.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>

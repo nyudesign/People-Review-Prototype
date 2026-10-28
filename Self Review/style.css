@@ -107,16 +107,9 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .confirm p { margin: 0 0 6px; font-size: clamp(11px, 0.875vw, 14px); }
 .warn-ico, .ok-ico { font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); line-height: 1; }
 
-/* Upload */
-.drop { border: 1px dashed #64a7ce; border-radius: 12px; background: var(--side); text-align: center; padding: 20px 12px; }
-.drop.over { background: var(--soft-blue); }
-.file-ico { font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); }
-.file-actions { display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
-.error { color: var(--danger); font-size: clamp(11px, 0.75vw, 12px); }
-
 /* ===== Khusus Self Review (skala ukuran mengikuti bagian bersama di atas) ===== */
-#viewIntro, #viewSoal, #viewEvidence, #viewKonfirmasi { flex: 1; min-height: 0; }
-#viewSoal, #viewEvidence, #viewKonfirmasi { display: flex; flex-direction: column; gap: 16px; }
+#viewIntro, #viewSoal, #viewCatatan, #viewKonfirmasi { flex: 1; min-height: 0; }
+#viewSoal, #viewCatatan, #viewKonfirmasi { display: flex; flex-direction: column; gap: 16px; }
 .head-title small { display: block; color: var(--muted); font-size: 11px; }
 .board-head .head-title { flex: 1; }
 .sr-body { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #fff; padding: 16px 24px; }
@@ -163,19 +156,15 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 /* Soal terjawab yang sedang dibuka: tidak ada di Figma, dibedakan dengan biru lebih gelap. */
 .nav-grid button.answered[aria-current="step"] { background: var(--primary-dark); border-color: var(--primary-dark); color: var(--side); }
 
-/* Upload evidence */
-.evidence { display: flex; flex-direction: column; }
-.drop.big { flex: 1; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; }
-/* Warna & ukuran dropzone sesuai Figma (Frame 1321317719): latar #ecf4f9, garis putus #64a7ce, teks #3c8dbc, "atau" #64a7ce. */
-.drop p { margin: 0; font-size: clamp(13px, 1vw, 16px); }
-.drop p.link { color: var(--primary); font-weight: 500; }
-.drop p.muted { color: #64a7ce; }
-.drop > img { width: clamp(80px, 6.6vw, 127px); height: auto; }
-.drop .btn { padding: 12px 20px; border-radius: 8px; color: var(--panel); font-size: clamp(13px, 1vw, 16px); }
-.file-name { color: var(--primary); font-weight: 500; max-width: 100%; overflow-wrap: anywhere; }
+/* Catatan Penilai — Figma Desktop 1726/1727 */
+.head-note { color: var(--muted); font-size: clamp(10px, 0.75vw, 12px); }
+.notes { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; }
+.notes label { font-size: clamp(12px, 0.875vw, 14px); font-weight: 500; color: var(--ink); }
+.notes textarea { flex: 1; min-height: 120px; resize: vertical; margin-bottom: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fdfdfd; font: inherit; font-size: clamp(11px, 0.875vw, 14px); color: var(--ink); }
+.notes textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
 
 /* Konfirmasi */
-/* Kolom jawaban selebar isinya (±garis pemisah 480px); sisa ruang untuk Evidence supaya tidak ada celah kosong di tengah. */
+/* Kolom jawaban selebar isinya (±garis pemisah 480px); sisa ruang untuk Catatan Penilai supaya tidak ada celah kosong di tengah. */
 .confirm-grid { display: grid; grid-template-columns: minmax(0, 520px) minmax(0, 1fr); gap: clamp(24px, 2.5vw, 40px); overflow-y: auto; }
 .answers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .answers li { display: grid; grid-template-columns: 28px 1fr; gap: 6px 12px; padding: 12px 0 0; }
@@ -188,8 +177,9 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .answers .option b { background: var(--primary-dark); }
 .answers .option span { padding: 8px 12px; font-weight: 500; }
 .answers .empty { grid-column: 2; color: var(--danger); font-size: 12px; }
-.evidence-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; align-self: start; position: sticky; top: 0; }
-.evidence-box .drop.big { min-height: clamp(200px, 45vh, 470px); }
+.notes-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; align-self: start; position: sticky; top: 0; }
+.notes-box p { margin: 0 0 8px; font-size: clamp(11px, 0.812vw, 13px); }
+.note-view { min-height: clamp(80px, 15vh, 120px); margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fdfdfd; font-size: clamp(11px, 0.812vw, 13px); white-space: pre-wrap; overflow-wrap: anywhere; }
 
 @media (max-width: 1100px) {
   .survey, .confirm-grid { grid-template-columns: 1fr; }

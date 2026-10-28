@@ -1,34 +1,8 @@
 // Tampilan dari desain Figma section "Self Review" (Behavior Survey).
-// Soal 1-2 dari Figma; soal 3-10 di Figma masih salinan soal 1/2.
-// shortcut: soal 3-10 adalah contoh sementara, ganti dengan daftar soal resmi saat tersedia.
-const QUESTIONS = [
-  ['Ketika anggota tim menyampaikan keluhan mengenai pekerjaan, saya biasanya',
-    ['Memberikan solusi', 'Mengarahkan ke prosedur', 'Mendengarkan hingga memahami situasi', 'Meminta menyelesaikan sendiri']],
-  ['Saat rekan kerja terlihat mengalami tekanan kerja tinggi',
-    ['Fokus pekerjaan masing-masing', 'Menanyakan kondisi dan membantu', 'Menunggu diminta', 'Menghindari keterlibatan']],
-  ['Ketika target tim tidak tercapai, saya biasanya',
-    ['Mencari siapa yang bertanggung jawab', 'Mengevaluasi bersama dan mencari perbaikan', 'Menyerahkan evaluasi ke atasan', 'Melanjutkan pekerjaan tanpa evaluasi']],
-  ['Saat menerima masukan kritis dari rekan kerja',
-    ['Menerima dan menindaklanjuti', 'Menjelaskan alasan tindakan saya', 'Mengabaikan bila tidak sesuai', 'Meminta bukti terlebih dahulu']],
-  ['Ketika ada anggota tim baru bergabung',
-    ['Membiarkan belajar sendiri', 'Memberikan dokumen panduan', 'Mendampingi hingga dapat bekerja mandiri', 'Menyerahkan pengenalan ke HR']],
-  ['Saat terjadi perbedaan pendapat dalam rapat',
-    ['Mempertahankan pendapat saya', 'Mendengarkan semua pihak lalu mencari titik temu', 'Mengikuti suara terbanyak', 'Diam agar tidak memperpanjang']],
-  ['Ketika menemukan kondisi tidak aman di area kerja',
-    ['Melaporkan dan menghentikan pekerjaan bila perlu', 'Menunggu orang lain melapor', 'Memberi tahu rekan terdekat saja', 'Melanjutkan pekerjaan dengan hati-hati']],
-  ['Saat beban kerja tim tidak merata',
-    ['Membiarkan sesuai pembagian awal', 'Menawarkan bantuan kepada yang kewalahan', 'Melaporkan ke atasan', 'Menyelesaikan bagian sendiri lebih dulu']],
-  ['Ketika keberhasilan tim mendapat apresiasi',
-    ['Menyebutkan kontribusi setiap anggota', 'Menerima apresiasi atas nama saya', 'Tidak menanggapi', 'Menyebutkan kontribusi utama saya']],
-  ['Saat diminta membantu pekerjaan di luar tanggung jawab saya',
-    ['Menolak karena bukan tugas saya', 'Membantu sesuai kemampuan tanpa mengganggu tugas utama', 'Membantu bila diperintah atasan', 'Menunda sampai tugas saya selesai']],
-].map(([text, options]) => ({ text, options }));
-const LETTERS = ['A', 'B', 'C', 'D'];
-// Batas 500KB: localStorage ±5 juta karakter dipakai bersama semua tahapan; file base64 ±1,37× ukuran asli.
-const MAX_FILE = 500 * 1024;
+// Soal (QUESTIONS, LETTERS) dari ../behavior-survey.js, sama dengan Penilaian 360.
 
 /* ---------- Penyimpanan di localStorage (per user login) ---------- */
-// shortcut: tanpa backend, isian & file evidence (base64) disimpan di localStorage browser ini; ganti dengan API saat ada.
+// shortcut: tanpa backend, isian & catatan disimpan di localStorage browser ini; ganti dengan API saat ada.
 const LOGIN = (() => { try { return sessionStorage.getItem('pr-login') || 'heru'; } catch { return 'heru'; } })();
 const STORE_KEY = `pr-selfreview-${LOGIN}`;
 const stored = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })();
@@ -36,27 +10,18 @@ const validStore = Array.isArray(stored?.answers) && stored.answers.length === Q
 
 const answers = validStore ? stored.answers : QUESTIONS.map(() => null); // index pilihan per soal
 let current = 0;
-let submitted = validStore && !!stored.submitted;  // penilaian sudah dikirim ke Evaluator
-let file = (validStore && stored.file) || null;    // { name, size, type, data (data URL) }
-let fileUrl = null;
+// Submit dari alur lama (Upload Evidence, tanpa notes) tidak dihitung: Catatan Penilai harus bisa diisi lalu submit ulang.
+let submitted = validStore && !!stored.submitted && !!stored.notes;  // penilaian sudah dikirim ke Evaluator
+// Catatan Penilai (Figma Desktop 1726/1727): dua isian opsional.
+const notes = { keep: '', change: '', ...(validStore && stored.notes) };
 
 // true bila tersimpan; false bila localStorage penuh/diblokir.
 function persist() {
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify({ answers, submitted, file }));
+    localStorage.setItem(STORE_KEY, JSON.stringify({ answers, submitted, notes }));
     return true;
   } catch { return false; }
 }
-// Data URL → blob URL, karena browser memblokir membuka data URL langsung di tab baru.
-function blobUrlFrom(dataUrl) {
-  const [head, b64] = dataUrl.split(',');
-  const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-  return URL.createObjectURL(new Blob([bytes], { type: head.match(/^data:([^;]*)/)[1] }));
-}
-const fmtSize = (b) => (b < 1024 * 1024 ? `${Math.round(b / 1024)} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`);
-console.assert(fmtSize(500 * 1024) === '500 KB' && fmtSize(1.5 * 1024 * 1024) === '1.5 MB', 'format ukuran file');
-if (file) { try { fileUrl = blobUrlFrom(file.data); } catch { file = null; } }
-
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const icon = (name, cls = '') => `<i class="ico ${cls}">${ICONS[name]}</i>`;
@@ -112,9 +77,9 @@ function renderSoal() {
   const prev = current > 0 ? `<a class="btn-outline" href="#soal-${current}">${icon('tabler:arrow-left')}Sebelumnya</a>` : '';
   let right;
   if (!isLast()) right = `<a class="btn" href="#soal-${current + 2}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
-  // Figma Desktop 1690/1691: tanpa langkah Simpan; Upload Evidence aktif setelah semua soal terjawab.
-  else if (allAnswered()) right = `<a class="btn" href="#evidence">Menuju Upload Evidence ${icon('tabler:arrow-right')}</a>`;
-  else right = `<button type="button" class="btn" disabled title="Jawab semua soal terlebih dahulu">Menuju Upload Evidence ${icon('tabler:arrow-right')}</button>`;
+  // Figma Desktop 1725: tanpa langkah Simpan; Catatan Penilai aktif setelah semua soal terjawab.
+  else if (allAnswered()) right = `<a class="btn" href="#catatan">Menuju Catatan Penilai ${icon('tabler:arrow-right')}</a>`;
+  else right = `<button type="button" class="btn" disabled title="Jawab semua soal terlebih dahulu">Menuju Catatan Penilai ${icon('tabler:arrow-right')}</button>`;
   $('#qFoot').innerHTML = `${prev}<span class="spacer"></span>${right}`;
 }
 
@@ -130,74 +95,12 @@ $('#navGrid').addEventListener('click', (e) => {
   if (b) location.hash = `soal-${Number(b.dataset.go) + 1}`;
 });
 
-/* ---------- Upload evidence ---------- */
-function fileHTML(editable) {
-  if (!file) {
-    return `<img src="assets/upload-illustration.svg" alt="" width="66" height="64">
-      <p class="link">Tarik dan lepaskan file yang Anda ingin unggah<br>(.pdf/.jpg max. 500KB)</p>
-      <p class="muted">atau</p>
-      <button type="button" class="btn" data-pick>Pilih File</button>`;
-  }
-  return `${icon('line-md:file-twotone', 'file-ico')}
-    <p class="file-name">${esc(file.name)}</p><p class="muted">${fmtSize(file.size)}</p>
-    <div class="file-actions">
-      <button type="button" class="btn-outline" data-view>${icon('mdi:eye')}Lihat File</button>
-      ${editable ? `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
-      <button type="button" class="btn-outline danger" data-remove>${icon('mdi:trash')}Hapus File</button>` : ''}
-    </div>`;
+/* ---------- Catatan Penilai ---------- */
+const noteFields = { keep: $('#noteKeep'), change: $('#noteChange') };
+function renderCatatan() {
+  Object.entries(noteFields).forEach(([k, el]) => { el.value = notes[k]; el.readOnly = submitted; });
 }
-
-function renderEvidence() {
-  $('#drop').innerHTML = fileHTML(!submitted);
-  $('#evNext').innerHTML = file
-    ? `<a class="btn" href="#konfirmasi">Selanjutnya ${icon('tabler:arrow-right')}</a>`
-    : `<button class="btn" disabled>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
-}
-
-const showFileError = (msg) => { $('#fileError').textContent = msg; $('#fileError').hidden = false; };
-
-async function setFile(f) {
-  $('#fileError').hidden = true;
-  if (!f || submitted) return;
-  if (!/\.(pdf|jpe?g)$/i.test(f.name) || f.size > MAX_FILE) return showFileError('File harus .pdf/.jpg dan maksimal 500KB');
-  const data = await new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = r.onabort = () => reject(r.error);
-    r.readAsDataURL(f);
-  }).catch(() => null);
-  if (!data) return showFileError('File gagal dibaca, silakan coba lagi');
-  const prev = file;
-  file = { name: f.name, size: f.size, type: f.type, data };
-  if (!persist()) {
-    file = prev; // jangan pasang file yang tidak ikut tersimpan
-    return showFileError('Penyimpanan browser penuh. Gunakan file yang lebih kecil atau hapus data tahapan lain.');
-  }
-  if (fileUrl) URL.revokeObjectURL(fileUrl);
-  fileUrl = URL.createObjectURL(f);
-  renderEvidence();
-}
-
-const drop = $('#drop');
-drop.addEventListener('click', async (e) => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  if ('pick' in b.dataset) $('#fileInput').click();
-  if ('view' in b.dataset) window.open(fileUrl, '_blank');
-  if ('remove' in b.dataset) {
-    if (!await confirmBox('Apakah Anda ingin menghapus file evidence?', 'File Evidence akan dihapus setelah Anda konfirmasi')) return;
-    URL.revokeObjectURL(fileUrl);
-    file = fileUrl = null;
-    persist();
-    renderEvidence();
-  }
-});
-drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('over'); });
-drop.addEventListener('dragleave', () => drop.classList.remove('over'));
-drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); setFile(e.dataTransfer.files[0]); });
-// Kosongkan input setelah file selesai dibaca; mengosongkan lebih awal bisa membatalkan FileReader di Chrome.
-$('#fileInput').addEventListener('change', async (e) => { await setFile(e.target.files[0]); e.target.value = ''; });
-$('#evidenceView').addEventListener('click', (e) => { if (e.target.closest('[data-view]')) window.open(fileUrl, '_blank'); });
+Object.entries(noteFields).forEach(([k, el]) => el.addEventListener('input', () => { notes[k] = el.value; persist(); }));
 
 /* ---------- Konfirmasi & submit ---------- */
 function renderKonfirmasi() {
@@ -205,7 +108,8 @@ function renderKonfirmasi() {
     <li><span class="num">${i + 1}</span><span class="q">${esc(q.text)}</span>
       ${answers[i] === null ? '<span class="empty">Belum dijawab</span>'
         : `<span class="option"><b>${LETTERS[answers[i]]}</b><span>${esc(q.options[answers[i]])}</span></span>`}</li>`).join('');
-  $('#evidenceView').innerHTML = fileHTML(false);
+  $('#viewKeep').textContent = notes.keep.trim() || '-';
+  $('#viewChange').textContent = notes.change.trim() || '-';
   $('#kfActions').innerHTML = `${submitted ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
     <button type="button" class="btn" data-submit ${submitted ? 'disabled' : ''}>${icon('material-symbols:send-rounded')}Submit</button>`;
   syncSelfStep();
@@ -232,31 +136,30 @@ $('#kfActions').addEventListener('click', async (e) => {
   await ask($('#successDialog'));
 });
 
-/* ---------- Routing: #intro (kosong), #soal-N, #evidence, #konfirmasi ---------- */
+/* ---------- Routing: #intro (kosong), #soal-N, #catatan, #konfirmasi ---------- */
 function route() {
   const h = location.hash.slice(1);
   const n = Number(h.match(/^soal-(\d+)$/)?.[1]);
   let view = 'intro';
   if (n >= 1 && n <= QUESTIONS.length) { view = 'soal'; current = n - 1; }
-  if (h === 'evidence') view = allAnswered() ? 'evidence' : 'soal';
-  if (h === 'konfirmasi') view = allAnswered() && file ? 'konfirmasi' : (allAnswered() ? 'evidence' : 'soal');
+  // Catatan opsional: konfirmasi cukup butuh semua soal terjawab.
+  if (h === 'catatan' || h === 'konfirmasi') view = allAnswered() ? h : 'soal';
   // Halaman yang belum boleh dibuka diarahkan ke langkah yang masih harus diselesaikan.
   if (h && view !== h.replace(/-\d+$/, '')) return location.replace(view === 'soal' ? `#soal-${QUESTIONS.length}` : `#${view}`);
 
   $('#viewIntro').hidden = view !== 'intro';
   $('#viewSoal').hidden = view !== 'soal';
-  $('#viewEvidence').hidden = view !== 'evidence';
+  $('#viewCatatan').hidden = view !== 'catatan';
   $('#viewKonfirmasi').hidden = view !== 'konfirmasi';
   if (view === 'soal') renderSoal();
-  if (view === 'evidence') renderEvidence();
+  if (view === 'catatan') renderCatatan();
   if (view === 'konfirmasi') renderKonfirmasi();
   syncSelfStep();
   scrollTo(0, 0);
 }
 
 const backToLast = (e) => { e.preventDefault(); location.hash = `soal-${QUESTIONS.length}`; };
-$('#evBack').addEventListener('click', backToLast);
-$('#evBack2').addEventListener('click', backToLast);
+$('#ctBack').addEventListener('click', backToLast);
 
 // Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 

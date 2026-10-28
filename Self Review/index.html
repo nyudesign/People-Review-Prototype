@@ -38,7 +38,7 @@
     <ol class="stepper" id="stepper">
       <li class="done"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></li>
       <li class="done"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded"></i></li>
-      <li class="done"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></li>
+      <li class="done"><a href="../Nominate%20360/index.html"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
       <li class="done"><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
       <li class="current" id="selfStep"><i data-icon="material-symbols:person-rounded"></i>Self Review<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
       <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
@@ -72,44 +72,47 @@
         </section>
         <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
           <p class="nav-title">Behavior Survey</p>
-          <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+          <p class="nav-count"><span>Survey Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
           <div class="progress"><i id="navBar"></i></div>
           <div class="nav-grid" id="navGrid"></div>
         </aside>
       </div>
-      <!-- Figma Desktop 1685–1691: footer di luar kartu soal, seperti footer Upload Evidence -->
+      <!-- Figma Desktop 1685–1691: footer di luar kartu soal, seperti footer Catatan Penilai -->
       <div class="footer-bar split" id="qFoot"></div>
     </div>
 
-    <!-- 3. Upload evidence -->
-    <div id="viewEvidence" hidden>
+    <!-- 3. Catatan Penilai (Figma Desktop 1726/1727) -->
+    <div id="viewCatatan" hidden>
       <section class="board-wrap">
-        <div class="board-head"><a href="#" class="back" id="evBack" aria-label="Kembali ke penilaian"><i data-icon="tabler:arrow-left"></i></a>
-          <div class="head-title"><h1>Self Review</h1><small>Upload Evidence</small></div></div>
-        <div class="sr-body evidence">
-          <h2 class="label">Evidence Anda</h2>
-          <div class="drop big" id="drop"></div>
-          <p class="error" id="fileError" hidden></p>
+        <div class="board-head"><div class="head-title"><h1>Self Review</h1></div><small class="head-note">Catatan Penilai</small></div>
+        <div class="sr-body notes">
+          <label for="noteKeep">Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteKeep" placeholder="Isi pendapat Anda"></textarea>
+          <label for="noteChange">Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteChange" placeholder="Isi pendapat Anda"></textarea>
         </div>
       </section>
       <div class="footer-bar split">
-        <a class="btn-outline" href="#" id="evBack2"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian Self Review</a>
-        <span id="evNext"></span>
+        <a class="btn-outline" href="#" id="ctBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian Self Review</a>
+        <a class="btn" href="#konfirmasi">Selanjutnya <i data-icon="tabler:arrow-right"></i></a>
       </div>
     </div>
 
     <!-- 4. Konfirmasi -->
     <div id="viewKonfirmasi" hidden>
       <section class="board-wrap">
-        <div class="board-head"><a href="#evidence" class="back" aria-label="Kembali ke upload evidence"><i data-icon="tabler:arrow-left"></i></a>
+        <div class="board-head"><a href="#catatan" class="back" aria-label="Kembali ke catatan penilai"><i data-icon="tabler:arrow-left"></i></a>
           <h1>Konfirmasi Penilaian Tentang Diri Anda</h1></div>
         <div class="sr-body confirm-grid">
           <ol class="answers" id="answerList"></ol>
-          <div class="evidence-box"><h2 class="label">Evidence Anda</h2><div class="drop big" id="evidenceView"></div></div>
+          <div class="notes-box"><h2 class="label">Catatan Penilai</h2>
+            <p>Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata.</p><div class="note-view" id="viewKeep"></div>
+            <p>Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata.</p><div class="note-view" id="viewChange"></div>
+          </div>
         </div>
       </section>
       <div class="footer-bar split">
-        <a class="btn-outline" href="#evidence"><i data-icon="tabler:arrow-left"></i>Kembali ke Upload Evidence</a>
+        <a class="btn-outline" href="#catatan"><i data-icon="tabler:arrow-left"></i>Kembali ke Catatan Penilai</a>
         <span class="foot-actions" id="kfActions"></span>
       </div>
     </div>
@@ -137,9 +140,8 @@
     </form>
   </dialog>
 
-  <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" hidden>
-
   <script src="icons.js"></script>
+  <script src="../behavior-survey.js"></script>
   <script src="app.js"></script>
   <script src="../dropdown.js"></script>
   <script src="../profile.js"></script>

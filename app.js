@@ -6,7 +6,7 @@ const steps = [
   { label: 'Settings Evaluator', icon: 'material-symbols-light:frame-person-rounded' },
   { label: 'Individual Goal Setting', icon: 'tabler:award-filled' },
   { label: 'CSB', icon: 'tabler:award-filled', hidden: true }, // disembunyikan atas permintaan
-  { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid' },
+  { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid', href: './Nominate%20360/index.html' },
   { label: 'Realisasi Target', icon: 'mingcute:target-fill', href: IG },
   { label: 'Self Review', icon: 'material-symbols:person-rounded', href: './Self%20Review/index.html' },
   { label: 'Survey', icon: 'ri:survey-fill' },
@@ -118,7 +118,7 @@ const myNominees = ME === PEOPLE.heru ? [] : nominees;
 const myBes = ME === PEOPLE.oka ? [] : besTargets;
 $('#tab-nominee').innerHTML = myNominees.map((p) => person(p, false)).join('')
   || emptyState('fluent:people-error-24-filled', 'Tidak ditemukan data Pekerja<br>yang dipilih oleh Anda', 'Anda belum memilih Pekerja<br>untuk Nominee 360',
-    `<button type="button" class="btn-outline" data-missing>Menuju Nominate 360${icon('tabler:arrow-right')}</button>`);
+    `<a class="btn-outline" href="./Nominate%20360/index.html">Menuju Nominate 360${icon('tabler:arrow-right')}</a>`);
 $('#tab-bes').innerHTML = myBes.map((p) => person(p, true)).join('')
   || emptyState('fluent:comment-error-24-regular', 'Tidak ditemukan data Pekerja yang<br>memilih Anda untuk menilai', 'Belum ada Pekerja yang memberikan permintaan Anda<br>untuk melakukan Penilaian 360');
 
