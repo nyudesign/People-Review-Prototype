@@ -101,9 +101,9 @@ $("#steps").innerHTML = steps.filter((s) => !s.hidden).map((s) => `<li><a href="
 $('#icList').innerHTML = contributory.map((c) => `
   <a class="ic" href="${c.href}">
     <span class="ic-name">${c.name}</span>
-    <span><b class="big">${c.value}</b><small class="muted">/100 %</small></span>
+    <span><b class="big">${c.value}</b><small class="muted">/${PERF_MAX} %</small></span>
     ${icon('tabler:arrow-right')}
-    <span class="ic-bar" role="progressbar" aria-label="Performa ${c.name}" aria-valuenow="${c.value}" aria-valuemin="0" aria-valuemax="100"><i style="width:${c.value}%"></i></span>
+    <span class="ic-bar" role="progressbar" aria-label="Performa ${c.name}" aria-valuenow="${c.value}" aria-valuemin="0" aria-valuemax="${PERF_MAX}"><i style="width:${(c.value / PERF_MAX) * 100}%"></i></span>
   </a>`).join('');
 
 const person = (p, action) => `

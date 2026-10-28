@@ -315,70 +315,26 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 /* Rekap realisasi sasaran kerja (Figma "Finalisasi Hasil KPI") */
 .status-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: clamp(11px, 0.875vw, 14px); }
 .status-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-#rekapView .board-head h1 { flex: 1; }
-/* Halaman tidak di-scroll: tiap kartu punya area scroll sendiri, Total Performa tetap di bawah kartu. */
-.rekap-body { flex: 1; min-height: 0; display: flex; gap: 24px; padding: 32px 40px; }
-@media (max-width: 1600px) {
-  .rekap-body { gap: 16px; padding: 24px; }
-  .rk-kpi .dev-legend { flex-direction: column; gap: 2px; padding: 12px 20px; }
-  .rk-kpi .dev-legend .dot { display: none; }
-}
-/* Ukuran Figma Desktop 925 (nilai = ukuran di 1920px, mengecil mengikuti lebar layar). */
-.rk-card { background: #feffff; border: 1px solid var(--line); border-radius: clamp(12px, 1.04vw, 20px); padding: clamp(16px, 1.25vw, 24px) clamp(20px, 1.67vw, 32px); display: flex; flex-direction: column; min-height: 0; }
-.rk-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 12px; margin-right: -12px; }
-.rk-card h2 { font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
-.rk-card h3 { font-size: clamp(14px, 1.125vw, 18px); font-weight: 500; }
-#rkPerforma { flex: 1 1 0; min-width: 0; padding-bottom: 8px; } /* Figma: bawah 8px, daftar ter-scroll sampai dekat tepi */
-.rk-group { margin-bottom: 28px; }
-#rkPerforma h2 { margin-bottom: 20px; }
-.rk-group-head { display: flex; justify-content: space-between; align-items: center; }
-.rk-group-head .chip, .rk-item .chip { font-size: clamp(11px, 0.68vw, 13px); font-weight: 500; padding: clamp(5px, 0.42vw, 8px) clamp(8px, 0.63vw, 12px); border-radius: clamp(8px, 0.63vw, 12px); }
-.rk-item { margin-top: 20px; }
-.rk-item-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px 12px; margin-bottom: 12px; }
-.rk-item-head > div { flex: 1 0 auto; }
-.rk-item-head > div > span { white-space: nowrap; }
-.rk-item-head p { margin: 0 0 4px; font-size: clamp(13px, 1vw, 16px); }
-.rk-item-head .big { font-size: clamp(16px, 1.04vw, 20px); font-weight: 700; }
-.rk-item-head small { color: var(--muted); font-size: clamp(11px, 0.73vw, 14px); margin-right: 12px; }
-.rk-item .bar { height: 12px; }
-/* shortcut: status evidence di rekap disembunyikan sementara atas permintaan; hapus `display: none` untuk menampilkan lagi. */
-.rk-ev { display: none !important; }
-.rk-ev { display: inline-flex; align-items: center; gap: 8px; color: var(--warn-ink); white-space: nowrap; }
-.rk-ev .ico { font-size: clamp(11px, 0.875vw, 14px); width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--warn-bg); }
-.rk-ev.ok { color: var(--ok-ink); }
-.rk-ev.ok .ico { background: #22a447; color: #fff; }
-.rk-kpi { flex: 1.24 1 0; /* Figma 615 : 765 */ min-width: 0; flex-direction: row; gap: 32px; align-items: stretch; }
-.rk-kpi-main { flex: 1; min-width: 0; min-height: 0; display: flex; flex-direction: column; }
-.rk-kpi-main > p { margin: 4px 0 8px; font-size: clamp(11px, 0.68vw, 13px); }
-.rk-kpi-group { padding: 20px 0 16px; }
-.rk-kpi-group + .rk-kpi-group { border-top: 1px solid var(--line); }
-.rk-kpi-group > b { display: block; margin-top: 12px; font-weight: 500; }
-.rk-calc { color: #466386; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin-top: 8px; }
-.rk-calc > span:last-child { white-space: nowrap; margin-left: auto; }
-.rk-calc .muted { color: inherit; }
-.rk-total > span:last-child { font-size: clamp(13px, 0.83vw, 16px); }
-.rk-total { display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid var(--line); font-size: clamp(14px, 1.125vw, 18px); font-weight: 500; }
-.rk-kpi-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
-.rk-kpi-side .donut { width: clamp(140px, 24vw - 157px, 304px); } /* 304px di 1920 (Figma) -> 150px di 1280: kolom perhitungan tetap muat */
-.rk-kpi-side .donut b { font-size: clamp(18px, 1.2vw, 23px); }
-.rk-kpi .dev-legend { padding: clamp(12px, 0.83vw, 16px); border-radius: clamp(12px, 0.83vw, 16px); background: #fdfdfd; color: #466386; font-size: clamp(12px, 0.73vw, 14px); }
-.rk-kpi .dev-legend .big { color: var(--ink); }
-/* Layar < 1600px: kartu KPI sedikit lebih lebar dari rasio Figma supaya baris "Hasil Performa Pembobotan … = nilai" tetap 1 baris. */
-@media (max-width: 1600px) {
-  .rk-kpi { flex-grow: 1.5; gap: clamp(16px, 1.67vw, 32px); }
-}
-.donut { position: relative; width: 300px; aspect-ratio: 1; display: grid; place-items: center; }
-.donut svg { position: absolute; inset: 0; transform: rotate(-90deg); }
-.donut circle { fill: none; stroke-width: 12; }
-.donut-track { stroke: var(--panel); }
-.donut-fill { stroke: var(--primary); stroke-linecap: round; }
-.donut b { font-size: clamp(18px, 1.375vw, 22px); font-weight: 500; }
-.dev-legend { white-space: nowrap; display: flex; align-items: center; gap: 8px; padding: 18px 16px; border: 1px solid var(--line); border-radius: 12px; color: var(--primary); }
-.dev-legend .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
-.dev-legend .big { font-size: clamp(18px, 1.375vw, 22px); margin-left: 4px; }
-.dev-legend small { color: var(--muted); }
-.rekap-foot { justify-content: space-between; }
-.rekap-foot .btn-outline, .rekap-foot .btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; font-size: clamp(11px, 0.875vw, 14px); text-decoration: none; }
+/* Modal rekap: tabel 9 kolom (Figma "Cek Hasil KPI new version", lebar 1480px di layar 1920). */
+dialog.rekap-dlg { width: min(1480px, calc(100vw - 32px)); }
+.rk-search { padding: 16px 24px; }
+.rk-search .search { width: 100%; }
+.rk-table-wrap { flex: 1; min-height: 0; overflow: auto; }
+.rk-table { width: 100%; border-collapse: collapse; text-align: center; font-size: clamp(12px, 0.938vw, 15px); }
+.rk-table th { position: sticky; top: 0; background: #fff; padding: 14px 8px; font-weight: 500; white-space: nowrap; }
+.rk-table td { padding: 20px 8px; color: var(--ink-2); }
+.rk-table td:first-child { width: 120px; }
+.rk-table tbody tr:nth-child(odd) { background: #eef3f6; }
+.rk-table tbody tr:nth-child(even) { background: #f8fbfb; }
+.rk-table .btn-outline { white-space: nowrap; font-size: clamp(11px, 0.75vw, 13px); }
+.rk-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 24px; }
+.rk-total { display: inline-flex; align-items: center; gap: 16px; font-weight: 500; }
+.rk-total b { background: var(--primary-dark); color: #fff; border-radius: 8px; padding: 8px 12px; font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
+.rk-total small { font-size: clamp(11px, 0.75vw, 12px); }
+.rk-foot .btn { display: inline-flex; align-items: center; gap: 8px; }
+dialog.period-dlg { width: min(680px, calc(100vw - 32px)); }
+.pp-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
+.pp-row small { color: var(--muted); }
 
 /* Mode Evaluator — Review & Approve Realisasi Target */
 .chip-danger { background: #fde8e8; color: #d92d20; }

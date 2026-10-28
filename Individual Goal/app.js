@@ -180,6 +180,7 @@ function makeFilter(wrap, tabs, onApply) {
 /* ---------- Board ---------- */
 function cardHTML(it) {
   const p = performa(it);
+  const w = (p / PERF_MAX) * 100; // ujung bar = PERF_MAX
   const done = p >= 100 && !it.incomplete; // incomplete: HSSE dengan aktivitas Mandatory yang belum disimpan
   return `
     <article class="card">
@@ -188,8 +189,8 @@ function cardHTML(it) {
         <div class="chips"><span class="chip ${done ? 'chip-ok' : 'chip-warn'}">${done ? 'Selesai' : 'Sedang Dikerjakan'}</span>${'file' in it ? evidenceChip(it.file) : ''}</div>
         <div class="title-row"><h3>${esc(it.name)}</h3>${it.members ? `<span class="avatars">${avatarsHTML(it.members)}</span>` : ''}</div>
         ${it.library ? `<div class="library">KPI Library ${icon('tabler:arrow-right')} ${esc(it.library)}</div>` : ''}
-        <div class="perf"><span class="with-ico">Performa Anda <button type="button" class="info-btn" data-info aria-label="Info performa" aria-controls="perfTip" aria-expanded="false">${icon('material-symbols:info-outline-rounded', 'info')}</button></span><span><b>${p}</b><small>/100 %</small></span></div>
-        <div class="bar"><i style="width:${p}%"></i>${p > 10 && p < 100 ? `<em style="left:${p}%">${p}%</em>` : ''}<span${p >= 95 ? ' style="color:#fff"' : ''}>${p >= 100 ? '100%' : 100}</span></div>
+        <div class="perf"><span class="with-ico">Performa Anda <button type="button" class="info-btn" data-info aria-label="Info performa" aria-controls="perfTip" aria-expanded="false">${icon('material-symbols:info-outline-rounded', 'info')}</button></span><span><b>${p}</b><small>/${PERF_MAX} %</small></span></div>
+        <div class="bar"><i style="width:${w}%"></i>${w > 10 && p < PERF_MAX ? `<em style="left:${w}%">${p}%</em>` : ''}<span${w >= 95 ? ' style="color:#fff"' : ''}>${p >= PERF_MAX ? `${PERF_MAX}%` : PERF_MAX}</span></div>
         <button class="toggle" data-toggle="${it.id}">Lihat ${it.periods.length} Realisasi Per Periode ${icon(open.has(it.id) ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
       </div>
       <div class="card-foot">${open.has(it.id) ? `<ul class="periods">${it.periods.map((pr) =>
@@ -274,7 +275,7 @@ function renderDetail() {
   $('#dTeam').innerHTML = it.leader ? `
     <h4>Nama Ketua/Penanggung Jawab</h4><div class="people">${personCard(it.leader)}</div>
     <h4>Nama Anggota</h4><div class="people">${it.members.map(personCard).join('')}</div>` : '';
-  $('#dTotal').innerHTML = `${performa(it)}<small>/100 %</small>`;
+  $('#dTotal').innerHTML = `${performa(it)}<small>/${PERF_MAX} %</small>`;
   $('#dProject').hidden = !it.project;
   $('#realForm').hidden = !!it.project;
   if (it.project) {
@@ -453,7 +454,7 @@ function renderProcess() {
 }
 
 function renderProcessFooter() {
-  $('#pTotal').innerHTML = `${performa(proj)}<small>/100 %</small>`;
+  $('#pTotal').innerHTML = `${performa(proj)}<small>/${PERF_MAX} %</small>`;
   $('#pEdit').hidden = !proj.saved || locked();
   $('#pSave').hidden = locked();
   $('#pSave').disabled = proj.saved || !isDirty();
@@ -515,26 +516,23 @@ function route() {
   const target = id && findItem(id);
   if (proj) allProcs().forEach((pr) => delete pr.draft);
   proj = target?.project ? target : null;
-  $('#boardView').hidden = !!proj || rekap;
-  $('#boardFooter').hidden = REVIEW || !!proj || rekap;
+  $('#boardView').hidden = !!proj;
+  $('#boardFooter').hidden = REVIEW || !!proj;
   $('#processView').hidden = $('#processFooter').hidden = !proj;
-  $('#rekapView').hidden = !rekap;
-  $('#rekapFooter').hidden = REVIEW || !rekap;
   $('#reviewFooter').hidden = !REVIEW || !!proj;
+  if (!rekap && $('#rekapDialog').open) $('#rekapDialog').close();
   if (REVIEW) {
-    disableLink($('#rvBack'), !rekap);
-    disableLink($('#rvToRekap'), rekap || !evidenceOk());
+    disableLink($('#rvToRekap'), !evidenceOk());
     renderDecide();
   }
-  if (rekap) {
-    renderRekap();
-  } else if (proj) {
+  if (proj) {
     $('#pSearch').value = '';
     procFilter.reset();
     closedPeriods.clear();
     renderProcess();
   } else {
     render();
+    if (rekap) openRekap();
   }
   scrollTo(0, 0);
 }
@@ -566,59 +564,49 @@ document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (
 $('#search').addEventListener('input', render);
 // Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
-/* ---------- Rekap realisasi sasaran kerja ---------- */
-// Item berbobot 0 (mis. Extramiles) tidak ikut rekap, sesuai Figma.
-const rekapGroups = () => columns.map((col) => ({ col, items: col.items.filter((it) => it.weight > 0) })).filter((g) => g.items.length);
+/* ---------- Rekap realisasi sasaran kerja (modal tabel, Figma "Cek Hasil KPI new version") ---------- */
+// Semua sasaran ikut rekap, termasuk Extramiles berbobot 0 (Figma).
+const JENIS = { 'Cascading KPI': 'Cascading KPI / IG' };
 const weighted = (it) => (it.weight * performa(it)) / 100;
-const evidenceOf = (col, it) => (col.evidence ? col.file : 'file' in it ? it.file : undefined); // undefined = tidak wajib evidence
+const amount = (it, key) => `${fmt(sum(it.periods.map((p) => p[key] || 0)))} ${it.unit}`;
 console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { target: 50, value: 50 }] }) === 60, 'bobot × performa');
 
 function renderRekap() {
-  const groups = rekapGroups();
-  const total = sum(groups.flatMap((g) => g.items.map(weighted)));
-  statusChip($('#rekapStatus'));
+  const rows = columns.flatMap((col) => col.items.map((it) => ({ it, cells: [it.name, JENIS[col.title] || col.title, it.polarity || 'MAX',
+    `${it.weight} %`, amount(it, 'target'), amount(it, 'value'), `${performa(it)} %`, it.periodType || 'Annual'] })));
+  const total = sum(rows.map(({ it }) => weighted(it)));
+  $('#rkTotal').innerHTML = `${fmt(+total.toFixed(2))}<small>/${sum(rows.map(({ it }) => it.weight)) * PERF_MAX / 100} %</small>`;
   $('#rkSubmit').disabled = locked();
-  $('#rkPerforma').innerHTML = `<h2>Performa Anda</h2><div class="rk-scroll">${groups.map(({ col, items }) => `
-    <div class="rk-group">
-      <div class="rk-group-head"><h3>${col.title}</h3><span class="chip chip-blue">Bobot: ${sum(items.map((i) => i.weight))}%</span></div>
-      ${items.map((it) => {
-        const p = performa(it);
-        const ev = evidenceOf(col, it);
-        return `<div class="rk-item">
-          <div class="rk-item-head">
-            <div><p>${esc(it.name)}</p><span><span class="big">${p}</span><small>/100 %</small><span class="chip chip-blue">Bobot: ${it.weight}%</span></span></div>
-            ${ev === undefined ? '' : `<span class="rk-ev ${ev ? 'ok' : ''}">${icon(ev ? 'material-symbols:check-rounded' : 'material-symbols:warning-outline-rounded')}Evidence ${ev ? 'Sudah' : 'Belum'} Terupload</span>`}
-          </div>
-          <div class="bar"><i style="width:${p}%"></i></div>
-        </div>`;
-      }).join('')}
-    </div>`).join('')}</div>`;
-
-  const C = 2 * Math.PI * 42;
-  $('#rkKpi').innerHTML = `
-    <div class="rk-kpi-main">
-      <h2>KPI Anda</h2>
-      <p class="muted small">Berdasarkan perhitungan capaian kinerja dan Individual Contributory yang dikalikan dengan bobot</p>
-      <div class="rk-scroll">${groups.map(({ col, items }) => `<div class="rk-kpi-group"><h3>${col.title}</h3>${items.map((it) => `
-        <b>${esc(it.name)}</b>
-        <div class="rk-calc"><span class="muted">Hasil Performa Pembobotan</span><span>${it.weight}% x ${performa(it)}% = <b>${weighted(it).toFixed(2)}</b></span></div>`).join('')}</div>`).join('')}</div>
-      <div class="rk-total"><span>Total Performa Pembobotan</span><span>${fmt(+total.toFixed(2))}%</span></div>
-    </div>
-    <div class="rk-kpi-side">
-      <div class="donut">
-        <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="42" class="donut-track"/>
-          <circle cx="50" cy="50" r="42" class="donut-fill" stroke-dasharray="${(C * Math.min(100, total)) / 100} ${C}"/></svg>
-        <b>${fmt(+total.toFixed(2))}%</b>
-      </div>
-      <div class="dev-legend"><span class="dot"></span>KPI Performance <span><span class="big">${fmt(+total.toFixed(2))}</span><small>/100 %</small></span></div>
-    </div>`;
+  const q = $('#rkSearch').value.trim().toLowerCase();
+  const shown = rows.filter(({ cells }) => !q || cells.join(' ').toLowerCase().includes(q));
+  $('#rkRows').innerHTML = shown.length ? shown.map(({ it, cells }) => `<tr>${cells.map((c) => `<td>${esc(c)}</td>`).join('')}
+    <td><button type="button" class="btn-outline" data-periods="${it.id}">Lihat ${it.periods.length} Realisasi</button></td></tr>`).join('')
+    : '<tr><td colspan="9" class="empty">Tidak ada hasil pencarian</td></tr>';
 }
+function openRekap() {
+  $('#rkSearch').value = '';
+  renderRekap();
+  if (!$('#rekapDialog').open) $('#rekapDialog').showModal();
+}
+// Tutup modal = kembali ke board tanpa memicu route() lagi.
+$('#rekapDialog').addEventListener('close', () => { if (location.hash === '#rekap') history.replaceState(null, '', '#'); });
+$('#rkSearch').addEventListener('input', renderRekap);
+$('#rkRows').addEventListener('click', (e) => {
+  const id = e.target.closest('[data-periods]')?.dataset.periods;
+  if (!id) return;
+  const it = findItem(id);
+  $('#ppName').textContent = it.name;
+  $('#ppList').innerHTML = it.periods.map((p) => `<div class="pp-row"><span class="chip chip-blue">${esc(p.label)}</span>
+    <span><span class="big">${fmt(p.value)}</span><small>/${fmt(p.target)} ${esc(it.unit)}</small></span></div>`).join('');
+  $('#periodDialog').showModal();
+});
 
-$('#toRekap').addEventListener('click', () => { location.hash = 'rekap'; });
+$('#toRekap').addEventListener('click', () => { location.hash === '#rekap' ? openRekap() : (location.hash = 'rekap'); });
 $('#rkSubmit').addEventListener('click', () => { $('#submitDialog').showModal(); });
 $('#submitDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value !== 'yes') return;
   saveStore({ status: 'waiting', reason: '' });
+  render(); // chip "Menunggu Persetujuan" di board (Figma) di belakang modal
   renderRekap();
   $('#doneDialog').showModal();
 });
@@ -640,7 +628,7 @@ function renderDecide() {
     // Ubah Persetujuan = alur Tidak Setuju (konfirmasi → alasan → revisi terkirim).
     : `<button type="button" class="btn-outline danger" data-decide="reject">${icon('material-symbols:close-rounded')}Ubah Persetujuan</button>`;
 }
-const refresh = () => { renderDecide(); location.hash === '#rekap' ? renderRekap() : render(); };
+const refresh = () => { renderDecide(); render(); if ($('#rekapDialog').open) renderRekap(); };
 function decided(title) {
   refresh();
   $('#decidedTitle').textContent = title;

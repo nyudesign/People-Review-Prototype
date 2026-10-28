@@ -58,29 +58,12 @@
     </section>
     <div class="footer-bar" id="boardFooter"><button type="button" class="btn" id="toRekap" disabled>Menuju Rekap Realisasi Sasaran Kerja Anda <i data-icon="tabler:arrow-right"></i></button></div>
 
-    <!-- Rekap realisasi (Figma section "Finalisasi Hasil KPI") -->
-    <section class="board-wrap" id="rekapView" hidden>
-      <div class="board-head">
-        <h1>Rekap Realisasi Sasaran Kerja</h1>
-        <button type="button" class="btn-outline msg-btn" data-msg hidden>Lihat Pesan</button>
-        <span class="chip chip-warn status-chip" id="rekapStatus" hidden>Menunggu Persetujuan</span>
-      </div>
-      <div class="rekap-body">
-        <article class="rk-card" id="rkPerforma"></article>
-        <article class="rk-card rk-kpi" id="rkKpi"></article>
-      </div>
-    </section>
-    <!-- Mode Evaluator (Figma "Review & Approve Realisasi Target"): satu footer untuk board & rekap -->
+    <!-- Mode Evaluator (Figma "Review & Approve Realisasi Target"): footer board; rekap dibuka sebagai modal -->
     <div class="footer-bar review-foot" id="reviewFooter" hidden>
       <span class="review-nav">
-        <a class="btn-outline" id="rvBack" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Realisasi Sasaran Kerja</a>
         <a class="btn" id="rvToRekap" href="#rekap">Menuju Rekap Realisasi Sasaran Kerja <i data-icon="tabler:arrow-right"></i></a>
       </span>
       <span class="review-decide" id="rvDecide"></span>
-    </div>
-    <div class="footer-bar rekap-foot" id="rekapFooter" hidden>
-      <a class="btn-outline" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Realisasi Sasaran Kerja</a>
-      <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
     </div>
 
     <!-- Halaman proses Project Control -->
@@ -126,6 +109,26 @@
       <button value="yes" class="btn">Ya</button>
       <button value="no" class="btn-outline">Tidak</button>
     </form>
+  </dialog>
+
+  <!-- Rekap realisasi sasaran kerja (Figma "Cek Hasil KPI new version") -->
+  <dialog id="rekapDialog" class="rekap-dlg">
+    <div class="dlg-head"><h2>Rekap Realisasi Sasaran Kerja</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="rk-search"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rkSearch" type="search" placeholder="Cari sasaran kerja, jenis, target, atau lainnya" aria-label="Cari rekap"></label></div>
+    <div class="rk-table-wrap">
+      <table class="rk-table">
+        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th>Polaritas</th><th>Bobot</th><th>Target</th><th>Total Realisasi</th><th>Performa</th><th>Periode Monitor Target</th><th>Realisasi Per Periode</th></tr></thead>
+        <tbody id="rkRows"></tbody>
+      </table>
+    </div>
+    <div class="rk-foot">
+      <span class="rk-total">Total Weighted Performance <b id="rkTotal"></b></span>
+      <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+    </div>
+  </dialog>
+  <dialog id="periodDialog" class="period-dlg">
+    <div class="dlg-head"><h2>Realisasi Per Periode</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-body"><h3 id="ppName" class="link"></h3><div id="ppList"></div></div>
   </dialog>
 
   <!-- Submit rekap -->
