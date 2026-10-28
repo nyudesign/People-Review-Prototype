@@ -12,10 +12,14 @@ const steps = [
   { label: 'Survey', icon: 'ri:survey-fill' },
   { label: 'CoPI Feedback', icon: 'mdi:speak' },
 ];
+// Performa (%) sama dengan kartu di Realisasi Target: performa() di review.js atas realisasi Year End.
+// Realisasi HSSE / PCI = total poin yang disimpan halamannya (`summary` di `pr-hsse-…` / `pr-pci-…`); Development Commitment = angka tetap yang sama dengan Realisasi Target.
+const savedPoin = (id) => { try { return JSON.parse(localStorage.getItem(`pr-${id}-${window.PR_USER}`))?.summary?.total ?? null; } catch { return null; } };
+const yearEnd = (target, value) => performa({ periods: [{ target, value }] });
 const contributory = [
-  { name: 'HSSE Objective', value: 20, max: 150, unit: 'Poin', href: './HSSE%20Objective/index.html?from=beranda' },
-  { name: 'Development Commitment', value: 20, max: 150, unit: '%', href: './Development%20Commitment/index.html?from=beranda' },
-  { name: 'Community Involvement', value: 20, max: 150, unit: 'Poin', href: './Project%20Community%20Involvement/index.html?from=beranda' },
+  { name: 'HSSE Objective', value: yearEnd(YEAR_END_TARGET.hsse, savedPoin('hsse')), href: './HSSE%20Objective/index.html?from=beranda' },
+  { name: 'Development Commitment', value: yearEnd(100, 100), href: './Development%20Commitment/index.html?from=beranda' },
+  { name: 'Community Involvement', value: yearEnd(YEAR_END_TARGET.pci, savedPoin('pci')), href: './Project%20Community%20Involvement/index.html?from=beranda' },
 ];
 const nominees = [
   { name: 'Jamaludin Ahmad', nip: '29231284', done: false },
@@ -97,9 +101,9 @@ $("#steps").innerHTML = steps.filter((s) => !s.hidden).map((s) => `<li><a href="
 $('#icList').innerHTML = contributory.map((c) => `
   <a class="ic" href="${c.href}">
     <span class="ic-name">${c.name}</span>
-    <span><b class="big">${c.value}</b><small class="muted">/${c.max} ${c.unit}</small></span>
+    <span><b class="big">${c.value}</b><small class="muted">/100 %</small></span>
     ${icon('tabler:arrow-right')}
-    <span class="ic-bar" role="progressbar" aria-label="${c.name}" aria-valuenow="${c.value}" aria-valuemin="0" aria-valuemax="${c.max}"><i style="width:${Math.min(100, (c.value / c.max) * 100)}%"></i></span>
+    <span class="ic-bar" role="progressbar" aria-label="Performa ${c.name}" aria-valuenow="${c.value}" aria-valuemin="0" aria-valuemax="100"><i style="width:${c.value}%"></i></span>
   </a>`).join('');
 
 const person = (p, action) => `

@@ -248,6 +248,18 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .drop.over { background: var(--soft-blue); }
 .file-ico { font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); }
 .file-actions { display: flex; gap: 8px; justify-content: center; margin-top: 8px; flex-wrap: wrap; }
+/* Modal evidence per kartu (#evidenceBox) — sama dengan PCI / Upload Evidence Self Review. */
+#evidenceBox { display: flex; flex-direction: column; padding: 16px 24px 24px; background: #fff; }
+#evidenceBox .drop { flex: 1; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 12px; border: 1px dashed #64a7ce; border-radius: 12px; background: var(--side); }
+#evidenceBox .drop.over { background: var(--soft-blue); }
+#evidenceBox .drop p { margin: 0; font-size: clamp(13px, 1vw, 16px); }
+#evidenceBox .drop p.link { color: var(--primary); font-weight: 500; }
+#evidenceBox .drop p.muted { color: #64a7ce; }
+#evidenceBox .drop > img { width: clamp(80px, 6.6vw, 127px); height: auto; }
+#evidenceBox .drop > .btn { padding: 12px 20px; border-radius: 8px; font-size: clamp(13px, 1vw, 16px); }
+#evidenceBox .file-name { max-width: 100%; color: var(--primary); font-weight: 500; overflow-wrap: anywhere; }
+.btn-outline.invalid { border-color: var(--danger); color: var(--danger); } /* Simpan tanpa evidence */
+#rekapList td .btn-outline { padding: 6px 12px; font-size: clamp(11px, 0.75vw, 12px); }
 .error { color: var(--danger); font-size: clamp(11px, 0.75vw, 12px); }
 
 /* ---------- HSSE Objective ---------- */
@@ -300,24 +312,8 @@ a.btn, a.btn-outline { text-decoration: none; }
 .act input, .act select, .act textarea { font: inherit; font-weight: 400; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink); min-width: 0; }
 .act textarea { resize: vertical; }
 .act :disabled { background-color: var(--panel); } /* background-color, bukan shorthand: chevron select tetap tampil */
-.act [aria-invalid="true"], .drop-inline.invalid { border-color: var(--danger); background-color: #fff5f5; } /* background-color: chevron tetap tampil */
+.act [aria-invalid="true"] { border-color: var(--danger); background-color: #fff5f5; } /* background-color: chevron tetap tampil */
 .act-grid { display: grid; grid-template-columns: 1fr 1.2fr 1.2fr; gap: 10px; }
-.upload-label small { color: var(--muted); font-size: 11px; margin-left: 4px; }
-.drop-inline { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; padding: 14px; border: 1.5px dashed var(--muted); border-radius: 8px; background: var(--panel); font-size: clamp(11px, 0.812vw, 13px); }
-.drop-inline.over { background: var(--soft-blue); }
-.file-box { display: flex; align-items: center; gap: 8px; padding: 12px; border: 1.5px dashed var(--muted); border-radius: 8px; background: var(--panel); }
-.file-box .file-ico { font-size: clamp(22px, 1.75vw, 28px); color: var(--primary); }
-.file-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.file-meta b { color: var(--primary); font-size: clamp(11px, 0.812vw, 13px); }
-.file-meta small { color: var(--muted); font-size: 11px; }
-.file-box .btn, .file-box .btn-outline { padding: 6px 10px; font-size: clamp(11px, 0.75vw, 12px); }
-/* Nama file: bagian dasar dipotong "…", ekstensi selalu tampil. */
-.fname { display: flex; min-width: 0; white-space: nowrap; }
-.fname-base { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.fname-ext { flex-shrink: 0; }
-/* Tombol file selalu 1 baris & tetap berteks; nama file yang mengalah (dipotong). */
-.fb-actions { display: flex; flex-shrink: 0; gap: 8px; }
-.fb-actions button { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .add-tile { min-height: 280px; border: 1.5px dashed var(--muted); border-radius: 10px; background: var(--panel); color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font: inherit; }
 .add-tile:hover:not(:disabled) { background: var(--soft-blue); color: var(--primary); }
 .add-tile:disabled { opacity: .5; cursor: not-allowed; }
@@ -337,7 +333,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 .totals small { color: var(--muted); }
 /* Footer menempel di bawah layar; margin negatif menutup padding main supaya latar putih selebar konten. */
 .hsse-foot { justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; bottom: 0; z-index: 5; background: #fff; margin: 0 calc(-1 * var(--pad-r)) calc(-1 * var(--pad-y)) calc(-1 * var(--pad-l)); padding: 0 var(--pad-r) var(--pad-y) var(--pad-l); } /* tanpa garis, 20px di bawah konten */
-.foot-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.foot-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
 /* Pemilihan aktivitas */
 .num-stepper { display: inline-flex; align-items: center; gap: 4px; padding: 4px; background: var(--panel); border-radius: 8px; }
@@ -351,7 +347,6 @@ a.btn, a.btn-outline { text-decoration: none; }
 /* Kartu kategori memotong isinya (baris terakhir tabel & header yang menempel) mengikuti lengkung sudut BAWAH-nya. clip-path, bukan overflow:
    batas atas diperluas 20px supaya penutup celah di atas header yang menempel tidak ikut terpotong; tidak memblokir sticky. */
 :is(#pilihList, #rekapList) .period { clip-path: inset(-20px 0 0 0 round 0 0 10px 10px); }
-#rekapList .period:has(.file-menu .menu:not([hidden])) { clip-path: none; } /* menu "Lihat File" boleh keluar dari tepi kartu */
 /* Header kategori (dropdown) menempel 12px di bawah header papan saat daftar di-scroll (= gap antar-kategori). */
 :is(#pilihList, #rekapList) .period[open] > summary { position: sticky; top: -4px; /* -4px + padding .hsse-list 16px = 12px */ z-index: 3; background: #fff; border-radius: 9px 9px 0 0; /* sudut bawah dipotong kartu (overflow: clip) */ box-shadow: 0 1px 0 var(--line); container-type: scroll-state; }
 /* Hanya saat menempel: tutup celah 12px di atasnya supaya baris tabel tidak terlihat lewat (Chrome/Edge 133+; browser lain tanpa penutup). */
@@ -397,10 +392,6 @@ a.btn, a.btn-outline { text-decoration: none; }
 .hsse-table tbody tr:nth-child(even) td { background: var(--panel); }
 .hsse-table tbody tr.selected td { background: #e3eff6; } /* tbody: harus sama spesifiknya dengan baris genap abu-abu */
 .hsse-table td:nth-child(2), .hsse-table td:nth-child(3) { max-width: 240px; }
-.file-btns { display: flex; flex-direction: column; gap: 6px; align-items: center; }
-.file-btns .btn-outline { padding: 6px 12px; font-size: clamp(11px, 0.75vw, 12px); }
-.file-menu .menu { position: fixed; min-width: 140px; z-index: 20; } /* top/left diatur JS (lihat #rekapList click) */
-.file-menu .menu button { font-size: clamp(11px, 0.75vw, 12px); }
 
 @media (max-width: 900px) {
   .acts { grid-template-columns: 1fr; }

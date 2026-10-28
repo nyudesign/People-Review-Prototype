@@ -3,7 +3,7 @@ const MAX_MANDATORY_ACTS = 1; // batas aktivitas Mandatory sudah standar, jadi T
 const MAX_FILE = 2 * 1024 * 1024;
 const IG_URL = BACK.url;
 
-const newAct = () => ({ jenis: '', periode: '2025', tanggal: '', lokasi: '', ket: '', file: null, url: null });
+const newAct = () => ({ jenis: '', periode: '2025', tanggal: '', lokasi: '', ket: '' });
 const mandatoryItem = (o) => ({ type: 'mandatory', max: MAX_MANDATORY_ACTS, acts: [newAct()], open: false, poin: null, editing: false, dirty: false, ...o });
 
 // Sumber: Excel "All Stream_List Aktivitas pada Item Individual Contributory HSSE Objectives 2026", sheet "2026 (Rev)".
@@ -171,12 +171,13 @@ function poinNow(it) {
   return isMandatory(it) ? sum(it.acts.map((a) => jenisOf(it, a)?.poin || 0)) : it.poin_per * it.acts.length;
 }
 const locked = (it) => it.poin !== null && !it.editing;
-// Simpan baru aktif bila minimal satu aktivitas punya isian selain Periode (Jenis/Tanggal/Lokasi/Keterangan/file evidence) — sama dengan PCI.
-const filled = (it) => it.acts.some((a) => [a.jenis, a.tanggal, a.lokasi, a.ket].some((v) => v && String(v).trim()) || !!a.file);
-console.assert(!filled({ acts: [{ jenis: '', periode: '2025', tanggal: '', lokasi: ' ', ket: '', file: null }] })
-  && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '', file: null }, { jenis: '0', tanggal: '', lokasi: '', ket: '', file: null }] })
-  && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '', file: { name: 'a.pdf' } }] }), 'Simpan aktif bila salah satu aktivitas terisi (kecuali Periode)');
-const missingFields = (it, a) => [isMandatory(it) && a.jenis === '' && 'jenis', !a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi', !a.file && 'file'].filter(Boolean);
+// Simpan baru aktif bila ada evidence kartu atau minimal satu aktivitas punya isian selain Periode (Jenis/Tanggal/Lokasi/Keterangan).
+const filled = (it) => !!it.ev || it.acts.some((a) => [a.jenis, a.tanggal, a.lokasi, a.ket].some((v) => v && String(v).trim()));
+console.assert(!filled({ acts: [{ jenis: '', periode: '2025', tanggal: '', lokasi: ' ', ket: '' }] })
+  && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '' }, { jenis: '0', tanggal: '', lokasi: '', ket: '' }] })
+  && filled({ ev: { file: { name: 'a.pdf' } }, acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '' }] }), 'Simpan aktif bila evidence/salah satu aktivitas terisi (kecuali Periode)');
+const missingFields = (it, a) => [isMandatory(it) && a.jenis === '' && 'jenis', !a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi'].filter(Boolean);
+const EV_ERROR = 'Evidence wajib diunggah melalui tombol Lihat Evidence.';
 
 // Poin tidak dibatasi (sesuai sistem lama): total = jumlah poin aktivitas yang sudah disimpan; "/target" = target Year End, hanya acuan (boleh lebih, mis. 345/300).
 function totals() {
@@ -268,6 +269,8 @@ const totalsHTML = ({ m, n, all }) => `
     <div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Realisasi Non-Mandatory</span></div>
     <div><span><b class="big">${all}</b><small>/${YEAR_END_TARGET.hsse} Poin</small></span><span>Total Realisasi Semua</span></div>
   </div>`;
+// Tombol kembali di kiri bawah footer (Figma Desktop 1587 / 1742), menggantikan panah di header.
+const backLink = (href, label) => `<a class="btn-outline" href="${href}">${icon('tabler:arrow-left')}${label}</a>`;
 const nextLink = (href, why = '') => why
   ? `<button class="btn" disabled title="${why}">Selanjutnya ${icon('tabler:arrow-right')}</button>`
   : `<a class="btn" href="${href}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
@@ -291,21 +294,14 @@ const jenisDetail = (j) => (j.label !== j.short ? j.label : j.desc); // label Ex
 console.assert(mandatory.every((it) => it.jenis.every((j) => j.short && jenisDetail(j))), 'setiap kriteria punya judul singkat & deskripsi');
 
 // Pesan error per aktivitas, ringkas: hanya menyebut isian wajib yang masih kosong (sama dengan PCI).
-const FIELD_LABEL = { jenis: 'Kriteria', tanggal: 'Tanggal', lokasi: 'Lokasi', file: 'Evidence' };
+const FIELD_LABEL = { jenis: 'Kriteria', tanggal: 'Tanggal', lokasi: 'Lokasi' };
 const actError = (miss) => {
   const n = miss.map((f) => FIELD_LABEL[f]);
   return n.length ? `${n.length > 1 ? `${n.slice(0, -1).join(', ')} & ${n.at(-1)}` : n[0]} wajib diisi` : '';
 };
-console.assert(actError(['tanggal', 'lokasi']) === 'Tanggal & Lokasi wajib diisi' && actError(['jenis', 'tanggal', 'lokasi', 'file']) === 'Kriteria, Tanggal, Lokasi & Evidence wajib diisi'
-  && actError(['file']) === 'Evidence wajib diisi' && actError([]) === '', 'pesan error aktivitas');
+console.assert(actError(['tanggal', 'lokasi']) === 'Tanggal & Lokasi wajib diisi' && actError(['jenis', 'tanggal', 'lokasi']) === 'Kriteria, Tanggal & Lokasi wajib diisi'
+  && actError(['lokasi']) === 'Lokasi wajib diisi' && actError([]) === '', 'pesan error aktivitas');
 
-// Nama file panjang dipotong "…" tapi ekstensi (.pdf) tetap terlihat; nama lengkap di tooltip.
-const fileName = (name) => {
-  const dot = name.lastIndexOf('.');
-  const [base, ext] = dot > 0 ? [name.slice(0, dot), name.slice(dot)] : [name, ''];
-  return `<b class="fname" title="${esc(name)}"><span class="fname-base">${esc(base)}</span><span class="fname-ext">${esc(ext)}</span></b>`;
-};
-console.assert(fileName('a_b.c.pdf').includes('>a_b.c</span><span class="fname-ext">.pdf<') && fileName('README').includes('fname-ext"></span>'), 'nama file dipisah dari ekstensi');
 
 // hapus = layar Konfirmasi Penghapusan: isian terkunci, hanya tombol Hapus & Lihat File yang aktif.
 function actHTML(it, a, i, hapus = false) {
@@ -319,21 +315,6 @@ function actHTML(it, a, i, hapus = false) {
         ${it.jenis.map((j, ji) => `<option value="${ji}" data-desc="${esc(jenisDetail(j))}"${String(ji) === a.jenis ? ' selected' : ''}>${esc(j.short)} (${j.poin} Poin)</option>`).join('')}
       </select></label>`
     : '';
-  const file = a.file
-    ? `<div class="file-box">${icon('line-md:file-twotone', 'file-ico')}
-        <div class="file-meta">${fileName(a.file.name)}<small>${(a.file.size / 1024 / 1024).toFixed(1)} MB</small></div>
-        <span class="fb-actions">
-          <button type="button" class="btn" data-view>${icon('mdi:eye')}Lihat File</button>
-          ${dis ? '' : `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
-          <button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
-        </span>
-      </div>`
-    : hapus ? '<div class="drop-inline"><span class="muted">Belum ada file evidence</span></div>'
-    : `<div class="drop-inline${miss.includes('file') ? ' invalid' : ''}" data-drop>
-        <img src="assets/upload-illustration.svg" alt="" width="40" height="39">
-        <span class="link">Tarik dan lepaskan file yang Anda ingin unggah</span><span class="muted">atau</span>
-        <button type="button" class="btn" data-pick ${dis}>Pilih File</button>
-      </div>`;
   return `
     <div class="act" data-act="${i}">
       <div class="act-head"><span class="chip chip-blue">Aktivitas ${i + 1}</span>${isMandatory(it) ? '' : `<span class="chip chip-blue">${it.poin_per} Poin</span>`}
@@ -346,8 +327,6 @@ function actHTML(it, a, i, hapus = false) {
         <label>Lokasi<input data-field="lokasi" value="${esc(a.lokasi)}" placeholder="Isi Lokasi Kegiatan" ${dis}${inv('lokasi')}></label>
       </div>
       <label class="full">Keterangan<textarea data-field="ket" rows="3" placeholder="Isi Keterangan" ${dis}>${esc(a.ket)}</textarea></label>
-      <div class="upload-label"><b>Upload Evidence</b> <small>PDF (maks. ukuran file 2MB)</small></div>
-      ${file}
     </div>`;
 }
 
@@ -374,6 +353,7 @@ function itemHTML(it, hapus = false) {
           <div><h3>${esc(it.name)}</h3>${isMandatory(it) ? '' : `<p class="muted small">${esc(it.desc)}</p>`}</div>
           <div class="hi-actions">
             ${hapus ? '' : `${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
+            <button type="button" class="btn-outline${it.showErrors && !it.ev ? ' invalid' : ''}" data-evidence>Lihat Evidence</button>
             <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>`}
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
           </div>
@@ -400,7 +380,7 @@ function renderReal() {
         <a class="btn" href="#pilih">Mulai Mencari ${icon('tabler:arrow-right')}</a>
       </div>`;
   } else {
-    $('#realList').innerHTML = items.map(itemHTML).join('') || '<p class="empty">Tidak ada aktivitas yang cocok</p>';
+    $('#realList').innerHTML = items.map((it) => itemHTML(it)).join('') || '<p class="empty">Tidak ada aktivitas yang cocok</p>';
   }
   renderRealFoot();
 }
@@ -412,26 +392,74 @@ function renderRealFoot() {
   const why = tab === 'mandatory' ? (unsaved ? 'Simpan semua aktivitas Mandatory terlebih dahulu' : '')
     : !nonMandatory.length ? 'Pilih dan simpan aktivitas Non-Mandatory terlebih dahulu'
     : unsaved ? 'Simpan aktivitas Non-Mandatory terlebih dahulu' : '';
-  $('#foot').innerHTML = totalsHTML(totals()) + nextLink(tab === 'mandatory' ? '#non-mandatory' : '#rekap', why);
+  $('#foot').innerHTML = (tab === 'mandatory' ? backLink(IG_URL, `Kembali ke ${BACK.label}`) : backLink('#mandatory', 'Kembali ke HSSE Objective Mandatory'))
+    + `<span class="foot-actions">${totalsHTML(totals())}${nextLink(tab === 'mandatory' ? '#non-mandatory' : '#rekap', why)}</span>`;
   persist(); // footer dirender ulang setiap perubahan (termasuk saat mengetik) → titik simpan yang lengkap
-}
-
-let fileTarget = null;
-
-function setFile(it, a, f) {
-  if (!f) return;
-  if (!/\.pdf$/i.test(f.name) || f.size > MAX_FILE) return alert('File harus berformat PDF dan maksimal 2MB');
-  if (a.url) URL.revokeObjectURL(a.url);
-  a.file = f;
-  a.url = URL.createObjectURL(f);
-  it.dirty = true;
-  renderReal();
 }
 
 function removeItemIfEmpty(it) {
   if (isMandatory(it) || it.acts.length) return;
   nonMandatory = nonMandatory.filter((i) => i !== it);
 }
+
+/* ---------- Evidence per kartu (modal, wajib) — Figma "Upload Evidence new Version" ---------- */
+// Isi modal sama dengan PCI; setelah kartu disimpan Hapus File disembunyikan (Ubah File tetap bisa, evidence tidak pernah kosong).
+let evItem = null;
+function renderEvidence() {
+  const ev = evItem.ev;
+  $('#evidenceBox').innerHTML = ev
+    ? `<div class="drop">${icon('line-md:file-twotone', 'file-ico')}
+        <p class="file-name">${esc(ev.file.name)}</p><p class="muted">${(ev.file.size / 1024 / 1024).toFixed(1)} MB</p>
+        <div class="file-actions">
+          <button type="button" class="btn-outline" data-view>${icon('mdi:eye')}Lihat File</button>
+          <button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
+          ${locked(evItem) ? '' : `<button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
+        </div>
+      </div>`
+    : `<div class="drop" data-drop>
+        <img src="assets/upload-illustration.svg" alt="" width="64" height="62">
+        <p class="link">Tarik dan lepaskan file yang Anda ingin unggah<br>(.pdf max. 2MB)</p>
+        <p class="muted">atau</p>
+        <button type="button" class="btn" data-pick>Pilih File</button>
+      </div>`;
+}
+function setEvidence(f) {
+  if (!f) return;
+  if (!/\.pdf$/i.test(f.name) || f.size > MAX_FILE) return alert('File harus berformat PDF dan maksimal 2MB');
+  if (evItem.ev) URL.revokeObjectURL(evItem.ev.url);
+  evItem.ev = { file: f, url: URL.createObjectURL(f) };
+  if (!locked(evItem)) evItem.dirty = true;
+  if (evItem.error === EV_ERROR) evItem.error = '';
+  rekapSaved = false;
+  renderEvidence();
+  renderReal();
+}
+$('#evidenceDialog [data-close]').addEventListener('click', () => $('#evidenceDialog').close());
+$('#evidenceBox').addEventListener('click', async (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  if ('pick' in b.dataset) return $('#fileInput').click();
+  if ('view' in b.dataset) return window.open(evItem.ev.url, '_blank');
+  if ('delFile' in b.dataset) {
+    if (!await confirmBox('Apakah Anda ingin menghapus file evidence?', 'File Evidence dalam aktivitas tersebut akan dihapus setelah Anda konfirmasi')) return;
+    URL.revokeObjectURL(evItem.ev.url);
+    evItem.ev = null;
+    evItem.dirty = true;
+    renderEvidence();
+    renderReal();
+  }
+});
+$('#evidenceBox').addEventListener('dragover', (e) => { const z = e.target.closest('[data-drop]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+$('#evidenceBox').addEventListener('dragleave', (e) => e.target.closest('[data-drop]')?.classList.remove('over'));
+$('#evidenceBox').addEventListener('drop', (e) => {
+  if (!e.target.closest('[data-drop]')) return;
+  e.preventDefault();
+  setEvidence(e.dataTransfer.files[0]);
+});
+$('#fileInput').addEventListener('change', (e) => {
+  setEvidence(e.target.files[0]);
+  e.target.value = '';
+});
 
 $('#realList').addEventListener('click', async (e) => {
   const card = e.target.closest('[data-item]');
@@ -455,30 +483,22 @@ $('#realList').addEventListener('click', async (e) => {
     it.dirty = true;
     return renderReal();
   }
-  if ('pick' in btn.dataset) { fileTarget = { it, a }; return $('#fileInput').click(); }
-  if ('view' in btn.dataset) return window.open(a.url, '_blank');
-  if ('delFile' in btn.dataset) {
-    if (!await confirmBox('Apakah Anda ingin menghapus file evidence?', 'File Evidence dalam aktivitas tersebut akan dihapus setelah Anda konfirmasi')) return;
-    URL.revokeObjectURL(a.url);
-    a.file = a.url = null;
-    it.dirty = true;
-    return renderReal();
-  }
+  if ('evidence' in btn.dataset) { evItem = it; renderEvidence(); return $('#evidenceDialog').showModal(); }
   if ('delAct' in btn.dataset || 'delAll' in btn.dataset) {
     const all = 'delAll' in btn.dataset;
     const ok = await confirmBox(all ? 'Apakah Anda ingin menghapus semua aktivitas?' : 'Apakah Anda ingin menghapus aktivitas?',
       'Jika semua list realisasi dihapus, maka akan menghilangkan kelompok aktivitas');
     if (!ok) return;
     const removed = all ? it.acts.splice(0) : it.acts.splice(it.acts.indexOf(a), 1);
-    removed.forEach((r) => r.url && URL.revokeObjectURL(r.url));
     it.dirty = true;
     removeItemIfEmpty(it);
     return renderReal();
   }
   if ('save' in btn.dataset) {
     const incomplete = it.acts.some((x) => missingFields(it, x).length);
-    it.showErrors = incomplete || !it.acts.length;
-    it.error = !it.acts.length ? 'Tambahkan minimal 1 aktivitas sebelum menyimpan.' : ''; // isian kosong: pesan per aktivitas (actError)
+    it.showErrors = incomplete || !it.acts.length || !it.ev;
+    // isian kosong: pesan per aktivitas (actError); evidence kartu belum ada: pesan di kartu + tombol Lihat Evidence merah
+    it.error = !it.acts.length ? 'Tambahkan minimal 1 aktivitas sebelum menyimpan.' : !it.ev ? EV_ERROR : '';
     if (it.showErrors) { it.open = true; return renderReal(); }
     if (!await confirmBox('Apakah Anda ingin menyimpan data realisasi?', 'Data realisasi akan berubah menjadi yang terbaru')) return;
     it.poin = poinNow(it);
@@ -513,19 +533,6 @@ $('#realList').addEventListener('input', onField);
 
 $('#realList').addEventListener('change', onField);
 
-$('#realList').addEventListener('dragover', (e) => { const z = e.target.closest('[data-drop]'); if (z) { e.preventDefault(); z.classList.add('over'); } });
-$('#realList').addEventListener('dragleave', (e) => e.target.closest('[data-drop]')?.classList.remove('over'));
-$('#realList').addEventListener('drop', (e) => {
-  const z = e.target.closest('[data-drop]');
-  if (!z) return;
-  e.preventDefault();
-  const it = findItem(z.closest('[data-item]').dataset.item);
-  if (!locked(it)) setFile(it, it.acts[Number(z.closest('[data-act]').dataset.act)], e.dataTransfer.files[0]);
-});
-$('#fileInput').addEventListener('change', (e) => {
-  if (fileTarget) setFile(fileTarget.it, fileTarget.a, e.target.files[0]);
-  e.target.value = '';
-});
 document.addEventListener('click', (e) => {
   document.querySelectorAll('.menu:not([hidden])').forEach((m) => {
     if (!e.composedPath().includes(m.parentElement)) {
@@ -573,9 +580,9 @@ function renderPilih() {
     </details>`).join('') || empty;
   if (typing) { search.focus(); search.setSelectionRange(caret, caret); }
   const n = pickedPoin();
-  $('#foot').innerHTML = `
+  $('#foot').innerHTML = backLink('#non-mandatory', 'Kembali ke List Aktivitas Non-Mandatory') + `<span class="foot-actions">
     <div class="totals"><div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Poin Aktivitas Terpilih</span></div></div>
-    <button type="button" class="btn" data-commit ${n ? '' : 'disabled'}>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
+    <button type="button" class="btn" data-commit ${n ? '' : 'disabled'}>Selanjutnya ${icon('tabler:arrow-right')}</button></span>`;
 }
 
 $('#pilihList').addEventListener('click', async (e) => {
@@ -608,18 +615,16 @@ $('#pilihSearch').addEventListener('input', () => renderPilih());
 function renderHapus() {
   const it = nonMandatory.find((i) => i.id === hapusId);
   $('#hapusList').innerHTML = itemHTML({ ...it, open: true }, true);
-  $('#foot').innerHTML = `<a class="btn-outline" href="#pilih">${icon('tabler:arrow-left')}Kembali ke Pilih Aktivitas</a>${totalsHTML(totals())}`;
+  $('#foot').innerHTML = backLink('#pilih', 'Kembali ke Pilih Aktivitas') + totalsHTML(totals());
 }
 $('#hapusList').addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   const it = nonMandatory.find((i) => i.id === hapusId);
   const a = it && it.acts[Number(btn?.closest('[data-act]')?.dataset.act)];
   if (!a) return;
-  if ('view' in btn.dataset) return window.open(a.url, '_blank');
   if (!('delAct' in btn.dataset)) return;
-  if (!await confirmBox('Apakah Anda ingin menghapus aktivitas?', 'Aktivitas beserta file evidence-nya akan dihapus setelah Anda konfirmasi')) return;
+  if (!await confirmBox('Apakah Anda ingin menghapus aktivitas?', 'Aktivitas akan dihapus setelah Anda konfirmasi')) return;
   it.acts.splice(it.acts.indexOf(a), 1);
-  if (a.url) URL.revokeObjectURL(a.url);
   if (it.poin !== null) it.poin = poinNow(it); // poin tersimpan ikut berkurang; aktivitas lain tetap tersimpan
   rekapSaved = false;
   removeItemIfEmpty(it);
@@ -637,7 +642,7 @@ function commitPicks() {
     const want = picks[c.id];
     if (it.acts.length !== want) {
       while (it.acts.length < want) it.acts.push(newAct());
-      it.acts.splice(want).forEach((r) => r.url && URL.revokeObjectURL(r.url));
+      it.acts.splice(want);
       it.dirty = true;
       if (it.poin !== null) it.editing = true;
     }
@@ -665,16 +670,6 @@ const rekapFilter = makeFilter($('#rekapFilter'), [
   { name: 'Kategori', options: () => [...new Set(allItems().map((i) => i.kategori))] },
 ], () => renderRekap());
 
-// Satu file → tombol "Lihat File"; beberapa file → tombol menu "Lihat File" berisi Aktivitas 1, 2, 3.
-function fileCell(i) {
-  const files = i.acts.map((a, ai) => [a, ai]).filter(([a]) => a.url);
-  if (files.length < 2) return files.map(([, ai]) => `<button type="button" class="btn-outline" data-open="${i.id}:${ai}">${icon('mdi:eye')}Lihat File</button>`).join('');
-  return `<span class="menu-wrap file-menu">
-    <button type="button" class="btn-outline" data-file-menu aria-haspopup="menu" aria-expanded="false">${icon('mdi:eye')}Lihat File${icon('mdi:chevron-down')}</button>
-    <span class="menu" role="menu" hidden>${files.map(([, ai]) => `<button type="button" role="menuitem" data-open="${i.id}:${ai}">Aktivitas ${ai + 1}</button>`).join('')}</span>
-  </span>`;
-}
-
 function rekapRows(items) {
   return items.filter((i) => i.poin !== null && i.acts.length).map((i) => `
     <tr>
@@ -682,7 +677,7 @@ function rekapRows(items) {
       <td>${esc(i.name)}</td>
       <td>${esc(isMandatory(i) ? [...new Set(i.acts.map((a) => jenisOf(i, a)?.desc).filter(Boolean))].join('; ') : i.desc)}</td>
       <td>${esc(i.evidence)}</td>
-      <td><div class="file-btns">${fileCell(i)}</div></td>
+      <td>${i.ev ? `<button type="button" class="btn-outline" data-open="${i.id}">${icon('mdi:eye')}Lihat File</button>` : '-'}</td>
       <td>${i.acts.length}</td>
       <td>${i.poin} Poin</td>
     </tr>`).join('');
@@ -702,36 +697,17 @@ function renderRekap() {
         <div class="table-scroll"><table class="hsse-table">${head}<tbody>${rekapRows(items) || none}</tbody></table></div>
       </details>`).join('');
 
-  $('#foot').innerHTML = totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : `<span class="foot-actions">
+  $('#foot').innerHTML = REVIEW ? totalsHTML(totals()) + `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : backLink('#non-mandatory', 'Kembali ke HSSE Objective Non-Mandatory') + `<span class="foot-actions">${totalsHTML(totals())}
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
-    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
+    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`;
   persist();
 }
 
-const closeFileMenus = () => document.querySelectorAll('.file-menu .menu:not([hidden])').forEach((m) => {
-  m.hidden = true;
-  m.previousElementSibling.setAttribute('aria-expanded', 'false');
-});
 $('#rekapList').addEventListener('click', (e) => {
-  const toggle = e.target.closest('[data-file-menu]');
-  if (toggle) {
-    const menu = toggle.nextElementSibling, open = menu.hidden;
-    closeFileMenus();
-    if (!open) return;
-    menu.hidden = false;
-    toggle.setAttribute('aria-expanded', 'true');
-    // fixed: tidak terpotong area tabel yang bisa di-scroll; buka ke atas bila ruang bawah tidak cukup
-    const r = toggle.getBoundingClientRect();
-    const up = r.bottom + 4 + menu.offsetHeight > innerHeight - 8;
-    menu.style.top = `${up ? r.top - 4 - menu.offsetHeight : r.bottom + 4}px`;
-    menu.style.left = `${Math.min(r.left, innerWidth - menu.offsetWidth - 8)}px`;
-    return;
-  }
-  const [id, ai] = (e.target.closest('[data-open]')?.dataset.open || '').split(':');
-  if (id) { closeFileMenus(); window.open(findItem(id).acts[Number(ai)].url, '_blank'); }
+  const id = e.target.closest('[data-open]')?.dataset.open;
+  if (id) window.open(findItem(id).ev.url, '_blank');
 });
-document.addEventListener('scroll', closeFileMenus, true); // posisi fixed: tutup saat area di-scroll
 $('#rekapSearch').addEventListener('input', () => renderRekap());
 
 /* ---------- Routing: #mandatory, #non-mandatory, #pilih, #rekap ---------- */
@@ -768,14 +744,12 @@ function route() {
 // `summary` dibaca halaman Individual Goal: total poin yang sudah disimpan = realisasi kartu HSSE Objective.
 const DATA_KEY = `pr-hsse-${REVIEW ? 'heru' : LOGIN}`;
 const fileMeta = (f) => f && { name: f.name, size: f.size };
-const packItem = (it) => ({ id: it.id, open: it.open, poin: it.poin, editing: it.editing, dirty: it.dirty,
-  acts: it.acts.map((a) => ({ ...a, file: fileMeta(a.file), url: null })) });
+const packItem = (it) => ({ id: it.id, open: it.open, poin: it.poin, editing: it.editing, dirty: it.dirty, acts: it.acts, ev: fileMeta(it.ev?.file) });
 function persist() {
   if (REVIEW) return; // Evaluator hanya melihat
   const saved = allItems().filter((i) => i.poin !== null && i.acts.length);
-  const files = saved.flatMap((i) => i.acts.map((a) => a.file));
   const data = { mandatory: mandatory.map(packItem), nonMandatory: nonMandatory.map(packItem), rekapSaved,
-    summary: { total: totals().all, evidence: files.length && files.every(Boolean) ? fileMeta(files[0]) : null,
+    summary: { total: totals().all, evidence: saved.length && saved.every((i) => i.ev) ? fileMeta(saved[0].ev.file) : null,
       mandatoryDone: mandatory.every((i) => i.poin !== null && i.acts.length) } }; // false → kartu HSSE tidak boleh "Selesai"
   try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* storage penuh/diblokir: tetap jalan tanpa simpan */ }
 }
@@ -786,7 +760,7 @@ function restoreData() {
   try { d = JSON.parse(localStorage.getItem(DATA_KEY)); } catch { /* abaikan */ }
   if (!d) return false;
   const unpack = (s, it) => Object.assign(it, { open: s.open, poin: s.poin, editing: !!s.editing, dirty: !!s.dirty,
-    acts: s.acts.map((a) => ({ ...newAct(), ...a, url: a.file ? placeholderUrl(a.file) : null })) });
+    acts: s.acts.map(({ file, url, ...a }) => ({ ...newAct(), ...a })), ev: s.ev && { file: s.ev, url: placeholderUrl(s.ev) } }); // file/url: sisa format lama (evidence per aktivitas)
   d.mandatory.forEach((s) => { const it = mandatory.find((m) => m.id === s.id); if (it) unpack(s, it); });
   nonMandatory = d.nonMandatory.filter((s) => findCatalog(s.id))
     .map((s) => unpack(s, { ...findCatalog(s.id), type: 'non', poin_per: findCatalog(s.id).poin }));
@@ -797,20 +771,17 @@ const restored = restoreData();
 
 // Mode evaluator: rekap read-only berisi isian Heru yang tersimpan; bila belum ada, data contoh (Figma "HSSE Objective + Evidence").
 if (REVIEW && !restored) {
-  const demoAct = (jenis = '') => {
-    const file = new File(['Evidence demo'], 'evidence-demo.pdf', { type: 'application/pdf' });
-    return { ...newAct(), jenis, tanggal: '2025-06-10', lokasi: 'Jakarta', file, url: URL.createObjectURL(file) };
-  };
-  mandatory.forEach((it) => { it.acts = [demoAct(it.id === 'observasi' ? '5' : '0')]; it.poin = poinNow(it); });
+  const demoAct = (jenis = '') => ({ ...newAct(), jenis, tanggal: '2025-06-10', lokasi: 'Jakarta' });
+  const demoEv = () => { const file = new File(['Evidence demo'], 'evidence-demo.pdf', { type: 'application/pdf' }); return { file, url: URL.createObjectURL(file) }; };
+  mandatory.forEach((it) => { it.acts = [demoAct(it.id === 'observasi' ? '5' : '0')]; it.ev = demoEv(); it.poin = poinNow(it); });
   nonMandatory = ['nm-5', 'nm-7'].map((id) => {
     const c = findCatalog(id);
-    const it = { ...c, type: 'non', poin_per: c.poin, acts: [demoAct(), demoAct()], open: false, poin: null, editing: false, dirty: false };
+    const it = { ...c, type: 'non', poin_per: c.poin, acts: [demoAct(), demoAct()], ev: demoEv(), open: false, poin: null, editing: false, dirty: false };
     return Object.assign(it, { poin: poinNow(it) });
   });
 }
 if (REVIEW) {
   initReviewUI('Review HSSE Objective');
-  $('#viewRekap .back').href = IG_URL;
 }
 
 window.addEventListener('hashchange', route);

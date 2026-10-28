@@ -49,7 +49,6 @@
     <!-- 1. Pengisian realisasi (tab Mandatory / Non-Mandatory) -->
     <section class="board-wrap" id="viewReal" hidden>
       <div class="board-head">
-        <a href="../Individual%20Goal/index.html" class="back" aria-label="Kembali ke Realisasi Target"><i data-icon="tabler:arrow-left"></i></a>
         <h1 class="head-title">HSSE Objective</h1>
         <a href="#pilih" id="addActivity" class="btn-outline" hidden><i data-icon="ic:round-plus"></i>Tambah Aktivitas</a>
         <div class="seg" role="tablist" aria-label="Jenis HSSE Objective">
@@ -65,7 +64,6 @@
     <!-- 2. Pemilihan aktivitas Non-Mandatory -->
     <section class="board-wrap" id="viewPilih" hidden>
       <div class="board-head">
-        <a href="#non-mandatory" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
         <div class="head-title"><h1>HSSE Objective (Non-Mandatory)</h1><small>Pilih Aktivitas</small></div>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="pilihSearch" type="search" placeholder="Cari kategori aktivitas yang sesuai dengan Anda" aria-label="Cari aktivitas"></label>
         <div class="filter-wrap" id="pilihFilter"></div>
@@ -84,7 +82,6 @@
     <!-- 3. Rekap realisasi -->
     <section class="board-wrap" id="viewRekap" hidden>
       <div class="board-head">
-        <a href="#non-mandatory" class="back" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
         <h1 class="head-title">Rekap Realisasi HSSE Objective</h1>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rekapSearch" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari aktivitas"></label>
         <div class="filter-wrap" id="rekapFilter"></div>
@@ -118,6 +115,12 @@
       <button value="yes" class="btn">Ya</button>
       <button value="no" class="btn-outline">Tidak</button>
     </form>
+  </dialog>
+
+  <!-- Evidence per kartu aktivitas (wajib) — Figma "Upload Evidence new Version" -->
+  <dialog id="evidenceDialog">
+    <div class="dlg-head"><h2>Evidence Aktivitas</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div id="evidenceBox"></div>
   </dialog>
 
   <input id="fileInput" type="file" accept=".pdf,application/pdf" hidden>

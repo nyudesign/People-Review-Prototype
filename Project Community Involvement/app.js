@@ -143,6 +143,8 @@ function altSwitch(el, options, current, onPick) {
 
 const totalsHTML = () => `
   <div class="totals"><div><span><b class="big">${total()}</b><small>/${YEAR_END_TARGET.pci} Poin</small></span><span>Total Realisasi</span></div></div>`;
+// Tombol kembali di kiri bawah footer (Figma Desktop 1619 / 1627), menggantikan panah di header — sama dengan HSSE Objective.
+const backLink = (href, label) => `<a class="btn-outline" href="${href}">${icon('tabler:arrow-left')}${label}</a>`;
 const nextLink = (href, enabled) => enabled
   ? `<a class="btn" href="${href}">Selanjutnya ${icon('tabler:arrow-right')}</a>`
   : `<button class="btn" disabled>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
@@ -228,7 +230,7 @@ function renderReal() {
 
 // persist(): footer dirender ulang setiap perubahan (termasuk saat mengetik) → titik simpan yang lengkap.
 const renderRealFoot = () => {
-  $('#foot').innerHTML = `<a class="btn-outline" href="${IG_URL}">${icon('tabler:arrow-left')}Sebelumnya</a><span class="foot-actions">${totalsHTML()}${nextLink('#rekap', allDone())}</span>`;
+  $('#foot').innerHTML = `${backLink(IG_URL, `Kembali ke ${BACK.label}`)}<span class="foot-actions">${totalsHTML()}${nextLink('#rekap', allDone())}</span>`;
   persist();
 };
 
@@ -377,9 +379,9 @@ function renderPilih() {
   }
   if (typing) { search.focus(); search.setSelectionRange(caret, caret); }
   const n = pickedPoin();
-  $('#foot').innerHTML = FOOT_ALT + `
+  $('#foot').innerHTML = backLink('#isi', 'Kembali ke List Aktivitas') + FOOT_ALT + `<span class="foot-actions">
     <div class="totals"><div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Poin Aktivitas Terpilih</span></div></div>
-    <button type="button" class="btn" data-commit ${n ? '' : 'disabled'}>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
+    <button type="button" class="btn" data-commit ${n ? '' : 'disabled'}>Selanjutnya ${icon('tabler:arrow-right')}</button></span>`;
   altSwitch($('#footAlt'), [['1', 'Alt. 1 Kartu'], ['2', 'Alt. 2 Dropdown'], ['3', 'Alt. 3 Two Menus']], pilihAlt, (v) => {
     pilihAlt = v;
     store.set('pci.pilihAlt', v);
@@ -502,10 +504,10 @@ function renderRekap() {
         <div class="table-scroll"><table class="hsse-table">${head}<tbody>${rekapRows(list)}</tbody></table></div>
       </details>`).join('') || '<p class="empty">Tidak ada aktivitas yang cocok</p>';
 
-  $('#foot').innerHTML = totalsHTML() + (REVIEW ? `<span class="foot-actions"><a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a></span>` : `<span class="foot-actions">
+  $('#foot').innerHTML = REVIEW ? totalsHTML() + `<span class="foot-actions"><a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a></span>` : backLink('#isi', 'Kembali ke List Aktivitas') + `<span class="foot-actions">${totalsHTML()}
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
-    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
+    <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`;
   persist();
 }
 $('#rekapList').addEventListener('click', (e) => {
@@ -581,7 +583,6 @@ if (REVIEW && !restored) {
 }
 if (REVIEW) {
   initReviewUI('Review Community Involvement');
-  $('#viewRekap .back').href = IG_URL;
 }
 
 window.addEventListener('hashchange', route);
