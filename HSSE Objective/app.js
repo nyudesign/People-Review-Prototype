@@ -146,6 +146,8 @@ const catalog = [
 let nonMandatory = []; // item Non-Mandatory yang dipilih user (dibuat dari katalog)
 let picks = {};        // draft jumlah aktivitas di layar Pemilihan: { catalogId: jumlah }
 let rekapSaved = false;
+let hapusId = null;     // item Non-Mandatory di layar Konfirmasi Penghapusan Aktivitas
+let keepPicks = false;  // kembali ke Pemilihan tanpa mereset draft jumlah aktivitas
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -156,14 +158,6 @@ const hydrateIcons = (root) => root.querySelectorAll('[data-icon]').forEach((el)
   el.innerHTML = ICONS[el.dataset.icon];
 });
 hydrateIcons(document);
-
-// Pilihan alternatif UI disimpan per browser (kenyamanan saja, aman bila storage diblokir).
-const store = {
-  get(k, fallback) { try { return localStorage.getItem(k) ?? fallback; } catch { return fallback; } },
-  set(k, v) { try { localStorage.setItem(k, v); } catch { /* abaikan */ } },
-};
-let pilihAlt = store.get('hsse.pilihAlt', '2');
-let rekapAlt = store.get('hsse.rekapAlt', 'dropdown');
 
 /* ---------- Aturan poin & kelengkapan ---------- */
 const findCatalog = (id) => catalog.find((c) => c.id === id);
@@ -268,14 +262,6 @@ $('#confirmDialog').addEventListener('click', (e) => {
   answerConfirm(false);
 });
 
-// Pilihan alternatif UI ditaruh di tengah footer.
-const FOOT_ALT = '<div class="alt-switch" id="footAlt" role="group" aria-label="Alternatif UI"></div>';
-function altSwitch(el, options, current, onPick) {
-  el.innerHTML = `<span>Alternatif UI</span>${options.map(([v, label]) =>
-    `<button type="button" data-alt="${v}" aria-pressed="${v === current}">${label}</button>`).join('')}`;
-  el.onclick = (e) => { const v = e.target.closest('[data-alt]')?.dataset.alt; if (v) onPick(v); };
-}
-
 const totalsHTML = ({ m, n, all }) => `
   <div class="totals">
     <div><span><b class="big">${m}</b><small> Poin</small></span><span>Total Realisasi Mandatory</span></div>
@@ -321,8 +307,9 @@ const fileName = (name) => {
 };
 console.assert(fileName('a_b.c.pdf').includes('>a_b.c</span><span class="fname-ext">.pdf<') && fileName('README').includes('fname-ext"></span>'), 'nama file dipisah dari ekstensi');
 
-function actHTML(it, a, i) {
-  const dis = locked(it) ? 'disabled' : '';
+// hapus = layar Konfirmasi Penghapusan: isian terkunci, hanya tombol Hapus & Lihat File yang aktif.
+function actHTML(it, a, i, hapus = false) {
+  const dis = hapus || locked(it) ? 'disabled' : '';
   const miss = it.showErrors ? missingFields(it, a) : [];
   const inv = (f) => (miss.includes(f) ? ' aria-invalid="true"' : '');
   // Label opsi dari Excel bisa sangat panjang: dropdown dibuat selebar kartu + teks lengkap pilihan ditampilkan di bawahnya.
@@ -337,10 +324,11 @@ function actHTML(it, a, i) {
         <div class="file-meta">${fileName(a.file.name)}<small>${(a.file.size / 1024 / 1024).toFixed(1)} MB</small></div>
         <span class="fb-actions">
           <button type="button" class="btn" data-view>${icon('mdi:eye')}Lihat File</button>
-          ${locked(it) ? '' : `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
+          ${dis ? '' : `<button type="button" class="btn-outline" data-pick>${icon('iconamoon:swap-bold')}Ubah File</button>
           <button type="button" class="btn-outline danger" data-del-file>${icon('mdi:trash')}Hapus File</button>`}
         </span>
       </div>`
+    : hapus ? '<div class="drop-inline"><span class="muted">Belum ada file evidence</span></div>'
     : `<div class="drop-inline${miss.includes('file') ? ' invalid' : ''}" data-drop>
         <img src="assets/upload-illustration.svg" alt="" width="40" height="39">
         <span class="link">Tarik dan lepaskan file yang Anda ingin unggah</span><span class="muted">atau</span>
@@ -350,7 +338,7 @@ function actHTML(it, a, i) {
     <div class="act" data-act="${i}">
       <div class="act-head"><span class="chip chip-blue">Aktivitas ${i + 1}</span>${isMandatory(it) ? '' : `<span class="chip chip-blue">${it.poin_per} Poin</span>`}
         <span class="act-error" role="alert" data-act-error>${actError(miss)}</span>
-        <button type="button" class="link-danger" data-del-act ${dis || (isMandatory(it) ? 'disabled' : '')}>${icon('ic:round-delete')}Hapus</button></div>
+        <button type="button" class="link-danger" data-del-act ${hapus ? '' : dis || (isMandatory(it) ? 'disabled' : '')}>${icon('ic:round-delete')}Hapus</button></div>
       ${jenisRow}
       <div class="act-grid">
         <label>Periode<select data-field="periode" ${dis}>${['2025', '2024'].map((y) => `<option${y === a.periode ? ' selected' : ''}>${y}</option>`).join('')}</select></label>
@@ -363,9 +351,9 @@ function actHTML(it, a, i) {
     </div>`;
 }
 
-function itemHTML(it) {
+function itemHTML(it, hapus = false) {
   const lock = locked(it);
-  const canAdd = !lock && it.acts.length < it.max;
+  const canAdd = !hapus && !lock && it.acts.length < it.max;
   return `
     <article class="hsse-item" data-item="${it.id}">
       <div class="hi-head">
@@ -374,26 +362,26 @@ function itemHTML(it) {
           <span class="chip chip-blue">${esc(it.kategori)}</span>
           <span class="chip chip-blue">Evidence: ${esc(it.evidence)}</span>
           ${isMandatory(it) ? '' : `<span class="chip chip-blue">Maksimal Aktivitas: ${it.max}</span>
-          <span class="menu-wrap">
+          ${hapus ? '' : `<span class="menu-wrap">
             <button type="button" class="icon-btn dots" data-menu aria-label="Menu aktivitas" aria-expanded="false" ${lock ? 'disabled' : ''}>${icon('ri:more-fill')}</button>
             <span class="menu" hidden>
               <button type="button" data-add-act ${canAdd ? '' : 'disabled'}>${icon('ic:round-plus')}Tambah Aktivitas</button>
               <button type="button" class="danger" data-del-all ${it.acts.length ? '' : 'disabled'}>${icon('ic:round-delete')}Hapus Semua Aktivitas</button>
             </span>
-          </span>`}
+          </span>`}`}
         </div>
         <div class="hi-title">
           <div><h3>${esc(it.name)}</h3>${isMandatory(it) ? '' : `<p class="muted small">${esc(it.desc)}</p>`}</div>
           <div class="hi-actions">
-            ${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
-            <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>
+            ${hapus ? '' : `${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
+            <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>`}
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
           </div>
         </div>
         ${it.showErrors && it.error ? `<p class="error" role="alert">${it.error}</p>` : ''}
       </div>
-      ${it.open ? `<div class="acts">${it.acts.map((a, i) => actHTML(it, a, i)).join('')}
-        ${canAdd || isMandatory(it) ? `<button type="button" class="add-tile" data-add-act ${canAdd ? '' : 'disabled title="Batas aktivitas Mandatory sudah sesuai standar"'}>${icon('ic:round-plus')}Tambah Aktivitas</button>` : ''}</div>` : ''}
+      ${it.open ? `<div class="acts">${it.acts.map((a, i) => actHTML(it, a, i, hapus)).join('')}
+        ${canAdd || (isMandatory(it) && !hapus) ? `<button type="button" class="add-tile" data-add-act ${canAdd ? '' : 'disabled title="Batas aktivitas Mandatory sudah sesuai standar"'}>${icon('ic:round-plus')}Tambah Aktivitas</button>` : ''}</div>` : ''}
     </article>`;
 }
 
@@ -548,7 +536,7 @@ document.addEventListener('click', (e) => {
 });
 $('#realSearch').addEventListener('input', () => renderReal());
 
-/* ---------- 2. Pemilihan aktivitas (Alt. 1 kartu, Alt. 2 dropdown/tabel, Alt. 3 dua panel) ---------- */
+/* ---------- 2. Pemilihan aktivitas (dropdown per kategori, Figma "Alt. 2 Dropdown (Choose this)") ---------- */
 const openKat = new Set([KATEGORI[0]]);
 const pilihFilter = makeFilter($('#pilihFilter'), [{ name: 'Kategori', options: () => KATEGORI }], () => renderPilih());
 const pickedPoin = () => sum(Object.entries(picks).map(([id, n]) => findCatalog(id).poin * n));
@@ -566,79 +554,47 @@ function stepperHTML(c) {
   </div>${block ? `<small class="group-note">Hanya boleh pilih salah satu dengan "${esc(block.name)}"</small>` : ''}`;
 }
 
-function pickCardHTML(c, { removable = false } = {}) {
-  return `
-    <article class="pick-card${picks[c.id] && !removable ? ' selected' : ''}">
-      <span class="ribbon">${c.poin} Point</span>
-      <span class="chip chip-blue">${esc(c.kategori)}</span>
-      <h3>${esc(c.name)}</h3>
-      <p class="muted small">${esc(c.desc)}</p>
-      <div class="pick-foot">
-        <div><b class="ev-label">Evidence</b><p class="small">${esc(c.evidence)}</p></div>
-        <div class="pick-count"><b>${esc(c.kriteria)}</b>${stepperHTML(c)}<small class="muted">Maks. ${c.max} aktivitas</small></div>
-        ${removable ? `<button type="button" class="btn-outline danger" data-unpick="${c.id}">${icon('ic:round-delete')}Hapus</button>` : ''}
-      </div>
-    </article>`;
-}
-
 function renderPilih() {
   const q = $('#pilihSearch').value.trim().toLowerCase();
   const [kats] = pilihFilter.applied;
   const list = catalog.filter((c) => (!kats.size || kats.has(c.kategori)) && `${c.name} ${c.kategori} ${c.desc}`.toLowerCase().includes(q));
   const empty = '<p class="empty">Tidak ada aktivitas yang cocok</p>';
-  // Alt. 3: cari & filter pindah ke judul kolom "Pilih Aktivitas" (Figma Two-Menus); jaga fokus/kursor & scroll panel saat render ulang.
-  const search = $('#pilihSearch'), tools = [search.closest('.search'), $('#pilihFilter')];
+  const search = $('#pilihSearch');
   const typing = document.activeElement === search, caret = search.selectionStart;
-  const scrolls = [...$('#pilihList').querySelectorAll('.pick-stack')].map((el) => el.scrollTop);
-  $('#viewPilih .board-head').append(...tools);
-  search.placeholder = pilihAlt === '3' ? 'Cari Kategori/Aktivitas' : 'Cari kategori aktivitas yang sesuai dengan Anda';
-
-  if (pilihAlt === '1') {
-    $('#pilihList').innerHTML = list.length ? `<div class="pick-grid">${list.map((c) => pickCardHTML(c)).join('')}</div>` : empty;
-  } else if (pilihAlt === '2') {
-    const groups = KATEGORI.map((k) => [k, list.filter((c) => c.kategori === k)]).filter(([, cs]) => cs.length);
-    $('#pilihList').innerHTML = groups.map(([k, cs]) => `
-      <details class="period" data-kat="${esc(k)}"${openKat.has(k) ? ' open' : ''}>
-        <summary><b>${esc(k)}</b><span><span class="big">${sum(cs.map((c) => c.poin * (picks[c.id] || 0)))}</span><small> Poin</small></span>${icon('tabler:chevron-up', 'caret')}</summary>
-        <div class="table-scroll"><table class="hsse-table">
-          <thead><tr><th>Nama Aktivitas</th><th>Poin per Aktivitas</th><th>Maksimal Aktivitas</th><th>Kriteria Perhitungan</th><th>Keterangan</th><th>Evidence</th><th>Jumlah Aktivitas</th></tr></thead>
-          <tbody>${cs.map((c) => `<tr class="${picks[c.id] ? 'selected' : ''}"><td>${esc(c.name)}</td><td>${c.poin}</td><td>${c.max}</td><td>${esc(c.kriteria)}</td>
-            <td>${esc(c.desc)}</td><td>${esc(c.evidence)}</td><td>${stepperHTML(c)}</td></tr>`).join('')}</tbody>
-        </table></div>
-      </details>`).join('') || empty;
-  } else {
-    const chosen = catalog.filter((c) => picks[c.id]);
-    $('#pilihList').innerHTML = `
-      <div class="two-col">
-        <section><div class="col-head"><h2 class="col-title">Pilih Aktivitas</h2><div class="col-tools" id="pilihTools"></div></div>
-          <div class="pick-stack">${list.map((c) => pickCardHTML(c)).join('') || empty}</div></section>
-        <section><div class="col-head"><h2 class="col-title">Aktivitas Terpilih</h2></div><div class="pick-stack chosen">${chosen.map((c) => pickCardHTML(c, { removable: true })).join('')
-          || '<p class="empty">Aktivitas Anda masih kosong<br>Silakan untuk memilih terlebih dahulu</p>'}</div></section>
-      </div>`;
-    $('#pilihTools').append(...tools);
-    $('#pilihList').querySelectorAll('.pick-stack').forEach((el, i) => { el.scrollTop = scrolls[i] || 0; });
-  }
+  const groups = KATEGORI.map((k) => [k, list.filter((c) => c.kategori === k)]).filter(([, cs]) => cs.length);
+  $('#pilihList').innerHTML = groups.map(([k, cs]) => `
+    <details class="period" data-kat="${esc(k)}"${openKat.has(k) ? ' open' : ''}>
+      <summary><b>${esc(k)}</b><span><span class="big">${sum(cs.map((c) => c.poin * (picks[c.id] || 0)))}</span><small> Poin</small></span>${icon('tabler:chevron-up', 'caret')}</summary>
+      <div class="table-scroll"><table class="hsse-table">
+        <thead><tr><th>Nama Aktivitas</th><th>Poin per Aktivitas</th><th>Maksimal Aktivitas</th><th>Kriteria Perhitungan</th><th>Keterangan</th><th>Evidence</th><th>Jumlah Aktivitas</th></tr></thead>
+        <tbody>${cs.map((c) => `<tr class="${picks[c.id] ? 'selected' : ''}"><td>${esc(c.name)}</td><td>${c.poin}</td><td>${c.max}</td><td>${esc(c.kriteria)}</td>
+          <td>${esc(c.desc)}</td><td>${esc(c.evidence)}</td><td>${stepperHTML(c)}</td></tr>`).join('')}</tbody>
+      </table></div>
+    </details>`).join('') || empty;
   if (typing) { search.focus(); search.setSelectionRange(caret, caret); }
   const n = pickedPoin();
-  $('#foot').innerHTML = FOOT_ALT + `
+  $('#foot').innerHTML = `
     <div class="totals"><div><span><b class="big">${n}</b><small> Poin</small></span><span>Total Poin Aktivitas Terpilih</span></div></div>
     <button type="button" class="btn" data-commit ${n ? '' : 'disabled'}>Selanjutnya ${icon('tabler:arrow-right')}</button>`;
-  altSwitch($('#footAlt'), [['1', 'Alt. 1 Kartu'], ['2', 'Alt. 2 Dropdown'], ['3', 'Alt. 3 Two Menus']], pilihAlt, (v) => {
-    pilihAlt = v;
-    store.set('hsse.pilihAlt', v);
-    renderPilih();
-  });
 }
 
-$('#pilihList').addEventListener('click', (e) => {
+$('#pilihList').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
-  const id = b.dataset.inc || b.dataset.dec || b.dataset.unpick;
+  const id = b.dataset.inc || b.dataset.dec;
   if (!id) return;
   const c = findCatalog(id);
   const n = picks[id] || 0;
   if (b.dataset.inc && blockedBy(c)) return;
-  picks[id] = b.dataset.unpick ? 0 : Math.max(0, Math.min(c.max, n + (b.dataset.inc ? 1 : -1)));
+  // Mengurangi aktivitas yang sudah terlist & berisi data: user memilih sendiri aktivitas mana yang dihapus (Figma "Kondisi Pengurangan Aktivitas").
+  const listed = nonMandatory.find((i) => i.id === id);
+  if (b.dataset.dec && listed && n - 1 < listed.acts.length && filled(listed)) {
+    if (!await confirmBox('Apakah Anda ingin menghapus aktivitas?', 'Anda akan diarahkan ke halaman list aktivitas untuk memilih aktivitas yang ingin Anda hapus')) return;
+    hapusId = id;
+    location.hash = 'hapus';
+    return;
+  }
+  picks[id] = Math.max(0, Math.min(c.max, n + (b.dataset.inc ? 1 : -1)));
   if (!picks[id]) delete picks[id];
   renderPilih();
 });
@@ -647,6 +603,31 @@ $('#pilihList').addEventListener('toggle', (e) => {
   if (k) e.target.open ? openKat.add(k) : openKat.delete(k);
 }, true);
 $('#pilihSearch').addEventListener('input', () => renderPilih());
+
+/* ---------- 2b. Konfirmasi Penghapusan Aktivitas ---------- */
+function renderHapus() {
+  const it = nonMandatory.find((i) => i.id === hapusId);
+  $('#hapusList').innerHTML = itemHTML({ ...it, open: true }, true);
+  $('#foot').innerHTML = `<a class="btn-outline" href="#pilih">${icon('tabler:arrow-left')}Kembali ke Pilih Aktivitas</a>${totalsHTML(totals())}`;
+}
+$('#hapusList').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button');
+  const it = nonMandatory.find((i) => i.id === hapusId);
+  const a = it && it.acts[Number(btn?.closest('[data-act]')?.dataset.act)];
+  if (!a) return;
+  if ('view' in btn.dataset) return window.open(a.url, '_blank');
+  if (!('delAct' in btn.dataset)) return;
+  if (!await confirmBox('Apakah Anda ingin menghapus aktivitas?', 'Aktivitas beserta file evidence-nya akan dihapus setelah Anda konfirmasi')) return;
+  it.acts.splice(it.acts.indexOf(a), 1);
+  if (a.url) URL.revokeObjectURL(a.url);
+  if (it.poin !== null) it.poin = poinNow(it); // poin tersimpan ikut berkurang; aktivitas lain tetap tersimpan
+  rekapSaved = false;
+  removeItemIfEmpty(it);
+  // Kembali ke Pemilihan dengan jumlah berkurang satu; draft jumlah aktivitas lain tetap.
+  if (it.acts.length) picks[it.id] = it.acts.length; else delete picks[it.id];
+  persist();
+  location.hash = 'pilih';
+});
 
 // Terapkan pilihan: item yang sudah ada dipertahankan (isian tidak hilang), jumlah aktivitas disesuaikan.
 function commitPicks() {
@@ -677,14 +658,14 @@ $('#foot').addEventListener('click', async (e) => {
   if ('rekapEdit' in b.dataset) { rekapSaved = false; location.hash = 'mandatory'; }
 });
 
-/* ---------- 3. Rekap realisasi (Alt. 1 tabel, Alt. 2 dropdown) ---------- */
+/* ---------- 3. Rekap realisasi (dropdown Mandatory / Non-Mandatory, Figma "Alternative 2 Dropdown (choose this)") ---------- */
 const GROUPS = [['Mandatory', () => mandatory], ['Non Mandatory', () => nonMandatory]];
 const rekapFilter = makeFilter($('#rekapFilter'), [
   { name: 'Jenis HSSE Objective', options: () => GROUPS.map(([g]) => g) },
   { name: 'Kategori', options: () => [...new Set(allItems().map((i) => i.kategori))] },
 ], () => renderRekap());
 
-// Satu file → tombol "Lihat File"; beberapa file → tombol menu "Lihat File" berisi Aktivitas 1, 2, 3 (Alt. 1 & Alt. 2).
+// Satu file → tombol "Lihat File"; beberapa file → tombol menu "Lihat File" berisi Aktivitas 1, 2, 3.
 function fileCell(i) {
   const files = i.acts.map((a, ai) => [a, ai]).filter(([a]) => a.url);
   if (files.length < 2) return files.map(([, ai]) => `<button type="button" class="btn-outline" data-open="${i.id}:${ai}">${icon('mdi:eye')}Lihat File</button>`).join('');
@@ -712,28 +693,19 @@ function renderRekap() {
   const [jenis, kats] = rekapFilter.applied;
   const groups = GROUPS.filter(([g]) => !jenis.size || jenis.has(g)).map(([g, items]) =>
     [g, items().filter((i) => (!kats.size || kats.has(i.kategori)) && i.name.toLowerCase().includes(q))]);
-  const head = (ketLabel) => `<thead><tr><th>Kategori</th><th>Daftar Aktivitas</th><th>${ketLabel}</th><th>Evidence</th><th>File Lampiran Evidence</th><th>Jumlah Aktivitas Terisi</th><th>Total Poin</th></tr></thead>`;
+  const head = `<thead><tr><th>Kategori</th><th>Daftar Aktivitas</th><th>Kriteria/Keterangan</th><th>Evidence</th><th>File Lampiran Evidence</th><th>Jumlah Aktivitas Terisi</th><th>Total Poin</th></tr></thead>`;
   const none = '<tr><td colspan="7" class="empty">Belum ada aktivitas tersimpan</td></tr>';
 
-  $('#rekapList').innerHTML = rekapAlt === 'tabel'
-    ? `<div class="table-scroll"><table class="hsse-table rekap">${head('Keterangan')}<tbody>
-        ${groups.map(([g, items]) => `<tr class="group"><td colspan="7">${g === 'Mandatory' ? 'Mandatory' : 'Non-Mandatory'}</td></tr>${rekapRows(items) || none}`).join('')}
-      </tbody></table></div>`
-    : groups.map(([g, items]) => `
+  $('#rekapList').innerHTML = groups.map(([g, items]) => `
       <details class="period" open>
         <summary><b>${g === 'Mandatory' ? 'Mandatory' : 'Non-Mandatory'}</b>${icon('tabler:chevron-up', 'caret')}</summary>
-        <div class="table-scroll"><table class="hsse-table">${head('Kriteria/Keterangan')}<tbody>${rekapRows(items) || none}</tbody></table></div>
+        <div class="table-scroll"><table class="hsse-table">${head}<tbody>${rekapRows(items) || none}</tbody></table></div>
       </details>`).join('');
 
-  $('#foot').innerHTML = FOOT_ALT + totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : `<span class="foot-actions">
+  $('#foot').innerHTML = totalsHTML(totals()) + (REVIEW ? `<a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : `<span class="foot-actions">
     ${rekapSaved ? `<button type="button" class="btn-outline" data-rekap-edit>${icon('mdi:pencil')}Edit</button>
       <a class="btn" href="${IG_URL}">Kembali ke ${BACK.label}</a>` : ''}
     <button type="button" class="btn" data-rekap-save ${rekapSaved ? 'disabled' : ''}>Simpan Data Realisasi</button></span>`);
-  altSwitch($('#footAlt'), [['tabel', 'Alt. 1 Tabel'], ['dropdown', 'Alt. 2 Dropdown']], rekapAlt, (v) => {
-    rekapAlt = v;
-    store.set('hsse.rekapAlt', v);
-    renderRekap();
-  });
   persist();
 }
 
@@ -765,17 +737,24 @@ $('#rekapSearch').addEventListener('input', () => renderRekap());
 /* ---------- Routing: #mandatory, #non-mandatory, #pilih, #rekap ---------- */
 function route() {
   const h = REVIEW ? 'rekap' : location.hash.slice(1) || 'mandatory';
-  const view = h === 'pilih' ? 'pilih' : h === 'rekap' ? 'rekap' : 'real';
+  // #hapus hanya bisa dibuka dari tombol "−" di Pemilihan (hapusId); setelah reload kembali ke Pemilihan.
+  if (h === 'hapus' && !nonMandatory.some((i) => i.id === hapusId)) return location.replace('#pilih');
+  const view = ['pilih', 'hapus', 'rekap'].includes(h) ? h : 'real';
   $('#viewReal').hidden = view !== 'real';
   $('#viewPilih').hidden = view !== 'pilih';
+  $('#viewHapus').hidden = view !== 'hapus';
   $('#viewRekap').hidden = view !== 'rekap';
   if (view === 'real') {
     const next = h === 'non-mandatory' ? 'non-mandatory' : 'mandatory';
     if (next !== tab) { tab = next; realFilter.reset(); $('#realSearch').value = ''; }
     renderReal();
   } else if (view === 'pilih') {
-    picks = Object.fromEntries(nonMandatory.map((i) => [i.id, i.acts.length]));
+    if (!keepPicks) picks = Object.fromEntries(nonMandatory.map((i) => [i.id, i.acts.length]));
+    keepPicks = false;
     renderPilih();
+  } else if (view === 'hapus') {
+    keepPicks = true; // dari Konfirmasi Penghapusan (Hapus atau Kembali) draft Pemilihan tidak direset
+    renderHapus();
   } else {
     renderRekap();
   }
