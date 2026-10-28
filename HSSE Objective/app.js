@@ -177,7 +177,7 @@ console.assert(!filled({ acts: [{ jenis: '', periode: '2025', tanggal: '', lokas
   && filled({ acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '' }, { jenis: '0', tanggal: '', lokasi: '', ket: '' }] })
   && filled({ ev: { file: { name: 'a.pdf' } }, acts: [{ jenis: '', tanggal: '', lokasi: '', ket: '' }] }), 'Simpan aktif bila evidence/salah satu aktivitas terisi (kecuali Periode)');
 const missingFields = (it, a) => [isMandatory(it) && a.jenis === '' && 'jenis', !a.tanggal && 'tanggal', !a.lokasi.trim() && 'lokasi'].filter(Boolean);
-const EV_ERROR = 'Evidence wajib diunggah melalui tombol Lihat Evidence.';
+const EV_ERROR = 'Evidence wajib diunggah melalui tombol Upload Evidence.';
 
 // Poin tidak dibatasi (sesuai sistem lama): total = jumlah poin aktivitas yang sudah disimpan; "/target" = target Year End, hanya acuan (boleh lebih, mis. 345/300).
 function totals() {
@@ -353,7 +353,7 @@ function itemHTML(it, hapus = false) {
           <div><h3>${esc(it.name)}</h3>${isMandatory(it) ? '' : `<p class="muted small">${esc(it.desc)}</p>`}</div>
           <div class="hi-actions">
             ${hapus ? '' : `${lock ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
-            <button type="button" class="btn-outline${it.showErrors && !it.ev ? ' invalid' : ''}" data-evidence>Lihat Evidence</button>
+            <button type="button" class="btn-outline${it.showErrors && !it.ev ? ' invalid' : ''}" data-evidence>${lock ? 'Lihat' : 'Upload'} Evidence</button>
             <button type="button" class="btn" data-save ${lock || !it.dirty || !filled(it) ? 'disabled' : ''}>${icon('fa-solid:save')}Simpan</button>`}
             <button type="button" class="icon-btn caret" data-toggle aria-expanded="${it.open}" aria-label="${it.open ? 'Tutup' : 'Buka'} aktivitas">${icon(it.open ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
           </div>
@@ -497,7 +497,7 @@ $('#realList').addEventListener('click', async (e) => {
   if ('save' in btn.dataset) {
     const incomplete = it.acts.some((x) => missingFields(it, x).length);
     it.showErrors = incomplete || !it.acts.length || !it.ev;
-    // isian kosong: pesan per aktivitas (actError); evidence kartu belum ada: pesan di kartu + tombol Lihat Evidence merah
+    // isian kosong: pesan per aktivitas (actError); evidence kartu belum ada: pesan di kartu + tombol Upload Evidence merah
     it.error = !it.acts.length ? 'Tambahkan minimal 1 aktivitas sebelum menyimpan.' : !it.ev ? EV_ERROR : '';
     if (it.showErrors) { it.open = true; return renderReal(); }
     if (!await confirmBox('Apakah Anda ingin menyimpan data realisasi?', 'Data realisasi akan berubah menjadi yang terbaru')) return;
