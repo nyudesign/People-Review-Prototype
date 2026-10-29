@@ -40,15 +40,19 @@ const NTABS = [{ id: 'all', label: 'Semua' }, { id: 'nominate', label: 'Nominate
 // Status Realisasi Target Heru yang ditulis halaman Individual Goal (submit Heru / keputusan Oka).
 const realisasi = (() => { try { return JSON.parse(localStorage.getItem('pr-realisasi-heru')); } catch { return null; } })();
 const REVIEW_HERU = IG; // dibuka Oka → otomatis mode Review & Approve Realisasi Target
+const SINTESIS = './Sintesis%20Evaluator/index.html';
 // Evaluee milik Oka (Figma "Homepage" → Pilih Evaluee). Approval Progress = shortcut ke halaman langkahnya.
 // approval(n, realisasiHref): n langkah pertama sudah disetujui (dicentang), langkah ke-n+1 aktif, sisanya abu-abu. C5B dihilangkan atas permintaan.
 // n = -1: evaluee belum submit Individual Goal Setting → semua langkah abu-abu.
-const approval = (n, realisasiHref) => [
+// Langkah yang sudah punya halaman (href) tidak dikunci.
+// shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Realisasi Target disetujui (permintaan user); kunci lagi bila alur sudah lengkap.
+const approval = (n, realisasiHref, sintesisHref) => [
   { group: 'Approval Progress', label: 'Individual Goal Setting' },
   { group: 'Approval Progress', label: 'Nominate 360' },
   { group: 'Approval Progress', label: 'Realisasi Target', href: realisasiHref },
   { group: 'Penilaian', label: 'Penilaian Behavior Survey 360' },
-].map((s, i) => ({ ...s, done: i < n, locked: i > n }));
+  { group: 'Penilaian', label: 'Sintesis Evaluator Final', href: sintesisHref },
+].map((s, i) => ({ ...s, done: i < n, locked: i > n && !s.href }));
 const PEOPLE = {
   heru: {
     name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt',
@@ -63,7 +67,7 @@ const PEOPLE = {
     evaluees: [
       // pos = urutan di halaman Pilih Evaluee (Figma); beranda memakai urutan array.
       { name: 'Muhamad Fadlin Ananta', nip: '754933', title: 'Analyst I Perf.&amp; Comp.Mgt', steps: approval(-1), pos: 3 },
-      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU), review: REVIEW_HERU, open: true, pos: 1 },
+      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS), review: REVIEW_HERU, open: true, pos: 1 },
       { name: 'Roehim Nuranas', nip: '752579', title: 'Sr Officer I Audit Relation', steps: approval(-1), pos: 2 },
     ],
     project: { label: 'Total Tugas', total: 27, done: 9, prog: 10 },

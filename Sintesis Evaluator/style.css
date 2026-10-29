@@ -1,0 +1,44 @@
+/* Sintesis Evaluator Final — tambahan di atas ../Individual Goal/style.css */
+.sx { background: #fff; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(12px, 1.25vw, 20px); padding: clamp(12px, 1.25vw, 20px); }
+.sx-left { background: var(--panel); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
+
+.sx-acc { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; flex-shrink: 0; }
+.sx-acc summary { display: flex; align-items: center; gap: 12px; padding: 14px 18px; font-weight: 500; cursor: pointer; list-style: none; }
+.sx-acc summary::-webkit-details-marker { display: none; }
+.sx-acc summary .big { margin-left: auto; }
+.sx-acc summary .big small { font-size: 12px; margin-left: 2px; }
+.sx-acc summary > .ico { margin-left: auto; font-size: 22px; transition: transform .15s; }
+.sx-acc summary .big + .ico { margin-left: 0; }
+.sx-acc[open] summary > .ico { transform: rotate(180deg); } /* atas saat terbuka, bawah saat tertutup */
+
+.sx-table { width: 100%; border-collapse: collapse; text-align: center; font-size: clamp(12px, 0.875vw, 14px); }
+.sx-table th { font-weight: 500; padding: 10px 8px; border-top: 1px solid var(--line); }
+.sx-table td { padding: 10px 8px; border-top: 1px solid var(--line); }
+.sx-table tbody tr:nth-child(even) { background: var(--panel); }
+.sx-table .btn-outline { gap: 8px; white-space: nowrap; }
+
+.sx-right { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.sx-right h2 { font-size: clamp(16px, 1.25vw, 20px); }
+.sx-right textarea { flex: 1; min-height: 200px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); resize: none; }
+.sx-right textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.sx-count { align-self: flex-end; color: var(--primary); font-size: 12px; }
+.sx-count.max { color: var(--danger); }
+#formFooter { padding-top: var(--gap); }
+
+.sx-state { background: #fff; align-items: center; justify-content: center; text-align: center; gap: 12px; padding: 32px 24px; }
+.sx-state h1 { font-size: clamp(18px, 1.5vw, 24px); font-weight: 500; }
+.sx-state p { margin: 0 0 12px; color: var(--ink-2, var(--ink)); line-height: 1.5; }
+.sx-state img { max-width: 60%; height: auto; }
+.sx-state .btn { gap: 10px; text-decoration: none; }
+
+.sx-done { background: #fff url(../assets/wave-left.svg) no-repeat left top / 100px auto; position: relative; overflow: hidden; }
+.sx-done::after { content: ''; position: absolute; right: 0; bottom: 0; width: 360px; height: 360px; background: url(../assets/wave-right.svg) no-repeat right bottom / contain; pointer-events: none; }
+.sx-check { display: grid; place-items: center; width: 80px; height: 80px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 48px; }
+.sx-done h1 { font-size: clamp(28px, 2.5vw, 44px); font-weight: 300; color: var(--primary); line-height: 1.4; }
+.sx-done p { font-size: clamp(16px, 1.25vw, 24px); color: var(--primary); }
+
+@media (max-width: 900px) {
+  .sx { grid-template-columns: minmax(0, 1fr); }
+  .sx-table { font-size: 12px; }
+  .sx-done::after { width: 180px; height: 180px; }
+}

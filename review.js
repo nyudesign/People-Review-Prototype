@@ -36,18 +36,26 @@ document.querySelectorAll('a[href="../Individual%20Goal/index.html"]').forEach((
 });
 const REVIEW = (() => { try { return LOGIN !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
 
-// Header evaluator sesuai Figma section "Review & Approve Realisasi Target".
-function initReviewUI(title) {
+// Header evaluator sesuai Figma section "Review & Approve Realisasi Target"; langkah sebelum `current` = done, sesudahnya disabled.
+// Langkah yang sudah punya halaman jadi tautan (semua halaman evaluator ada satu folder di bawah root).
+// shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Behaviour Survey (permintaan user); matikan bila alur sudah lengkap.
+function initReviewUI(title, current = 'Review & Approve Realisasi Target') {
   const q = (s) => document.querySelector(s);
   document.title = `${title} – People Review`;
   q('.crumbs').innerHTML = 'Pengelolaan Kinerja • PWTT • <span>Evaluator</span>';
   q('.flow-pill').firstChild.textContent = 'Alur Evaluator ';
   q('.topbar-right').insertAdjacentHTML('afterbegin', '<span class="flow-pill evaluee-pill">Heru Kautsar - 19050193</span>');
-  q('#stepper').innerHTML = [
-    ['tabler:award-filled', 'Approve Individual Goal Setting', 'done'],
-    ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', 'done'],
-    ['mingcute:target-fill', 'Review & Approve Realisasi Target', 'current'],
-    ['ri:survey-fill', 'Behaviour Survey', 'disabled'],
-    ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', 'disabled'],
-  ].map(([ic, label, st]) => `<li class="${st}"><i class="ico">${ICONS[ic]}</i>${label}</li>`).join('');
+  const steps = [
+    ['tabler:award-filled', 'Approve Individual Goal Setting'],
+    ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360'],
+    ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
+    ['ri:survey-fill', 'Behaviour Survey'],
+    ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],
+  ];
+  const at = steps.findIndex(([, label]) => label === current);
+  q('#stepper').innerHTML = steps.map(([ic, label, href], i) => {
+    const body = `<i class="ico">${ICONS[ic]}</i>${label}`;
+    if (i === at) return `<li class="current">${body}</li>`;
+    return href ? `<li${i < at ? ' class="done"' : ''}><a href="${href}">${body}</a></li>` : `<li class="${i < at ? 'done' : 'disabled'}">${body}</li>`;
+  }).join('');
 }
