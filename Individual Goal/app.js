@@ -254,6 +254,7 @@ function render() {
         ${items.length ? items.map(cardHTML).join('') : `<p class="empty">Tidak ada ${q ? 'hasil pencarian' : 'proyek yang ditambahkan'} di sini</p>`}
       </section>`;
   }).join('');
+  saveSummary();
 }
 
 const boardFilter = makeFilter($('#boardFilter'), [{ name: 'Kategori', options: () => columns.map((c) => c.title) }], render);
@@ -570,6 +571,18 @@ const JENIS = { 'Cascading KPI': 'Cascading KPI / IG' };
 const weighted = (it) => (it.weight * performa(it)) / 100;
 const amount = (it, key) => `${fmt(sum(it.periods.map((p) => p[key] || 0)))} ${it.unit}`;
 console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { target: 50, value: 50 }] }) === 60, 'bobot × performa');
+
+// Ringkasan untuk Sintesis Evaluator Final: Σ weighted performance per Jenis (satu baris per Jenis; Individual Contributory per item).
+const SUMMARY_KEY = `pr-realisasi-summary-${REVIEW ? 'heru' : LOGIN}`;
+function saveSummary() {
+  if (!REVIEW && !review?.status) return; // draft Evaluee belum ikut sintesis
+  const total = {};
+  columns.forEach((col) => col.items.forEach((it) => {
+    const jenis = col.title === 'Individual Contributory' ? it.name : col.title;
+    total[jenis] = (total[jenis] || 0) + weighted(it);
+  }));
+  try { localStorage.setItem(SUMMARY_KEY, JSON.stringify(total)); } catch {}
+}
 
 function renderRekap() {
   const rows = columns.flatMap((col) => col.items.map((it) => ({ it, cells: [it.name, JENIS[col.title] || col.title, it.polarity || 'MAX',

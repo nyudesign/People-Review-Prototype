@@ -40,19 +40,25 @@ const NTABS = [{ id: 'all', label: 'Semua' }, { id: 'nominate', label: 'Nominate
 const realisasi = (() => { try { return JSON.parse(localStorage.getItem('pr-realisasi-heru')); } catch { return null; } })();
 const REVIEW_HERU = IG; // dibuka Oka → otomatis mode Review & Approve Realisasi Target
 const SINTESIS = './Sintesis%20Evaluator/index.html';
+const BEHAVIOR = './Behavior%20Survey/index.html'; // dibuka Oka → Behaviour Survey Evaluator
 const NOMINATE = './Nominate%20360/index.html'; // dibuka Oka → mode Approve Nominee 360
 // Evaluee milik Oka (Figma "Homepage" → Pilih Evaluee). Approval Progress = shortcut ke halaman langkahnya.
 // approval(n, realisasiHref): n langkah pertama sudah disetujui (dicentang), langkah ke-n+1 aktif, sisanya abu-abu. C5B dihilangkan atas permintaan.
 // n = -1: evaluee belum submit Individual Goal Setting → semua langkah abu-abu.
 // Langkah yang sudah punya halaman (href) tidak dikunci.
 // shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Realisasi Target disetujui (permintaan user); kunci lagi bila alur sudah lengkap.
-const approval = (n, realisasiHref, sintesisHref, nominateHref) => [
+const approval = (n, realisasiHref, sintesisHref, nominateHref, bsHref) => [
   { group: 'Approval Progress', label: 'Individual Goal Setting' },
-  { group: 'Approval Progress', label: 'Nominate 360', href: nominateHref },
+  { group: 'Approval Progress', label: 'Nominate 360', href: nominateHref, gate: true },
   { group: 'Approval Progress', label: 'Realisasi Target', href: realisasiHref },
-  { group: 'Penilaian', label: 'Penilaian Behavior Survey 360' },
+  { group: 'Penilaian', label: 'Penilaian Behavior Survey 360', href: bsHref },
   { group: 'Penilaian', label: 'Sintesis Evaluator Final', href: sintesisHref },
-].map((s, i) => ({ ...s, done: i < n, locked: i > n && !s.href }));
+].map((s, i) => {
+  const off = s.gate && !s.href; // Nominate 360 tanpa href = Evaluee belum submit → abu-abu & tidak dicentang
+  return { ...s, done: i < n && !off, locked: off || (i > n && !s.href) };
+});
+// Pilihan Nominee 360 Heru (disimpan Nominate 360/app.js) sudah dikirim ke Evaluator?
+const nominateHeru = (() => { try { return !!JSON.parse(localStorage.getItem('pr-nominate-heru'))?.submitted; } catch { return false; } })();
 const PEOPLE = {
   heru: {
     name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt',
@@ -63,14 +69,23 @@ const PEOPLE = {
   },
   oka: {
     name: 'Oka Fitrio', nip: '1905416', title: 'Manager Performance &amp; Competency Mgt',
-    evaluator: { name: 'Muhammad Aryomekka Firdaus', nip: '777777', title: 'VP Talent Development &amp; Recruitment' },
+    evaluator: { name: 'Aryomekka Firdaus', nip: '777777', title: 'VP Talent Development &amp; Recruitment' },
     evaluees: [
       // pos = urutan di halaman Pilih Evaluee (Figma); beranda memakai urutan array.
       { name: 'Muhamad Fadlin Ananta', nip: '754933', title: 'Analyst I Perf.&amp; Comp.Mgt', steps: approval(-1), pos: 3 },
-      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, NOMINATE), review: REVIEW_HERU, open: true, pos: 1 },
+      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, nominateHeru && NOMINATE, BEHAVIOR), review: REVIEW_HERU, open: true, pos: 1 },
       { name: 'Roehim Nuranas', nip: '752579', title: 'Sr Officer I Audit Relation', steps: approval(-1), pos: 2 },
     ],
     project: { label: 'Total Tugas', total: 27, done: 9, prog: 10 },
+  },
+  // Chairman (Figma "Rekapitulasi Sintesis Evaluator - Alt 2 - POV Chairman"): Evaluator bagi Oka sekaligus
+  // penyetuju Rekapitulasi Sintesis yang diajukan Evaluator (tab Persetujuan Penilaian Kinerja, persetujuan.js).
+  aryo: {
+    name: 'Aryomekka Firdaus', nip: '777777', title: 'VP Talent Development &amp; Recruitment', chairman: true,
+    // shortcut: atasan Chairman belum ada di desain; isi contoh sampai ada data organisasi.
+    evaluator: { name: 'I Made Wisnu Suryadana', nip: '700001', title: 'SVP Human Capital' },
+    evaluees: [{ name: 'Oka Fitrio', nip: '1905416', title: 'Manager Performance &amp; Competency Mgt', steps: approval(-1), pos: 1 }],
+    project: { label: 'Total Tugas', total: 12, done: 4, prog: 3 },
   },
 };
 const ME = PEOPLE[window.PR_USER] || PEOPLE.heru;
@@ -148,7 +163,7 @@ const evCard = (p) => `
 $('#myEvaluees').innerHTML = [0, 1].map((c) => `<div class="ev-col">${ME.evaluees.filter((_, i) => i % 2 === c).map(evCard).join('')}</div>`).join('');
 $('#myEvalueesHead').hidden = $('#myEvaluees').hidden = !ME.evaluees.length;
 
-// Pagination: 6 evaluee per halaman (3 baris × 2 kolom). Hanya 1 halaman → seluruh pager nonaktif.
+// Pagination: 6 evaluee per halaman (3 baris × 2 kolom). Hanya 1 halaman → pager disembunyikan.
 const PAGE_SIZE = 6;
 let evPage = 1;
 // Nomor yang tampil: 1, sekitar halaman aktif (minimal sampai 3), dan halaman terakhir; celahnya jadi "…".
@@ -170,13 +185,16 @@ function renderEvList() {
       <div><b class="name">${p.name}</b><span class="nip">${p.nip}</span><small>${p.title}</small></div>
       ${startReview(p).replace(' wide', '')}
     </div>`).join('') : '<p class="muted ev-empty">Pekerja tidak ditemukan.</p>';
-  const off = pages === 1;
-  $('#evPager').classList.toggle('off', off);
-  $('#evPager').innerHTML = `
-    <button type="button" class="icon-btn" data-page="${evPage - 1}" aria-label="Halaman sebelumnya"${evPage === 1 ? ' disabled' : ''}>${icon('mdi:chevron-down').replace('class="ico"', 'class="ico pg-prev"')}</button>
-    ${pageNumbers(evPage, pages).map((n) => n === '…' ? '<span class="pg-gap">…</span>'
-      : `<button type="button" class="pg" data-page="${n}"${n === evPage ? ' aria-current="page"' : ''}${off ? ' disabled' : ''}>${n}</button>`).join('')}
-    <button type="button" class="icon-btn" data-page="${evPage + 1}" aria-label="Halaman berikutnya"${evPage === pages ? ' disabled' : ''}>${icon('mdi:chevron-down').replace('class="ico"', 'class="ico pg-next"')}</button>`;
+  renderPager($('#evPager'), evPage, pages);
+}
+// Dipakai juga oleh Rekapitulasi Sintesis Evaluator (rekap.js).
+function renderPager(nav, cur, pages) {
+  nav.hidden = pages === 1;
+  nav.innerHTML = `
+    <button type="button" class="icon-btn" data-page="${cur - 1}" aria-label="Halaman sebelumnya"${cur === 1 ? ' disabled' : ''}>${icon('mdi:chevron-down').replace('class="ico"', 'class="ico pg-prev"')}</button>
+    ${pageNumbers(cur, pages).map((n) => n === '…' ? '<span class="pg-gap">…</span>'
+      : `<button type="button" class="pg" data-page="${n}"${n === cur ? ' aria-current="page"' : ''}>${n}</button>`).join('')}
+    <button type="button" class="icon-btn" data-page="${cur + 1}" aria-label="Halaman berikutnya"${cur === pages ? ' disabled' : ''}>${icon('mdi:chevron-down').replace('class="ico"', 'class="ico pg-next"')}</button>`;
 }
 $('#evSearch').addEventListener('input', () => { evPage = 1; renderEvList(); });
 $('#evPager').addEventListener('click', (e) => {
@@ -261,15 +279,25 @@ $('#roleNext').addEventListener('click', () => { try { sessionStorage.removeItem
 $('#ubahEval').addEventListener('click', notReady);
 
 function route() {
-  let view = { '#pwtt': 'role', '#pwtt-evaluator': 'evaluee' }[location.hash] || 'home';
-  if (view === 'evaluee' && !ME.evaluees.length) view = 'role';
+  let view = { '#pwtt': 'role', '#pwtt-evaluator': 'evaluee', '#pwtt-rekap': 'rekap', '#pwtt-approval': 'approval',
+    '#pwtt-persetujuan': 'persetujuan', '#pwtt-berita-acara': 'ba' }[location.hash] || 'home';
+  if (['evaluee', 'rekap', 'approval', 'persetujuan', 'ba'].includes(view) && !ME.evaluees.length) view = 'role';
+  if (view === 'persetujuan' && !ME.chairman) view = 'evaluee';
   const pwtt = view !== 'home';
+  const eypr = ['rekap', 'approval', 'persetujuan', 'ba'].includes(view);
   const crumbs = ['Pengelolaan Kinerja', 'PWTT'];
-  if (view === 'evaluee') crumbs.push('Evaluator');
+  if (eypr ? view !== 'approval' : view === 'evaluee') crumbs.push('Evaluator');
+  const tab = { evaluee: 'Penilaian Evaluee', rekap: 'Rekapitulasi Sintesis Evaluator' }[view];
+  if (tab) crumbs.push(tab);
   $('#pwttHead').innerHTML = `${crumbs.slice(0, -1).join(' • ')} • <span>${crumbs.at(-1)}</span>`;
   $('#viewHome').hidden = pwtt; $('#homeHead').hidden = pwtt;
   $('#viewPwtt').hidden = view !== 'role'; $('#viewEvaluee').hidden = view !== 'evaluee';
-  $('#pwttHead').hidden = !pwtt; $('#pwttPill').hidden = !pwtt;
+  $('#viewRekap').hidden = $('#rkFoot').hidden = view !== 'rekap'; $('#viewApproval').hidden = view !== 'approval';
+  $('#viewPersetujuan').hidden = view !== 'persetujuan';
+  $('#viewBA').hidden = $('#baFoot').hidden = view !== 'ba';
+  document.querySelectorAll('[data-chairman]').forEach((t) => { t.hidden = !ME.chairman; });
+  // Figma End Year People Review (Rekapitulasi, Approval, Persetujuan, Berita Acara) tidak menampilkan pill PWTT.
+  $('#pwttHead').hidden = !pwtt; $('#pwttPill').hidden = !pwtt || eypr;
   $('#navHome').classList.toggle('active', !pwtt);
   $('#navKinerja').classList.toggle('active', pwtt);
   $('#navPwtt').classList.toggle('active', pwtt);

@@ -194,6 +194,10 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .search .ico { font-size: 20px; }
 .search input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; color: var(--ink); background: none; }
 .search:focus-within { border-color: var(--primary); }
+/* Evaluator sebelum Evaluee submit Penilai 360: pencarian nonaktif (sama abu-abunya dengan tombol disabled). */
+.search:has(input:disabled) { background: var(--panel); color: #a7b6cc; cursor: not-allowed; }
+.search input:disabled { cursor: not-allowed; color: #a7b6cc; }
+.search input:disabled::placeholder { color: #a7b6cc; }
 .badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 6px; font-size: clamp(11px, 0.812vw, 13px); font-weight: 500; white-space: nowrap; }
 .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .badge.waiting { background: #fdfbd3; color: #7c6a00; }

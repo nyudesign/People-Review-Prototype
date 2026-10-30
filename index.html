@@ -6,6 +6,7 @@
   <title>Beranda – People Review</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="dropdown.css">
+  <link rel="stylesheet" href="rekap.css">
 </head>
 <body>
   <aside class="sidebar">
@@ -110,9 +111,10 @@
 
     <!-- PWTT → Tahapan Utama → Evaluator: pilih evaluee -->
     <section class="role-card" id="viewEvaluee" hidden>
-      <div class="ev-tabs" role="tablist">
-        <button type="button" role="tab" class="ev-tab" aria-selected="true">Penilaian Evaluee</button>
-        <button type="button" role="tab" class="ev-tab" aria-selected="false" data-missing>Rekapitulasi Sintesis Evaluator</button>
+      <div class="ev-tabs">
+        <a class="ev-tab" href="#pwtt-evaluator" aria-current="page">Penilaian Evaluee</a>
+        <a class="ev-tab" href="#pwtt-rekap">Rekapitulasi Sintesis Evaluator</a>
+        <a class="ev-tab" href="#pwtt-persetujuan" data-chairman hidden>Persetujuan Penilaian Kinerja</a>
       </div>
       <div class="ev-body">
         <div class="ev-top">
@@ -123,12 +125,208 @@
         <nav class="pager" id="evPager" aria-label="Halaman"></nav>
       </div>
     </section>
+
+    <!-- PWTT → Evaluator → Rekapitulasi Sintesis Evaluator (Figma "Rekapitulasi Sintesis Evaluator - Alt 2 - POV Evaluator") -->
+    <section class="role-card" id="viewRekap" hidden>
+      <div class="ev-tabs rk-head">
+        <div class="rk-tabs">
+          <a class="ev-tab" href="#pwtt-evaluator">Penilaian Evaluee</a>
+          <a class="ev-tab" href="#pwtt-rekap" aria-current="page">Rekapitulasi Sintesis Evaluator</a>
+          <a class="ev-tab" href="#pwtt-persetujuan" data-chairman hidden>Persetujuan Penilaian Kinerja</a>
+        </div>
+        <div class="rk-status" id="rkStatus"></div>
+      </div>
+      <div class="ev-body">
+        <div class="rk-tools">
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="rkSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+          <div class="rk-pop-wrap">
+            <button type="button" class="btn-outline rk-tool" id="sortBtn" aria-expanded="false" aria-controls="sortPop"><i data-icon="iconamoon:swap-bold"></i>Sortir</button>
+            <div class="pop rk-pop" id="sortPop" hidden>
+              <h3>Sortir</h3>
+              <div class="rk-opts" id="sortOpts" role="listbox" aria-label="Sortir"></div>
+              <div class="rk-pop-foot"><button type="button" class="btn" id="sortApply">Terapkan</button></div>
+            </div>
+          </div>
+          <div class="rk-pop-wrap">
+            <button type="button" class="btn-outline rk-tool" id="filterBtn" aria-expanded="false" aria-controls="filterPop"><i data-icon="ion:filter"></i>Filter</button>
+            <div class="pop rk-pop rk-filter" id="filterPop" hidden>
+              <h3>Filter</h3>
+              <div class="ntabs" id="filterTabs" role="tablist"></div>
+              <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="filterSearch" placeholder="Ketik di sini untuk mencari" aria-label="Cari pilihan filter"></label>
+              <div class="rk-opts" id="filterOpts" role="listbox" aria-multiselectable="true" aria-label="Pilihan filter"></div>
+              <div class="rk-pop-foot"><button type="button" class="rk-clear" id="filterClear">Hapus Semua Pilihan</button><button type="button" class="btn" id="filterApply">Terapkan</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="rk-grid" id="rkGrid"></div>
+        <nav class="pager" id="rkPager" aria-label="Halaman"></nav>
+      </div>
+    </section>
+    <div class="rk-foot" id="rkFoot" hidden>
+      <p id="rkNote">Tombol “Approval Chairman” akan menyala jika semua anggota sudah dinilai</p>
+      <!-- shortcut: Cetak Hasil Penilaian (PDF "Report Kalibrasi Dan Sintesis") belum dibuat; tampil setelah submit ke Chairman. -->
+      <button type="button" class="btn-outline" id="rkPrint" data-missing hidden><i data-icon="material-symbols:print-rounded"></i>Cetak Hasil Penilaian</button>
+      <button type="button" class="btn" id="rkSave"><i data-icon="fa-solid:save"></i>Simpan</button>
+      <button type="button" class="btn" id="rkNext" disabled>Approval Chairman<i data-icon="tabler:arrow-right"></i></button>
+    </div>
+
+    <!-- Rekapitulasi → Approval Chairman (Figma Desktop 1789–1797) -->
+    <section class="role-card" id="viewApproval" hidden>
+      <form class="apv" id="apvForm">
+        <button type="button" class="btn-outline apv-list" id="apvList">Lihat List Evaluee</button>
+        <h2>Pilih Jenis Approval Chairman dan Nama Atasan</h2>
+        <label>Jenis Approval
+          <select id="apvType">
+            <option value="">Pilih Jenis Approval</option>
+            <option value="atasan" data-desc="Approval oleh Pimpinan Evaluator untuk Kelompok Penilaian yang final ratingnya di Atasan Evaluator">Approval oleh Atasan Evaluator</option>
+            <option value="evaluator" data-desc="Approval oleh Evaluator untuk Kelompok Penilaian yang final ratingnya di Evaluator sendiri (tertentu)">Approval oleh Evaluator</option>
+          </select>
+        </label>
+        <label>Nama Atasan
+          <select id="apvBoss" disabled>
+            <option value="">Pilih Nama Atasan</option>
+            <option>Aryomekka Firdaus</option>
+            <option>I Made Wisnu Suryadana</option>
+            <option>John Doe</option>
+          </select>
+        </label>
+        <label class="apv-check"><input type="checkbox" id="apvAgree">Dengan ini menyatakan bahwa hasil Rating Kinerja para Evaluee dimaksud telah disampaikan dalam Diskusi People Review</label>
+      </form>
+      <div class="role-foot apv-foot">
+        <a class="btn-outline" href="#pwtt-rekap"><i data-icon="tabler:arrow-left"></i>Menuju Penilaian Kinerja</a>
+        <button type="button" class="btn" id="apvSubmit" disabled><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+      </div>
+    </section>
+    <!-- Chairman → Persetujuan Penilaian Kinerja (Figma "Rekapitulasi Sintesis Evaluator - Alt 2 - POV Chairman", Desktop 1667–1676, 1779) -->
+    <section class="role-card" id="viewPersetujuan" hidden>
+      <div class="ev-tabs">
+        <a class="ev-tab" href="#pwtt-evaluator">Penilaian Evaluee</a>
+        <a class="ev-tab" href="#pwtt-rekap">Rekapitulasi Sintesis Evaluator</a>
+        <a class="ev-tab" href="#pwtt-persetujuan" aria-current="page">Persetujuan Penilaian Kinerja</a>
+      </div>
+      <div class="ev-body">
+        <div class="rk-tools">
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="pjSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+          <!-- shortcut: Sortir & Filter kelompok belum dibuat (baru satu Evaluator yang mengajukan). -->
+          <button type="button" class="btn-outline rk-tool" data-missing><i data-icon="iconamoon:swap-bold"></i>Sortir</button>
+          <button type="button" class="btn-outline rk-tool" data-missing><i data-icon="ion:filter"></i>Filter</button>
+        </div>
+        <div class="pj-list" id="pjList"></div>
+      </div>
+    </section>
+
+    <!-- Pembuatan Berita Acara (Figma Evaluator 1774–1776, Chairman 1777–1778) -->
+    <section class="role-card" id="viewBA" hidden>
+      <div class="ba-head">
+        <a class="icon-btn" id="baBack" href="#pwtt-rekap" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></a>
+        <h2>Pembuatan Berita Acara</h2>
+        <span class="flow-pill" id="baEvaluator"></span>
+      </div>
+      <div class="ba-body">
+        <div class="ba-doc-col">
+          <div class="ba-doc-wrap"><article class="ba-doc" id="baDoc"></article></div>
+          <div class="ba-pager">
+            <button type="button" class="btn-outline" id="baPrev">Sebelumnya</button>
+            <span id="baPage"></span>
+            <button type="button" class="btn-outline" id="baNext">Selanjutnya</button>
+          </div>
+        </div>
+        <div class="ba-side">
+          <h3>Status Tanda Tangan</h3>
+          <div class="box ba-status" id="baStatus"></div>
+          <h3>Tanda Tangan Anda</h3>
+          <div class="box ba-sign" id="baSign"></div>
+          <input type="file" id="baFile" accept="image/*" hidden>
+        </div>
+      </div>
+    </section>
+    <div class="rk-foot ba-foot" id="baFoot" hidden>
+      <button type="button" class="btn" id="baPrint" disabled><i data-icon="material-symbols:print-rounded"></i>Cetak Berita Acara</button>
+    </div>
   </main>
+
+  <!-- Desktop 1644: Simpan -->
+  <dialog id="savedDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:check-rounded"></i></span>
+      <h2>Penilaian Anda<br>sudah tersimpan!</h2>
+      <button class="btn">OK</button>
+    </form>
+  </dialog>
+  <!-- Desktop 1793: konfirmasi submit ke Chairman -->
+  <dialog id="confirmDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></span>
+      <h2>Anda yakin untuk submit<br>sintesis rating ini?</h2>
+      <p class="muted">Anda tidak dapat merubah rating saat proses approval oleh Chairman</p>
+      <button value="yes" class="btn">Submit</button>
+      <button value="no" class="btn-outline">Tidak, Saya Ingin Cek Kembali</button>
+    </form>
+  </dialog>
+  <!-- Desktop 1794: terkirim -->
+  <dialog id="sentDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:check-rounded"></i></span>
+      <h2>Sintesis rating sudah terkirim<br>ke Chairman!</h2>
+      <p class="muted">Anda dapat kembali ke<br>menu pemilihan kelompok</p>
+      <button class="btn">Kembali ke Pemilihan Kelompok</button>
+    </form>
+  </dialog>
+  <!-- Desktop 1797: List Evaluee -->
+  <dialog id="listDlg" class="rk-list-dlg">
+    <div class="rk-list-head"><h2>List Evaluee</h2><button type="button" class="icon-btn" id="listClose" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="listSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+    <div class="rk-table-wrap">
+      <table class="rk-table">
+        <thead><tr><th>Nama</th><th>Nomor Pekerja</th><th>Behavior Survey</th><th>Individual Goal</th><th>Rating Development</th><th>Rating Reward</th></tr></thead>
+        <tbody id="listRows"></tbody>
+      </table>
+    </div>
+  </dialog>
+  <!-- Desktop 1642: pesan Chairman saat Tidak Disetujui -->
+  <dialog id="msgDlg" class="rk-msg-dlg">
+    <form method="dialog">
+      <div class="rk-msg-from"><img class="avatar" src="assets/avatar.png" alt="" width="32" height="32"><div><b id="msgName"></b><small id="msgNip"></small></div></div>
+      <p class="rk-msg" id="msgText"></p>
+      <button class="btn">OK</button>
+    </form>
+  </dialog>
+
+  <!-- Chairman: Setuju (1670–1671) / Tidak Setuju (1672–1675) -->
+  <dialog id="pjConfirmDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></span>
+      <h2 id="pjConfirmTitle"></h2>
+      <p class="muted" id="pjConfirmText"></p>
+      <button value="yes" id="pjYes"></button>
+      <button value="no" id="pjNo"></button>
+    </form>
+  </dialog>
+  <dialog id="pjReasonDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:chat-rounded"></i></span>
+      <h2>Berikan alasan Anda</h2>
+      <textarea id="pjReason" maxlength="200" rows="2" placeholder="Isi alasan Anda (opsional)" aria-label="Alasan"></textarea>
+      <small class="pj-count" id="pjCount">0/200</small>
+      <button value="send" class="btn-outline danger"><i data-icon="material-symbols:send-rounded"></i>Kirim</button>
+      <button value="back" class="btn">Kembali</button>
+    </form>
+  </dialog>
+  <dialog id="pjDoneDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:check-rounded"></i></span>
+      <h2 id="pjDoneTitle"></h2>
+      <p class="muted">Silakan untuk melanjutkan persetujuan<br>Evaluator lainnya</p>
+      <button class="btn">OK</button>
+    </form>
+  </dialog>
 
   <script src="icons.js"></script>
   <script src="profile.js"></script>
   <script src="review.js"></script>
   <script src="app.js"></script>
+  <script src="rekap.js"></script>
+  <script src="persetujuan.js"></script>
   <script src="dropdown.js"></script>
 </body>
 </html>

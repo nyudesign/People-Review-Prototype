@@ -67,7 +67,7 @@ if (APPROVE) {
     ['tabler:award-filled', 'Approve Individual Goal Setting', null, 'done'],
     ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', null, 'current'],
     ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
-    ['ri:survey-fill', 'Behaviour Survey', null, 'disabled'],
+    ['ri:survey-fill', 'Behaviour Survey', '../Behavior%20Survey/index.html'],
     ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],
   ].map(([ic, label, href, cls]) => `<li${cls ? ` class="${cls}"` : ''}>${href ? `<a href="${href}">${icon(ic)}${label}</a>` : `${icon(ic)}${label}`}</li>`).join('');
   // Judul tanpa dropdown (Evaluator tidak punya tampilan Penilaian 360 di sini).
@@ -177,17 +177,24 @@ function renderPilih() {
   $('#pilihFoot').hidden = done;
   $('#pilihDoneFoot').hidden = !done;
   $('#pilihDoneText').textContent = state.approval === 'approved' ? 'Pilihan Anda sudah disetujui oleh Evaluator' : 'Pilihan Anda sedang dilakukan proses approval dari Evaluator';
+  // Evaluator sebelum Evaluee submit pertama kali: halaman nonaktif, hanya pesan menunggu.
+  const waiting = APPROVE && !state.submitted && !state.approval;
   if (APPROVE) {
     // Setuju/Tidak Setuju baru bisa setelah Evaluee submit; Ubah Persetujuan nonaktif selama menunggu revisi Evaluee.
     ['#lihatBtn', '#tolakBtn', '#setujuBtn'].forEach((s) => { $(s).hidden = !!state.approval; });
     $('#tolakBtn').disabled = $('#setujuBtn').disabled = !state.submitted;
+    $('#lihatBtn').disabled = $('#pilihSearch').disabled = waiting;
     $('#ubahBtn').hidden = !state.approval;
     $('#ubahBtn').disabled = state.approval === 'revision';
+    if (waiting) {
+      $('#pilihEmpty h2').textContent = 'Evaluee Belum Submit Penilai 360';
+      $('#pilihEmpty p').textContent = 'Halaman ini bisa digunakan setelah Evaluee melakukan submit pemilihan Penilai 360';
+    }
   }
   // Evaluee sebelum mencari: empty state "Cari Penilai Anda dengan Tepat"; sesudah submit: daftar pilihan (read-only).
-  // Evaluator: selalu daftar semua pekerja dengan Terpilih/Pilih (Figma Desktop 1476).
-  $('#pilihEmpty').hidden = APPROVE || done || !!q;
-  $('#pilihTableWrap').hidden = !APPROVE && !done && !q;
+  // Evaluator: selalu daftar semua pekerja dengan Terpilih/Pilih (Figma Desktop 1476), kecuali saat waiting.
+  $('#pilihEmpty').hidden = (APPROVE && !waiting) || done || !!q;
+  $('#pilihTableWrap').hidden = waiting || (!APPROVE && !done && !q);
   if (done) {
     $('#pilihTable').innerHTML = pickedTable(state.picks.filter((p) => match(person(p.id), q)));
   } else if (APPROVE || q) {

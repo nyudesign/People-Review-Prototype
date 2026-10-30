@@ -6,6 +6,7 @@
   const USERS = {
     heru: { name: 'Heru Kautsar', nip: '19050193', photo: 'avatar.png', title: 'Sr Analyst II Performance &amp; Competency Mgt' },
     oka: { name: 'Oka Fitrio', nip: '1905416', photo: 'avatar-oka.png', title: 'Manager Performance &amp; Competency Mgt' },
+    aryo: { name: 'Aryomekka Firdaus', nip: '777777', photo: 'avatar.png', title: 'VP Talent Development &amp; Recruitment' },
   };
   // Belum login → mulai dari halaman login. Storage diblokir → biarkan masuk sebagai Heru.
   let id = 'heru';

@@ -40,31 +40,34 @@
 
     <!-- Figma "Sintesis Evaluator Final" Desktop 1822/1823: ringkasan read-only + feedback -->
     <section class="board-wrap sx" id="formView" hidden>
-      <!-- Figma terbaru: semua akordion tertutup saat halaman dibuka -->
-      <div class="sx-left">
-        <details class="sx-acc">
-          <summary>Indeks Behavior Survey<span class="big">100<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
-          <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata Skor</th></tr></thead><tbody id="besRows"></tbody></table>
-        </details>
-        <details class="sx-acc">
-          <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
-          <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
-        </details>
-        <details class="sx-acc">
-          <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
-          <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
-        </details>
-        <details class="sx-acc">
-          <summary>Individual Goal<span class="big">100<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
-          <table class="sx-table">
-            <thead><tr><th>Jenis</th><th>Sasaran Kerja</th><th>Realisasi</th><th>Evidence</th></tr></thead>
-            <tbody id="goalRows"></tbody>
-          </table>
-        </details>
-        <details class="sx-acc">
-          <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
-          <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
-        </details>
+      <!-- Figma terbaru (1823): judul "Realisasi", urutan IBS → Kekuatan → Individual Goal → Butuh Pengembangan → Rating; semua akordion tertutup saat dibuka -->
+      <div class="sx-col">
+        <h2>Realisasi</h2>
+        <div class="sx-left">
+          <details class="sx-acc">
+            <summary>Indeks Behaviour Survey (IBS)<span class="big">95<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata</th><th>Bobot</th><th>Rata-rata x Bobot</th></tr></thead><tbody id="besRows"></tbody></table>
+          </details>
+          <details class="sx-acc">
+            <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
+          </details>
+          <details class="sx-acc">
+            <summary>Individual Goal<span class="big"><span id="goalTotal">110</span><small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table">
+              <thead><tr><th>Jenis</th><th>Weighted Performance</th><th>Evidence</th></tr></thead>
+              <tbody id="goalRows"></tbody>
+            </table>
+          </details>
+          <details class="sx-acc">
+            <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
+          </details>
+          <details class="sx-acc">
+            <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
+          </details>
+        </div>
       </div>
       <label class="sx-right">
         <h2>Feedback</h2>

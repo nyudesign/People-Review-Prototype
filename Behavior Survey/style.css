@@ -1,0 +1,9 @@
+/* Halaman pilihan Behavior Survey Evaluator (Figma Desktop 400 / 1831); sisanya dari ../Nominate 360/style.css */
+.choice { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 40px; }
+.choice-card { position: relative; flex: 0 1 532px; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); text-align: center; text-decoration: none; }
+.choice-card:hover, .choice-card:focus-visible { border-color: var(--primary); outline: none; }
+.choice-card[aria-pressed="true"] { background: #eef5fa; border-color: var(--primary); }
+.choice-card img { height: 120px; width: auto; margin-bottom: 16px; }
+.choice-card h2 { font-size: clamp(16px, 1.5vw, 24px); color: #060f13; }
+.choice-card p { margin: 0; color: var(--ink-2); }
+.grid .pill { padding: 4px 10px; border-radius: 12px; font-weight: 500; white-space: nowrap; }

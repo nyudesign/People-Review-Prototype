@@ -49,7 +49,7 @@ function initReviewUI(title, current = 'Review & Approve Realisasi Target') {
     ['tabler:award-filled', 'Approve Individual Goal Setting'],
     ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', '../Nominate%20360/index.html'],
     ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
-    ['ri:survey-fill', 'Behaviour Survey'],
+    ['ri:survey-fill', 'Behaviour Survey', '../Behavior%20Survey/index.html'],
     ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],
   ];
   const at = steps.findIndex(([, label]) => label === current);

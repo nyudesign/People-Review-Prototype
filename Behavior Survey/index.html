@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Behaviour Survey – People Review</title>
+  <!-- Shell, soal, Catatan Penilai & Konfirmasi sama dengan Penilaian Behavior Survey 360 (Nominate 360) -->
+  <link rel="stylesheet" href="../Nominate%20360/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="../Nominate%20360/assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs"></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Alur Evaluator <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper"></ol>
+
+    <!-- 1. Pilihan (Figma Redesign-Evaluator Desktop 400, hover Desktop 1831) -->
+    <div id="viewHome" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><h1>Behavior Survey</h1></div>
+        <div class="sr-body choice">
+          <img class="wave wave-left" src="../Nominate%20360/assets/wave-left.svg" alt="">
+          <img class="wave wave-right" src="../Nominate%20360/assets/wave-right.svg" alt="">
+          <!-- Pilih kartu dulu, lalu Selanjutnya membuka tujuan kartu itu (data-href) -->
+          <button type="button" class="choice-card" id="startCard" data-href="#soal-1" aria-pressed="false">
+            <img src="assets/survey-evaluator.svg" alt="" width="190" height="120">
+            <h2>Mulai Penilaian Behavior Survey</h2>
+            <p>Klik ini jika Anda ingin menilai Behavior Survey<br>sebagai Evaluator</p>
+          </button>
+          <button type="button" class="choice-card" data-href="#penilai-360" aria-pressed="false">
+            <img src="assets/survey-360.svg" alt="" width="146" height="120">
+            <h2>Lihat Penilaian dari Penilai 360</h2>
+            <p>Lihat hasil Behavior Survey<br>dari Penilai 360</p>
+          </button>
+        </div>
+      </section>
+      <div class="footer-bar">
+        <button type="button" class="btn" id="homeNext" disabled title="Pilih salah satu terlebih dahulu">Selanjutnya <i data-icon="tabler:arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- 2. Hasil Penilai 360 (belum ada desain Figma; tabel mengikuti Penilaian 360 di Nominate 360) -->
+    <div id="view360" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><h1>Penilaian dari Penilai 360</h1><small class="ratee-info"></small></div>
+        <div class="sr-body table-body"><table class="grid" id="raterTable"></table></div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" href="#"><i data-icon="tabler:arrow-left"></i>Kembali ke Behavior Survey</a>
+      </div>
+    </div>
+
+    <!-- 3. Soal (Figma Desktop 1832–1837) -->
+    <div id="viewSoal" hidden>
+      <div class="survey">
+        <section class="board-wrap">
+          <div class="board-head"><h1>Penilaian Behavior Survey</h1><small class="ratee-info"></small></div>
+          <div class="sr-body question">
+            <img class="wave wave-right" src="../Nominate%20360/assets/wave-right.svg" alt="">
+            <div class="q-inner">
+              <p class="q-meta"><span class="chip" id="qPrinciple"></span><span><b>Definisi:</b> <span id="qDef"></span></span></p>
+              <h2 id="qText"></h2>
+              <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+            </div>
+          </div>
+        </section>
+        <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
+          <p class="nav-title">Behavior Survey</p>
+          <p class="nav-count"><span>Survey Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+          <div class="progress"><i id="navBar"></i></div>
+          <div class="nav-grid" id="navGrid"></div>
+        </aside>
+      </div>
+      <div class="footer-bar split" id="qFoot"></div>
+    </div>
+
+    <!-- 4. Catatan Penilai (Figma Desktop 1838 / 1839) -->
+    <div id="viewCatatan" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><h1>Penilaian Behavior Survey</h1><small class="ratee-info"></small><small class="head-note">Catatan Penilai</small></div>
+        <div class="sr-body notes">
+          <label for="noteKeep">Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteKeep" placeholder="Isi pendapat Anda"></textarea>
+          <label for="noteChange">Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata. (Opsional)</label>
+          <textarea id="noteChange" placeholder="Isi pendapat Anda"></textarea>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" id="ctBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian Behavior Survey</a>
+        <a class="btn" href="#konfirmasi">Selanjutnya <i data-icon="tabler:arrow-right"></i></a>
+      </div>
+    </div>
+
+    <!-- 5. Konfirmasi (Figma Desktop 1840); juga dipakai read-only untuk hasil tiap Penilai 360 -->
+    <div id="viewKonfirmasi" hidden>
+      <section class="board-wrap">
+        <div class="board-head"><h1 id="kfTitle">Konfirmasi Penilaian</h1><small class="ratee-info"></small></div>
+        <div class="sr-body confirm-grid">
+          <ol class="answers" id="answerList"></ol>
+          <div class="notes-box"><h2 class="label">Catatan Penilai</h2>
+            <p>Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata.</p><div class="note-view" id="viewKeep"></div>
+            <p>Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata.</p><div class="note-view" id="viewChange"></div>
+            <div class="result" id="resultBox" hidden>
+              <p><span>Kekuatan Utama</span><b class="pill ok" id="viewTop"></b></p>
+              <p><span>Perlu Pengembangan</span><b class="pill dev" id="viewLow"></b></p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="footer-bar split">
+        <a class="btn-outline" id="kfBack"><i data-icon="tabler:arrow-left"></i><span></span></a>
+        <span class="foot-actions" id="kfActions"></span>
+      </div>
+    </div>
+  </main>
+
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda ingin mengirimkan hasil survey Anda?</h2>
+      <p class="muted">Penilaian ini akan dikirimkan sebagai Behavior Survey Evaluator untuk Heru Kautsar.</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+
+  <dialog id="successDialog" class="confirm">
+    <form method="dialog">
+      <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2>Survey Anda sudah tersubmit</h2>
+      <p class="muted">Silakan untuk melanjutkan ke Sintesis Evaluator Final</p>
+      <button value="go" class="btn">Menuju Sintesis Evaluator Final</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini dan lihat hasil penilaian</button>
+    </form>
+  </dialog>
+
+  <script src="../Nominate%20360/icons.js"></script>
+  <script src="../behavior-survey.js"></script>
+  <script src="../review.js"></script>
+  <script src="app.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>

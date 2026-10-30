@@ -210,10 +210,11 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 
 /* PWTT → Evaluator — Pilih Evaluee (Figma "Desktop - 535", diskalakan ~0.75) */
 .ev-tabs { display: flex; flex-wrap: wrap; padding: 14px 24px; border-bottom: 1px solid var(--line); }
-.ev-tab { padding: 8px 16px; background: #fff; border: 1px solid var(--line); font-size: clamp(13px, 1vw, 16px); color: var(--ink); }
+.ev-tab { padding: 8px 16px; background: #fff; border: 1px solid var(--line); font-size: clamp(13px, 1vw, 16px); color: var(--ink); text-decoration: none; white-space: nowrap; }
 .ev-tab:first-child { border-radius: 8px 0 0 8px; }
 .ev-tab:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
-.ev-tab[aria-selected="true"] { background: #cde6fe; border-color: #b2d3e6; color: #02638f; font-weight: 500; }
+.ev-tab[aria-current="page"] { background: #cde6fe; border-color: #b2d3e6; color: #02638f; font-weight: 500; }
+.ev-tab:not([aria-current]):hover { background: #f1f8fc; }
 .ev-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; padding: 16px 24px 20px; }
 .ev-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .ev-top h2 { font-size: clamp(16px, 1.25vw, 20px); }
@@ -237,8 +238,6 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .pg:hover:not(:disabled):not([aria-current]) { background: var(--panel); }
 .pg[aria-current="page"] { background: var(--primary); color: var(--panel); }
 .pg-gap { width: 32px; text-align: center; color: #060f13; font-weight: 500; }
-.pager.off .pg { cursor: default; }
-.pager.off .pg[aria-current="page"] { background: #a7b6cc; }
 .pg-prev { transform: rotate(90deg); }
 .pg-next { transform: rotate(-90deg); }
 
