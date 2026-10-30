@@ -144,6 +144,8 @@ function openRel(anchor, id) {
   relFor = id;
   const cur = state.picks.find((p) => p.id === id)?.rel;
   $('#relOptions').innerHTML = REL.map((r) => `<button type="button" data-rel="${esc(r)}"${r === cur ? ' aria-pressed="true"' : ''}>${esc(r)}</button>`).join('');
+  // Di luar dialog modal semua elemen inert (tak bisa diklik), jadi popover ikut masuk ke dialog pemicunya.
+  (anchor.closest('dialog') || document.body).append($('#relPop'));
   $('#relPop').showPopover();
   place($('#relPop'), anchor, true);
 }
@@ -204,7 +206,7 @@ function renderPilih() {
     $('#pilihTable').innerHTML = th([...BASE_COLS, 'Aksi']) + `<tbody>${rows.map((c) => {
       const picked = state.picks.some((p) => p.id === c.id);
       return `<tr${picked ? ' class="picked"' : ''}>${baseCells(c)}<td>${picked
-        ? `<button type="button" class="btn-dark" data-picked="${c.id}">${icon('material-symbols:check-rounded')}Terpilih</button>`
+        ? `<button type="button" class="btn-dark unpick" data-picked="${c.id}"${locked() ? ' disabled' : ''} aria-label="Hapus ${esc(c.name)}"><span class="on">${icon('material-symbols:check-rounded')}Terpilih</span><span class="off">${icon('material-symbols:close-rounded')}Hapus</span></button>`
         : `<button type="button" class="btn-outline" data-pick="${c.id}"${locked() ? ' disabled' : ''}>${icon('akar-icons:plus')}Pilih</button>`}</td></tr>`;
     }).join('') || '<tr><td colspan="6" class="none">Pekerja tidak ditemukan</td></tr>'}</tbody>`;
   }
@@ -214,13 +216,18 @@ function renderPilih() {
   syncStep();
 }
 $('#pilihSearch').addEventListener('input', renderPilih);
-$('#pilihTable').addEventListener('click', (e) => {
+$('#pilihTable').addEventListener('click', async (e) => {
   const pick = e.target.closest('[data-pick]');
   if (pick) {
     if (state.picks.length >= MAX_PICK) return infoBox('Nominee 360 sudah maksimal', `Penilai 360 maksimal ${MAX_PICK} pekerja. Hapus pekerja lain di "Lihat Pilihan 360 Saya" untuk mengganti.`);
     return openRel(pick, pick.dataset.pick);
   }
-  if (e.target.closest('[data-picked]')) openPicks();
+  const unpick = e.target.closest('[data-picked]');
+  if (!unpick || locked()) return;
+  if (!await confirmBox('Apakah Anda ingin menghapus pekerja yang sudah terpilih?', 'Penghapusan ini akan menghilangkan pekerja dalam list terpilih penilaian 360', true)) return;
+  state.picks = state.picks.filter((p) => p.id !== unpick.dataset.picked);
+  persist();
+  renderPilih();
 });
 const incomplete = () => infoBox('Nominee 360 Anda belum lengkap', `Pastikan nominee 360 Anda terpenuhi dengan min. ${MIN_PICK} Pekerja (maks. ${MAX_PICK}) terdiri dari 1 Fungsi yang sama, 1 Direktorat yang sama, 1 Direktorat lain, dan 1 Entitas yang berbeda`);
 $('#pilihSubmit').addEventListener('click', () => (validPicks(state.picks) ? openKonfPilih() : incomplete()));

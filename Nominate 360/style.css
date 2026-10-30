@@ -224,6 +224,13 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .grid td a.btn-outline { min-width: 140px; }
 .grid td.none, .none { color: var(--muted); padding: 32px 12px; text-align: center; }
 .btn-dark { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: var(--ribbon); color: #fff; border: 1px solid var(--ribbon); border-radius: 6px; font-weight: 500; }
+/* Terpilih saat di-hover jadi Hapus (sama seperti Settings Evaluator). */
+.unpick { transition: background-color .2s ease-in, border-color .2s ease-in; }
+.unpick > span { display: none; align-items: center; gap: 6px; animation: pick-fade .2s ease-in; }
+@keyframes pick-fade { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .unpick, .unpick > span { transition: none; animation: none; } }
+.unpick:is(:disabled, :not(:hover, :focus-visible)) .on, .unpick:not(:disabled):is(:hover, :focus-visible) .off { display: inline-flex; }
+.unpick:not(:disabled):is(:hover, :focus-visible) { background: var(--danger); border-color: var(--danger); }
 
 /* Footer: jumlah penilai per hubungan kerja */
 .counts { display: flex; gap: clamp(16px, 2vw, 32px); flex-wrap: wrap; }

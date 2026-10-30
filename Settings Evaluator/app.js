@@ -171,9 +171,8 @@ $('#confirmDialog').addEventListener('close', (e) => {
   render();
   open($('#successDialog'));
 });
-// Individual Goal Setting belum punya halaman di prototype (sama dengan langkahnya di Beranda).
 $('#successDialog').addEventListener('close', (e) => {
-  if (e.target.returnValue === 'go') alert('Halaman ini belum tersedia di prototype.');
+  if (e.target.returnValue === 'go') location.href = '../Individual%20Goal%20Setting/index.html';
 });
 
 render();

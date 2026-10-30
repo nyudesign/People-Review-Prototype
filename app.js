@@ -4,7 +4,7 @@
 const IG = './Individual%20Goal/index.html';
 const steps = [
   { label: 'Settings Evaluator', icon: 'material-symbols-light:frame-person-rounded', href: './Settings%20Evaluator/index.html' },
-  { label: 'Individual Goal Setting', icon: 'tabler:award-filled' },
+  { label: 'Individual Goal Setting', icon: 'tabler:award-filled', href: './Individual%20Goal%20Setting/index.html' },
   { label: 'CSB', icon: 'tabler:award-filled', hidden: true }, // disembunyikan atas permintaan
   { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid', href: './Nominate%20360/index.html' },
   { label: 'Realisasi Target', icon: 'mingcute:target-fill', href: IG },

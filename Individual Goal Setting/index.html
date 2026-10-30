@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Individual Goal Setting – People Review</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../dropdown.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Alur Evaluee <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="done"><a href="../Settings%20Evaluator/index.html"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
+      <li class="current" id="igsStep"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
+      <li><a href="../Nominate%20360/index.html"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360</a></li>
+      <li><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target</a></li>
+      <li><a href="../Self%20Review/index.html"><i data-icon="material-symbols:person-rounded"></i>Self Review</a></li>
+      <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
+    </ol>
+
+    <!-- Board Sasaran Kerja (Figma section "KPI-Cascading" Desktop 1418/1427, "Project Control" Desktop 1420) -->
+    <section class="board-wrap" id="boardView">
+      <div class="board-head">
+        <h1>Sasaran Kerja</h1>
+        <button type="button" class="btn-outline add-btn" id="addGoal"><i data-icon="akar-icons:plus"></i>Tambah</button>
+        <span class="spacer"></span>
+        <span class="chip chip-blue chip-icon">KPI Non-Budget Holder <button type="button" class="info-btn" data-tip="nbh" aria-label="Info KPI Non-Budget Holder"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
+        <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="search" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari sasaran kerja"></label>
+        <div class="filter-wrap" id="boardFilter"></div>
+      </div>
+      <div class="board" id="board"></div>
+    </section>
+    <div class="footer-bar" id="boardFooter"><button type="button" class="btn" id="next">Selanjutnya <i data-icon="tabler:arrow-right"></i></button></div>
+
+    <!-- Proses Project Control (Figma Desktop 1421: kolom per periode target) -->
+    <section class="board-wrap" id="processView" hidden>
+      <div class="board-head">
+        <button type="button" class="back icon-btn" id="pBack" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></button>
+        <h1 id="pTitle"></h1>
+        <button type="button" class="btn-outline add-btn" id="addProcess"><i data-icon="akar-icons:plus"></i>Tambah</button>
+        <span class="spacer"></span>
+        <span id="pAvatars" class="avatars"></span>
+        <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="pSearch" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari proses"></label>
+      </div>
+      <div class="board" id="pBoard"></div>
+    </section>
+  </main>
+
+  <template id="filterTpl">
+    <button type="button" class="btn-outline filter-btn" aria-expanded="false"><i data-icon="ion:filter"></i><span>Filter</span></button>
+    <div class="filter-pop" hidden>
+      <h2>Filter</h2>
+      <div class="filter-tabs"></div>
+      <div class="filter-search"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" placeholder="Ketik di sini untuk mencari" aria-label="Cari pilihan filter"></label></div>
+      <ul class="filter-list"></ul>
+      <div class="filter-foot">
+        <button type="button" class="link-danger" data-clear>Hapus Semua Pilihan</button>
+        <button type="button" class="btn" data-apply>Terapkan</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Buat Sasaran Kerja/Proyek (Figma Desktop 1259–1267, 1244–1255) -->
+  <dialog id="goalDialog" class="form-dlg">
+    <div class="dlg-head"><h2 id="goalTitle">Buat Sasaran Kerja</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <form id="goalForm" class="dlg-body" novalidate>
+      <label class="field">Nama Sasaran Kerja<input name="name" placeholder="Isi nama sasaran kerja Anda" required></label>
+      <label class="field">Deskripsi<textarea name="desc" rows="3" placeholder="Deskripsikan sasaran kerja Anda"></textarea></label>
+      <div class="row row-3">
+        <div class="field"><span class="with-ico">Tipe <button type="button" class="info-btn" data-tip="type" aria-label="Info Tipe"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
+          <select name="type" aria-label="Tipe" required><option value="">Pilih tipe sasaran kerja</option><option>Cascading KPI</option><option>Project Control</option><option>Extramiles</option></select></div>
+        <div class="field"><span class="with-ico">Polaritas <button type="button" class="info-btn" data-tip="polarity" aria-label="Info Polaritas"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
+          <select name="polarity" aria-label="Polaritas" required><option value="">Pilih MAX/MIN</option><option>MAX</option><option>MIN</option></select></div>
+        <div class="field"><span class="with-ico">Jenis KPI (KPI Library) <button type="button" class="info-btn" data-tip="library" aria-label="Info Jenis KPI"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
+          <select name="library" aria-label="Jenis KPI (KPI Library)" id="librarySelect"><option value="">Pilih sasaran kerja Anda yang berkaitan</option></select></div>
+      </div>
+      <div class="row">
+        <div class="field">Periode Monitor Target
+          <select name="periodType" aria-label="Periode Monitor Target" required><option value="">Pilih periode target</option><option>Bulanan</option><option>Triwulan</option><option>Semester</option></select></div>
+        <div class="field">Satuan Target
+          <select name="unit" aria-label="Satuan Target" required><option value="">Pilih satuan target</option><option>%</option><option>Learning Hour</option><option>MMBOPD</option><option>Rp</option></select></div>
+      </div>
+      <div class="field">Target per Periode
+        <div id="gPeriods" class="target-rows"></div>
+        <button type="button" class="add-row" id="gAddPeriod"><i data-icon="akar-icons:plus"></i>Tambah Periode Target</button>
+      </div>
+      <div class="field">Bobot (%)
+        <div class="weight">
+          <input type="range" name="weight" min="0" max="80" step="5" value="0" aria-label="Bobot (%)">
+          <button type="button" class="icon-btn" data-step="-5" aria-label="Kurangi bobot"><i data-icon="akar-icons:minus"></i></button>
+          <output id="weightOut">0%</output>
+          <button type="button" class="icon-btn" data-step="5" aria-label="Tambah bobot"><i data-icon="akar-icons:plus"></i></button>
+        </div>
+        <small class="muted" id="weightHint"></small>
+      </div>
+
+      <fieldset id="teamSet">
+        <h3>Daftar Kelompok Proyek</h3>
+        <div class="field">Nama Ketua/Penanggung Jawab<div class="picker" id="leaderPicker"></div></div>
+        <div class="field">Nama Anggota<div class="picker" id="memberPicker"></div></div>
+        <div class="field">Dokumen (Nota Dinas, Penugasan, atau sejenisnya)
+          <div id="drop" class="drop">
+            <input id="fileInput" type="file" accept=".pdf,.jpg,.jpeg" hidden>
+            <div id="dropEmpty">
+              <img src="assets/upload-illustration.svg" alt="" width="66" height="64">
+              <p class="link small">Tarik dan lepaskan file yang Anda ingin unggah<br>(.pdf/.jpg max. 2MB)</p>
+              <p class="muted small">atau</p>
+              <button type="button" id="pickFile" class="btn">Pilih File</button>
+            </div>
+            <div id="dropFile" hidden>
+              <div class="file-ico"><i data-icon="line-md:file-twotone"></i></div>
+              <p id="fileName" class="link small"></p>
+              <p id="fileSize" class="muted small"></p>
+              <div class="file-actions">
+                <button type="button" id="viewFile" class="btn-outline"><i data-icon="mdi:eye"></i>Lihat File</button>
+                <button type="button" id="changeFile" class="btn-outline"><i data-icon="iconamoon:swap-bold"></i>Ubah File</button>
+                <button type="button" id="removeFile" class="btn-outline danger"><i data-icon="mdi:trash"></i>Hapus File</button>
+              </div>
+            </div>
+          </div>
+          <p id="fileError" class="error" hidden></p>
+        </div>
+      </fieldset>
+      <p id="goalError" class="error" hidden></p>
+    </form>
+    <div class="dlg-actions"><button type="submit" form="goalForm" class="btn" id="goalSubmit">Buat Sasaran Kerja</button></div>
+  </dialog>
+
+  <!-- Buat Proses (Figma Desktop 1223–1226) -->
+  <dialog id="processDialog" class="form-dlg">
+    <div class="dlg-head"><h2>Buat Proses</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <form id="processForm" class="dlg-body" novalidate>
+      <label class="field">Nama Proses<input name="name" placeholder="Isi nama proses" required></label>
+      <label class="field">Deskripsi<textarea name="desc" rows="3" placeholder="Deskripsikan proses Anda"></textarea></label>
+      <div class="field">Penugasan Anggota Tim<div class="picker" id="assignPicker"></div></div>
+      <div class="field">Satuan Target
+        <select name="unit" aria-label="Satuan Target" required><option value="">Pilih satuan target</option><option>%</option><option>Learning Hour</option><option>MMBOPD</option><option>Rp</option></select></div>
+      <div class="field">Target per Periode
+        <div id="prPeriods" class="target-rows"></div>
+        <button type="button" class="add-row" id="prAddPeriod"><i data-icon="akar-icons:plus"></i>Tambah Periode Target</button>
+      </div>
+      <p id="processError" class="error" hidden></p>
+    </form>
+    <div class="dlg-actions"><button type="submit" form="processForm" class="btn">Buat Sasaran Kerja</button></div>
+  </dialog>
+
+  <dialog id="deleteDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2 id="deleteTitle">Apakah Anda yakin ingin menghapus?</h2>
+      <p class="muted">Data yang dihapus tidak dapat dikembalikan</p>
+      <button value="yes" class="btn-outline danger">Hapus</button>
+      <button value="no" class="btn">Batal</button>
+    </form>
+  </dialog>
+
+  <div id="tip" class="tip" role="tooltip" hidden>
+    <p id="tipText"></p>
+    <button type="button" class="x" id="tipClose" aria-label="Tutup info"><i data-icon="material-symbols:close-rounded"></i></button>
+  </div>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+  <script src="../dropdown.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>
