@@ -156,18 +156,20 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .person-card { display: flex; flex-direction: column; gap: 20px; align-self: start; }
 .wide { width: 100%; padding: 12px; }
 
-.home-right { display: flex; flex-direction: column; gap: 12px; min-height: 0; overflow-y: auto; padding-right: 4px; }
+.home-right { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; }
 .home-right h2 { font-size: clamp(14px, 1.125vw, 18px); margin-top: 6px; }
-.ic { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; padding: 6px 0; color: var(--ink); text-decoration: none; border-radius: 8px; }
+/* Isi sisa tinggi supaya Project Progress sejajar dengan bawah panel Data Diri Anda. */
+#icList { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.ic { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 12px; padding: 4px 0; color: var(--ink); text-decoration: none; border-radius: 8px; }
 .ic .ic-name { grid-column: 1; }
 .ic > .ico { grid-column: 2; grid-row: 1 / 3; font-size: clamp(16px, 1.25vw, 20px); transition: transform .15s; }
 .ic:hover .ic-name { color: var(--primary); }
 .ic:hover > .ico { transform: translateX(3px); color: var(--primary); }
 .ic small { font-size: clamp(11px, 0.75vw, 12px); }
-.ic-bar { grid-column: 1 / -1; height: 10px; margin-top: 10px; background: var(--panel); border-radius: 5px; overflow: hidden; }
+.ic-bar { grid-column: 1 / -1; height: 8px; margin-top: 6px; background: var(--panel); border-radius: 5px; overflow: hidden; }
 .ic-bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #1f6fa8, #1d9be0); }
-.proj { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.stat { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 18px 20px; background: url(assets/dots.svg) no-repeat right bottom, var(--bg); border: 1px solid var(--line); border-radius: 20px; color: var(--ink-2); }
+.proj { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat { position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 20px; background: url(assets/dots.svg) no-repeat right bottom, var(--bg); border: 1px solid var(--line); border-radius: 20px; color: var(--ink-2); }
 .stat.wide { grid-column: 1 / -1; }
 .stat > .ico { position: absolute; left: -10px; top: -16px; font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); opacity: .2; }
 .stat b { font-size: clamp(19px, 1.5vw, 24px); color: var(--ink); }

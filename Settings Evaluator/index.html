@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings Evaluator – People Review</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Alur Evaluee <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="current" id="evStep"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
+      <li><i data-icon="tabler:award-filled"></i>Individual Goal Setting</li>
+      <li><a href="../Nominate%20360/index.html"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360</a></li>
+      <li><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target</a></li>
+      <li><a href="../Self%20Review/index.html"><i data-icon="material-symbols:person-rounded"></i>Self Review</a></li>
+      <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
+    </ol>
+
+    <!-- Pemilihan Evaluator (Figma section "Settings Evaluator": Desktop 689/710 awal, 691 cari, 696 filter, 693/692 terpilih, 728/726 hapus) -->
+    <div>
+      <section class="board-wrap">
+        <div class="board-head">
+          <div><h1>Pemilihan Evaluator</h1><small>Pilih salah satu Evaluator sesuai dengan Jabatan Anda</small></div>
+          <span class="spacer"></span>
+          <label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="evSearch" placeholder="Cari Nopek/Nama Evaluator" aria-label="Cari Nopek/Nama Evaluator"></label>
+          <div class="filter-wrap" id="evFilter"></div>
+        </div>
+        <div class="ev-grid" id="evList"></div>
+      </section>
+      <div class="footer-bar split">
+        <nav class="pager" id="evPager" aria-label="Halaman"></nav>
+        <span class="spacer"></span>
+        <button type="button" class="btn" id="evSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+      </div>
+    </div>
+  </main>
+
+  <template id="filterTpl">
+    <button type="button" class="btn-outline filter-btn" aria-expanded="false"><i data-icon="ion:filter"></i><span>Filter</span></button>
+    <div class="filter-pop" hidden>
+      <h2>Filter</h2>
+      <div class="filter-tabs"></div>
+      <div class="filter-search"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input type="search" placeholder="Ketik di sini untuk mencari" aria-label="Cari pilihan filter"></label></div>
+      <ul class="filter-list"></ul>
+      <div class="filter-foot">
+        <button type="button" class="link-danger" data-clear>Hapus Semua Pilihan</button>
+        <button type="button" class="btn" data-apply>Terapkan</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Konfirmasi Submit (Figma Desktop 731) -->
+  <dialog id="confirmDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda yakin pilihan Evaluator Anda?</h2>
+      <p class="muted">Periksa kembali pilihan tersebut sudah sesuai dengan jabatan Anda</p>
+      <button value="yes" class="btn">Submit</button>
+      <button value="no" class="btn-outline">Tidak, Saya Ingin Cek Kembali</button>
+    </form>
+  </dialog>
+
+  <!-- Sukses (Figma Desktop 732) -->
+  <dialog id="successDialog" class="confirm">
+    <form method="dialog">
+      <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2>Pilihan Evaluator Anda sudah tersubmit!</h2>
+      <p class="muted">Silakan untuk lanjut mengisi data Individual Goal</p>
+      <button value="go" class="btn">Lanjut ke Individual Goal Setting</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>

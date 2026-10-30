@@ -20,12 +20,12 @@ const CANDIDATES = [
   ['Bagus Pratama', '752581', 'Sr Officer Supply Chain', 'Shared Services Procurement', 'Logistic Infrastructure', 'PT Pertamina Patra Niaga'],
   ['Dewi Lestari', '752582', 'Analyst II Culture & Change', 'Culture & Change Management', 'Human Capital', 'PT Kilang Pertamina Internasional'],
 ].map(([name, nopek, title, dept, dir, company]) => ({ id: nopek, name, nopek, title, dept, dir, company }));
-// Pekerja yang memilih Anda sebagai Penilai 360 (Figma Desktop 1363).
+// Pekerja yang memilih Anda sebagai Penilai 360 — sama dengan tab "Penilaian BeS 360" di Beranda (besTargets di ../app.js).
+// done = status awal (Beranda: Completed); Beranda membaca status terkini dari penyimpanan halaman ini.
 const RATEES = [
-  ['Ardi Muslim', '1905416', 'Sr Expert', 'Upstream Development', 'Logistic Infrastructure'],
-  ['Jamaludin', '1905417', 'Sr Expert', 'Upstream Development', 'Logistic Infrastructure'],
-  ['Arjuna Eka', '1905418', 'Sr Expert', 'Downstream Development', 'Logistic Infrastructure'],
-].map(([name, nopek, title, dept, dir]) => ({ name, nopek, title, dept, dir }));
+  ['Zahara', '1905416', 'Sr Expert', 'Upstream Development', 'Logistic Infrastructure', false],
+  ['Dani Zulfah', '1905416', 'Sr Expert', 'Upstream Development', 'Logistic Infrastructure', true],
+].map(([name, nopek, title, dept, dir, done]) => ({ name, nopek, title, dept, dir, done }));
 
 /* ---------- Penyimpanan di localStorage (per user login) ---------- */
 // shortcut: tanpa backend, pilihan & penilaian disimpan di localStorage browser ini; ganti dengan API saat ada.
@@ -36,6 +36,8 @@ const APPROVE = (() => { try { return LOGIN !== 'heru' && sessionStorage.getItem
 const STORE_KEY = `pr-nominate-${APPROVE ? 'heru' : LOGIN}`;
 const stored = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })();
 const newRating = () => ({ answers: QUESTIONS.map(() => null), notes: { keep: '', change: '' }, submitted: false });
+// shortcut: jawaban contoh untuk pekerja yang sudah dinilai sejak awal (done), ganti dengan data API saat ada.
+const doneRating = () => ({ ...newRating(), answers: QUESTIONS.map((q, i) => q.scores.indexOf(i === 2 ? 4 : i === 4 ? 1 : 3)), submitted: true });
 const validRating = (r) => Array.isArray(r?.answers) && r.answers.length === QUESTIONS.length;
 const state = {
   // hanya pilihan yang pekerjanya masih ada di daftar
@@ -43,7 +45,7 @@ const state = {
   submitted: !!stored?.submitted, // pilihan sudah dikirim ke Evaluator
   approval: ['approved', 'revision'].includes(stored?.approval) ? stored.approval : null, // keputusan Evaluator
   reason: typeof stored?.reason === 'string' ? stored.reason : '', // alasan revisi dari Evaluator
-  ratings: RATEES.map((_, i) => (validRating(stored?.ratings?.[i]) ? { ...newRating(), ...stored.ratings[i] } : newRating())),
+  ratings: RATEES.map((p, i) => (validRating(stored?.ratings?.[i]) ? { ...newRating(), ...stored.ratings[i] } : p.done ? doneRating() : newRating())),
 };
 // Pilihan terkunci: Evaluee sesudah submit, Evaluator sesudah memberi keputusan.
 const locked = () => (APPROVE ? !!state.approval : state.submitted);
@@ -315,7 +317,7 @@ function renderPenilaian() {
     const done = state.ratings[i].submitted;
     const first = state.ratings[i].answers.findIndex((a) => a === null);
     return `<tr>${baseCells(p)}
-      <td><span class="badge ${done ? 'ok' : 'waiting'}">${done ? 'Sudah Dinilai' : 'Menunggu Penilaian'}</span></td>
+      <td><span class="badge ${done ? 'ok' : 'waiting'}">${done ? 'Selesai' : 'Menunggu Penilaian'}</span></td>
       <td><a class="btn-outline" href="#nilai-${i + 1}-${done ? 'konfirmasi' : `soal-${first < 0 ? 1 : first + 1}`}">${done ? 'Lihat Penilaian' : 'Mulai Penilaian'}${icon('tabler:arrow-right')}</a></td></tr>`;
   }).join('') || '<tr><td colspan="7" class="none">Pekerja tidak ditemukan</td></tr>'}</tbody>`;
 }

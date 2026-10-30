@@ -3,7 +3,7 @@
 // Akun aktif dari profile.js (window.PR_USER).
 const IG = './Individual%20Goal/index.html';
 const steps = [
-  { label: 'Settings Evaluator', icon: 'material-symbols-light:frame-person-rounded' },
+  { label: 'Settings Evaluator', icon: 'material-symbols-light:frame-person-rounded', href: './Settings%20Evaluator/index.html' },
   { label: 'Individual Goal Setting', icon: 'tabler:award-filled' },
   { label: 'CSB', icon: 'tabler:award-filled', hidden: true }, // disembunyikan atas permintaan
   { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid', href: './Nominate%20360/index.html' },
@@ -25,10 +25,12 @@ const nominees = [
   { name: 'Fariz Nur', nip: '29231284', done: false },
   { name: 'Bakrie Muh', nip: '29231284', done: true },
 ];
+// Sama dengan RATEES di Nominate 360/app.js; status mengikuti Penilaian 360 yang tersimpan di halaman itu.
+const besSaved = (() => { try { return JSON.parse(localStorage.getItem(`pr-nominate-${window.PR_USER}`))?.ratings; } catch { return null; } })();
 const besTargets = [
   { name: 'Zahara', nip: '1905416', done: false },
   { name: 'Dani Zulfah', nip: '1905416', done: true },
-];
+].map((p, i) => ({ ...p, done: besSaved?.[i] ? !!besSaved[i].submitted : p.done }));
 const notifs = [
   { group: 'Terkini', type: 'nominate', photo: 'avatar.png', title: 'Arjuna menambahkan Anda sebagai Nominee 360', text: 'Segera lakukan penilaian agar melancarkan proses rating sintesis' },
   { group: 'Terkini', type: 'rating', title: 'Evaluator Anda telah memberikan penilaian rating sintesis', text: 'Klik notifikasi ini untuk membuka ke rating sintesis' },
@@ -90,6 +92,9 @@ const PEOPLE = {
 };
 const ME = PEOPLE[window.PR_USER] || PEOPLE.heru;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+// Evaluator yang sudah di-submit di halaman Settings Evaluator menggantikan Evaluator bawaan.
+const myEvaluator = (() => { try { return JSON.parse(localStorage.getItem(`pr-evaluator-${window.PR_USER}`)); } catch { return null; } })();
+if (myEvaluator?.submitted && myEvaluator.name) ME.evaluator = { name: esc(myEvaluator.name), nip: esc(myEvaluator.nopek), title: esc(myEvaluator.title) };
 // Notifikasi untuk Heru setelah Evaluator memutuskan Realisasi Target-nya.
 if (ME === PEOPLE.heru && ['approved', 'revision'].includes(realisasi?.status)) {
   const ok = realisasi.status === 'approved';
