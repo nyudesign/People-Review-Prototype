@@ -9,7 +9,7 @@ const GOALS = [
 ];
 const STRENGTHS = ['Komunikasi efektif dengan tim lintas fungsi', 'Analisis data kinerja yang tajam'];
 const GROWTH = ['Manajemen waktu dan prioritas proyek', 'Delegasi pekerjaan ke anggota tim'];
-const BES = [['Behavior Survey 360', '100%'], ['Behavior Survey Evaluator', '100%']];
+const BES = [['Behavior Survey 360', '4 Pekerja', '100%'], ['Behavior Survey Evaluator', '1 Pekerja', '100%']];
 const RATINGS = [['Rating Development', '7'], ['Rating Rewards', '5.5x']];
 const MAX = 200;
 

@@ -132,6 +132,13 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .survey { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(230px, 20vw, 293px); grid-template-rows: minmax(0, 1fr); gap: 16px; }
 .question { display: flex; flex-direction: column; justify-content: center; gap: clamp(16px, 1.5vw, 24px); padding: clamp(20px, 2.5vw, 48px) clamp(24px, 4vw, 64px); overflow-y: auto; }
 .question h2 { font-size: clamp(14px, 1.25vw, 20px); position: relative; }
+/* Blok soal di tengah kartu; lebar pertanyaan dibatasi supaya tidak melebar di layar lebar */
+.q-inner { display: flex; flex-direction: column; gap: clamp(16px, 1.5vw, 24px); width: min(760px, 100%); margin-inline: auto; position: relative; }
+.q-inner .options { width: 100%; }
+/* Figma Desktop 1722: chip prinsip + definisi di atas soal (jarak 12px ke soal) */
+.q-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: calc(12px - clamp(16px, 1.5vw, 24px)); font-size: 14px; line-height: 1.5; color: #466386; position: relative; }
+.q-meta .chip { padding: 4px 12px; border-radius: 12px; background: #e3eff6; color: #3c8dbc; font-weight: 500; }
+.q-meta b { font-weight: 500; }
 .options { display: flex; flex-direction: column; gap: clamp(8px, 0.875vw, 14px); width: min(500px, 100%); position: relative; }
 .option { display: flex; align-items: stretch; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); text-align: left; overflow: hidden; }
 .option b { display: grid; place-items: center; width: clamp(34px, 2.75vw, 44px); background: var(--ribbon); color: #fff; flex-shrink: 0; }
@@ -180,6 +187,10 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .notes-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; align-self: start; position: sticky; top: 0; }
 .notes-box p { margin: 0 0 8px; font-size: clamp(11px, 0.812vw, 13px); }
 .note-view { min-height: clamp(80px, 15vh, 120px); margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fdfdfd; font-size: clamp(11px, 0.812vw, 13px); white-space: pre-wrap; overflow-wrap: anywhere; }
+.result p { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 10px; font-size: clamp(12px, 0.875vw, 14px); }
+.result .pill { padding: clamp(5px, 0.5vw, 8px) 12px; border-radius: 12px; font-size: clamp(13px, 1vw, 16px); font-weight: 500; }
+.pill.ok { background: #d9fede; color: #007606; }
+.pill.dev { background: #f7fed9; color: #866b02; border-radius: 8px; }
 
 @media (max-width: 1100px) {
   .survey, .confirm-grid { grid-template-columns: 1fr; }

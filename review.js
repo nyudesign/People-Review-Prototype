@@ -47,7 +47,7 @@ function initReviewUI(title, current = 'Review & Approve Realisasi Target') {
   q('.topbar-right').insertAdjacentHTML('afterbegin', '<span class="flow-pill evaluee-pill">Heru Kautsar - 19050193</span>');
   const steps = [
     ['tabler:award-filled', 'Approve Individual Goal Setting'],
-    ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360'],
+    ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', '../Nominate%20360/index.html'],
     ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
     ['ri:survey-fill', 'Behaviour Survey'],
     ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],

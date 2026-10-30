@@ -39,7 +39,7 @@ realisasiStep.querySelector('.check').hidden = !realisasiApproved;
 const answeredCount = () => answers.filter((a) => a !== null).length;
 const allAnswered = () => answeredCount() === QUESTIONS.length;
 const isLast = () => current === QUESTIONS.length - 1;
-console.assert(QUESTIONS.length === 10 && QUESTIONS.every((q) => q.options.length === 4), '10 soal, masing-masing 4 pilihan');
+console.assert(QUESTIONS.length === 20 && QUESTIONS.every((q) => q.options.length === 4), '20 soal, masing-masing 4 pilihan');
 
 /* ---------- Dialog (jawaban dibaca dari submit; event close tidak selalu terpicu ulang di Chrome) ---------- */
 let answerResolve = null;
@@ -63,6 +63,8 @@ function confirmBox(title, text) {
 function renderSoal() {
   const q = QUESTIONS[current];
   $('#qText').textContent = q.text;
+  $('#qPrinciple').textContent = q.principle;
+  $('#qDef').textContent = PRINCIPLES[q.principle];
   $('#qOptions').innerHTML = q.options.map((o, i) => `
     <button type="button" class="option" role="radio" aria-checked="${answers[current] === i}" data-opt="${i}" ${submitted ? 'disabled' : ''}>
       <b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`).join('');
@@ -110,6 +112,9 @@ function renderKonfirmasi() {
         : `<span class="option"><b>${LETTERS[answers[i]]}</b><span>${esc(q.options[answers[i]])}</span></span>`}</li>`).join('');
   $('#viewKeep').textContent = notes.keep.trim() || '-';
   $('#viewChange').textContent = notes.change.trim() || '-';
+  // Kekuatan Utama & Perlu Pengembangan hanya tampil setelah submit (Figma Desktop 1773).
+  $('#resultBox').hidden = !submitted;
+  if (submitted) { const res = principleResult(answers); $('#viewTop').textContent = res.top; $('#viewLow').textContent = res.low; }
   $('#kfActions').innerHTML = `${submitted ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
     <button type="button" class="btn" data-submit ${submitted ? 'disabled' : ''}>${icon('material-symbols:send-rounded')}Submit</button>`;
   syncSelfStep();
@@ -132,7 +137,7 @@ $('#kfActions').addEventListener('click', async (e) => {
   submitted = true;
   persist();
   renderKonfirmasi();
-  // shortcut: halaman Survey belum dibuat, jadi "Menuju ke Survey" hanya menutup dialog.
+  // shortcut: halaman CoPI Feedback belum dibuat, jadi "Menuju ke CoPI Feedback" hanya menutup dialog.
   await ask($('#successDialog'));
 });
 

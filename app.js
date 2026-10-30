@@ -9,7 +9,6 @@ const steps = [
   { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid', href: './Nominate%20360/index.html' },
   { label: 'Realisasi Target', icon: 'mingcute:target-fill', href: IG },
   { label: 'Self Review', icon: 'material-symbols:person-rounded', href: './Self%20Review/index.html' },
-  { label: 'Survey', icon: 'ri:survey-fill' },
   { label: 'CoPI Feedback', icon: 'mdi:speak' },
 ];
 // Performa (%) sama dengan kartu di Realisasi Target: performa() di review.js atas realisasi Year End.
@@ -41,14 +40,15 @@ const NTABS = [{ id: 'all', label: 'Semua' }, { id: 'nominate', label: 'Nominate
 const realisasi = (() => { try { return JSON.parse(localStorage.getItem('pr-realisasi-heru')); } catch { return null; } })();
 const REVIEW_HERU = IG; // dibuka Oka → otomatis mode Review & Approve Realisasi Target
 const SINTESIS = './Sintesis%20Evaluator/index.html';
+const NOMINATE = './Nominate%20360/index.html'; // dibuka Oka → mode Approve Nominee 360
 // Evaluee milik Oka (Figma "Homepage" → Pilih Evaluee). Approval Progress = shortcut ke halaman langkahnya.
 // approval(n, realisasiHref): n langkah pertama sudah disetujui (dicentang), langkah ke-n+1 aktif, sisanya abu-abu. C5B dihilangkan atas permintaan.
 // n = -1: evaluee belum submit Individual Goal Setting → semua langkah abu-abu.
 // Langkah yang sudah punya halaman (href) tidak dikunci.
 // shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Realisasi Target disetujui (permintaan user); kunci lagi bila alur sudah lengkap.
-const approval = (n, realisasiHref, sintesisHref) => [
+const approval = (n, realisasiHref, sintesisHref, nominateHref) => [
   { group: 'Approval Progress', label: 'Individual Goal Setting' },
-  { group: 'Approval Progress', label: 'Nominate 360' },
+  { group: 'Approval Progress', label: 'Nominate 360', href: nominateHref },
   { group: 'Approval Progress', label: 'Realisasi Target', href: realisasiHref },
   { group: 'Penilaian', label: 'Penilaian Behavior Survey 360' },
   { group: 'Penilaian', label: 'Sintesis Evaluator Final', href: sintesisHref },
@@ -67,7 +67,7 @@ const PEOPLE = {
     evaluees: [
       // pos = urutan di halaman Pilih Evaluee (Figma); beranda memakai urutan array.
       { name: 'Muhamad Fadlin Ananta', nip: '754933', title: 'Analyst I Perf.&amp; Comp.Mgt', steps: approval(-1), pos: 3 },
-      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS), review: REVIEW_HERU, open: true, pos: 1 },
+      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, NOMINATE), review: REVIEW_HERU, open: true, pos: 1 },
       { name: 'Roehim Nuranas', nip: '752579', title: 'Sr Officer I Audit Relation', steps: approval(-1), pos: 2 },
     ],
     project: { label: 'Total Tugas', total: 27, done: 9, prog: 10 },

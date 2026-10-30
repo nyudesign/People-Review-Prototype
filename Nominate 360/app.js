@@ -30,7 +30,10 @@ const RATEES = [
 /* ---------- Penyimpanan di localStorage (per user login) ---------- */
 // shortcut: tanpa backend, pilihan & penilaian disimpan di localStorage browser ini; ganti dengan API saat ada.
 const LOGIN = (() => { try { return sessionStorage.getItem('pr-login') || 'heru'; } catch { return 'heru'; } })();
-const STORE_KEY = `pr-nominate-${LOGIN}`;
+// Mode Evaluator (Figma Redesign-Evaluator "Approve Nominee 360"): Oka membuka pilihan Heru dari jalur review Beranda
+// (sessionStorage 'pr-review', sama dengan ../review.js) lalu menyetujui atau meminta revisi.
+const APPROVE = (() => { try { return LOGIN !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
+const STORE_KEY = `pr-nominate-${APPROVE ? 'heru' : LOGIN}`;
 const stored = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })();
 const newRating = () => ({ answers: QUESTIONS.map(() => null), notes: { keep: '', change: '' }, submitted: false });
 const validRating = (r) => Array.isArray(r?.answers) && r.answers.length === QUESTIONS.length;
@@ -38,8 +41,12 @@ const state = {
   // hanya pilihan yang pekerjanya masih ada di daftar
   picks: (Array.isArray(stored?.picks) ? stored.picks : []).filter((p) => CANDIDATES.some((c) => c.id === p.id) && REL.includes(p.rel)),
   submitted: !!stored?.submitted, // pilihan sudah dikirim ke Evaluator
+  approval: ['approved', 'revision'].includes(stored?.approval) ? stored.approval : null, // keputusan Evaluator
+  reason: typeof stored?.reason === 'string' ? stored.reason : '', // alasan revisi dari Evaluator
   ratings: RATEES.map((_, i) => (validRating(stored?.ratings?.[i]) ? { ...newRating(), ...stored.ratings[i] } : newRating())),
 };
+// Pilihan terkunci: Evaluee sesudah submit, Evaluator sesudah memberi keputusan.
+const locked = () => (APPROVE ? !!state.approval : state.submitted);
 // true bila tersimpan; false bila localStorage penuh/diblokir.
 function persist() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); return true; } catch { return false; }
@@ -49,6 +56,25 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const icon = (name, cls = '') => `<i class="ico ${cls}">${ICONS[name]}</i>`;
 document.querySelectorAll('[data-icon]').forEach((el) => { el.classList.add('ico'); el.innerHTML = ICONS[el.dataset.icon]; });
+// Header Evaluator: langkah sama dengan initReviewUI di ../review.js (file itu tidak dimuat di sini karena
+// mendeklarasikan LOGIN juga dan menulis ulang tautan Realisasi Target di stepper Evaluee).
+if (APPROVE) {
+  document.title = 'Approve Nominee 360 – People Review';
+  $('.crumbs').innerHTML = 'Pengelolaan Kinerja • PWTT • <span>Evaluator</span>';
+  $('.flow-pill').firstChild.textContent = 'Alur Evaluator ';
+  $('.topbar-right').insertAdjacentHTML('afterbegin', '<span class="flow-pill evaluee-pill">Heru Kautsar - 19050193</span>');
+  $('#stepper').innerHTML = [
+    ['tabler:award-filled', 'Approve Individual Goal Setting', null, 'done'],
+    ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', null, 'current'],
+    ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
+    ['ri:survey-fill', 'Behaviour Survey', null, 'disabled'],
+    ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],
+  ].map(([ic, label, href, cls]) => `<li${cls ? ` class="${cls}"` : ''}>${href ? `<a href="${href}">${icon(ic)}${label}</a>` : `${icon(ic)}${label}`}</li>`).join('');
+  // Judul tanpa dropdown (Evaluator tidak punya tampilan Penilaian 360 di sini).
+  $('[data-switch]').outerHTML = '<h1 class="view-switch">Pemilihan Nominee 360</h1>';
+  $('#lihatBtn').lastChild.textContent = 'Lihat Pilihan Penilai 360';
+  $('#pilihSubmit').hidden = true;
+}
 const person = (id) => CANDIDATES.find((c) => c.id === id);
 const match = (p, q) => !q || p.name.toLowerCase().includes(q) || p.nopek.includes(q);
 const query = (el) => el.value.trim().toLowerCase();
@@ -74,9 +100,11 @@ document.querySelectorAll('dialog.confirm').forEach((d) => {
   d.addEventListener('cancel', () => answerDialog(null));
 });
 // danger: tombol Ya merah & Tidak biru (Figma Desktop 1352, hapus pekerja).
-function confirmBox(title, text, danger = false) {
+function confirmBox(title, text, danger = false, yes = 'Ya', no = 'Tidak') {
   $('#confirmTitle').textContent = title;
   $('#confirmText').textContent = text;
+  $('#confirmYes').textContent = yes;
+  $('#confirmNo').textContent = no;
   $('#confirmYes').className = danger ? 'btn-outline danger' : 'btn';
   $('#confirmNo').className = danger ? 'btn' : 'btn-outline';
   return ask($('#confirmDialog')).then((v) => v === 'yes');
@@ -86,8 +114,9 @@ function infoBox(title, text) {
   $('#infoText').textContent = text;
   return ask($('#infoDialog'));
 }
-function successBox(title, text, go) {
+function successBox(title, text, go, stay = 'Tetap di halaman ini') {
   $('#successTitle').textContent = title;
+  $('#successStay').textContent = stay;
   $('#successText').textContent = text;
   $('#successGo').textContent = go;
   return ask($('#successDialog')).then((v) => v === 'go');
@@ -118,7 +147,7 @@ function openRel(anchor, id) {
 }
 $('#relOptions').addEventListener('click', (e) => {
   const b = e.target.closest('[data-rel]');
-  if (!b || relFor == null || state.submitted) return;
+  if (!b || relFor == null || locked()) return;
   const pick = state.picks.find((p) => p.id === relFor);
   if (pick) pick.rel = b.dataset.rel;
   else state.picks.push({ id: relFor, rel: b.dataset.rel });
@@ -139,27 +168,39 @@ const pickedTable = (picks) => th([...BASE_COLS, 'Hubungan Kerja'])
 
 function renderPilih() {
   const q = query($('#pilihSearch'));
-  const done = state.submitted;
-  $('#pilihStatus').hidden = !done;
+  const done = !APPROVE && state.submitted;
+  // Status: Disetujui / Revisi dari Evaluator (Figma Desktop 1485 / 1583), atau menunggu keputusan.
+  const st = { approved: ['ok', 'Disetujui'], revision: ['rev', 'Revisi'] }[state.approval] || (done ? ['waiting', 'Menunggu Persetujuan'] : null);
+  $('#pilihStatus').hidden = !st;
+  if (st) [$('#pilihStatus').className, $('#pilihStatus').textContent] = [`badge ${st[0]}`, st[1]];
+  $('#pilihStatus').title = state.approval === 'revision' && state.reason ? `Alasan Evaluator: ${state.reason}` : '';
   $('#pilihFoot').hidden = done;
   $('#pilihDoneFoot').hidden = !done;
-  // Sebelum mencari: empty state "Cari Penilai Anda dengan Tepat"; sesudah submit: daftar pilihan (read-only).
-  $('#pilihEmpty').hidden = done || !!q;
-  $('#pilihTableWrap').hidden = !done && !q;
+  $('#pilihDoneText').textContent = state.approval === 'approved' ? 'Pilihan Anda sudah disetujui oleh Evaluator' : 'Pilihan Anda sedang dilakukan proses approval dari Evaluator';
+  if (APPROVE) {
+    // Setuju/Tidak Setuju baru bisa setelah Evaluee submit; Ubah Persetujuan nonaktif selama menunggu revisi Evaluee.
+    ['#lihatBtn', '#tolakBtn', '#setujuBtn'].forEach((s) => { $(s).hidden = !!state.approval; });
+    $('#tolakBtn').disabled = $('#setujuBtn').disabled = !state.submitted;
+    $('#ubahBtn').hidden = !state.approval;
+    $('#ubahBtn').disabled = state.approval === 'revision';
+  }
+  // Evaluee sebelum mencari: empty state "Cari Penilai Anda dengan Tepat"; sesudah submit: daftar pilihan (read-only).
+  // Evaluator: selalu daftar semua pekerja dengan Terpilih/Pilih (Figma Desktop 1476).
+  $('#pilihEmpty').hidden = APPROVE || done || !!q;
+  $('#pilihTableWrap').hidden = !APPROVE && !done && !q;
   if (done) {
     $('#pilihTable').innerHTML = pickedTable(state.picks.filter((p) => match(person(p.id), q)));
-  } else if (q) {
+  } else if (APPROVE || q) {
     const rows = CANDIDATES.filter((c) => match(c, q));
     $('#pilihTable').innerHTML = th([...BASE_COLS, 'Aksi']) + `<tbody>${rows.map((c) => {
       const picked = state.picks.some((p) => p.id === c.id);
       return `<tr${picked ? ' class="picked"' : ''}>${baseCells(c)}<td>${picked
         ? `<button type="button" class="btn-dark" data-picked="${c.id}">${icon('material-symbols:check-rounded')}Terpilih</button>`
-        : `<button type="button" class="btn-outline" data-pick="${c.id}">${icon('akar-icons:plus')}Pilih</button>`}</td></tr>`;
+        : `<button type="button" class="btn-outline" data-pick="${c.id}"${locked() ? ' disabled' : ''}>${icon('akar-icons:plus')}Pilih</button>`}</td></tr>`;
     }).join('') || '<tr><td colspan="6" class="none">Pekerja tidak ditemukan</td></tr>'}</tbody>`;
   }
   $('#catCounts').innerHTML = REL.map((r) => {
-    const n = relCount(state.picks, r);
-    return `<p class="${n ? 'has' : ''}"><span><b>${n}</b> Penilai</span><small>${esc(r)}</small></p>`;
+    return `<p><span><b>${relCount(state.picks, r)}</b> Penilai</span><small>${esc(r)}</small></p>`;
   }).join('');
   syncStep();
 }
@@ -172,10 +213,34 @@ $('#pilihTable').addEventListener('click', (e) => {
   }
   if (e.target.closest('[data-picked]')) openPicks();
 });
-$('#pilihSubmit').addEventListener('click', () => {
-  if (validPicks(state.picks)) location.hash = 'konfirmasi-pilihan';
-  else infoBox('Nominee 360 Anda belum lengkap', `Pastikan nominee 360 Anda terpenuhi dengan min. ${MIN_PICK} Pekerja (maks. ${MAX_PICK}) terdiri dari 1 Fungsi yang sama, 1 Direktorat yang sama, 1 Direktorat lain, dan 1 Entitas yang berbeda`);
+const incomplete = () => infoBox('Nominee 360 Anda belum lengkap', `Pastikan nominee 360 Anda terpenuhi dengan min. ${MIN_PICK} Pekerja (maks. ${MAX_PICK}) terdiri dari 1 Fungsi yang sama, 1 Direktorat yang sama, 1 Direktorat lain, dan 1 Entitas yang berbeda`);
+$('#pilihSubmit').addEventListener('click', () => (validPicks(state.picks) ? openKonfPilih() : incomplete()));
+
+/* ---------- Approve Nominee 360 (Evaluator, Figma Desktop 1476–1485 & edge case Tidak Setuju 1480–1583) ---------- */
+const REALISASI = '../Individual%20Goal/index.html';
+function decide(approval) {
+  state.approval = approval;
+  persist();
+  renderPilih();
+}
+$('#setujuBtn').addEventListener('click', async () => {
+  if (!validPicks(state.picks)) return incomplete();
+  if (!await confirmBox('Anda yakin untuk menyetujui pemilihan penilai 360?', 'Penilai yang terpilih akan terkunci dan tidak bisa diubah kembali', false, 'Ya, ajukan persetujuan', 'Tidak, Saya Ingin Cek Kembali')) return;
+  decide('approved');
+  if (await successBox('Pemilihan Nominee 360 telah disetujui!', 'Silakan untuk melanjutkan ke halaman Approval Realisasi Target', 'Lanjut ke Realisasi Target')) location.href = REALISASI;
 });
+$('#reasonInput').addEventListener('input', (e) => { $('#reasonCount').textContent = `${e.target.value.length}/200`; });
+$('#tolakBtn').addEventListener('click', async () => {
+  if (!await confirmBox('Anda yakin untuk tidak menyetujui pemilihan penilai 360 dari Evaluee?', 'Revisi pemilihan penilai 360 ini akan disampaikan kepada Evaluee', true, 'Ya, ajukan revisi', 'Tidak')) return;
+  $('#reasonInput').value = '';
+  $('#reasonCount').textContent = '0/200';
+  if (await ask($('#reasonDialog')) !== 'send') return;
+  state.reason = $('#reasonInput').value.trim();
+  state.submitted = false; // Evaluee bisa mengubah pilihan lalu submit ulang
+  decide('revision');
+  if (await successBox('Revisi Nominee 360 sudah terkirim!', 'Silakan untuk melanjutkan ke halaman Realisasi Target', 'Lanjut ke Approval Realisasi Target')) location.href = REALISASI;
+});
+$('#ubahBtn').addEventListener('click', () => decide(null));
 
 // Lihat Pilihan 360 Saya (Figma Desktop 1350): ubah hubungan kerja / hapus pekerja.
 function renderPicks() {
@@ -188,8 +253,8 @@ function renderPicks() {
       <h3>${esc(c.name)}</h3><p class="muted">${esc(c.nopek)}</p>
       <p class="meta">${[c.company.replace(/^PT /, '').replace(/ \(Persero\)$/, ''), c.dir, c.dept].map(esc).join(' • ')}</p>
       <p class="title">${esc(c.title)}</p>
-      <button type="button" class="tag rel" data-edit-rel="${c.id}" aria-label="Ubah hubungan kerja ${esc(c.name)}">${esc(p.rel)}${icon('mdi:pencil')}</button>
-      <div class="pick-foot"><button type="button" class="btn-outline danger" data-del="${c.id}">${icon('mdi:trash')}Hapus Pekerja</button></div>
+      <button type="button" class="tag rel" data-edit-rel="${c.id}" aria-label="Ubah hubungan kerja ${esc(c.name)}"${locked() ? ' disabled' : ''}>${esc(p.rel)}${icon('mdi:pencil')}</button>
+      <div class="pick-foot"><button type="button" class="btn-outline danger" data-del="${c.id}"${locked() ? ' disabled' : ''}>${icon('mdi:trash')}Hapus Pekerja</button></div>
     </article>`;
   }).join('') || `<p class="none">${state.picks.length ? 'Pekerja tidak ditemukan' : 'Belum ada pekerja yang dipilih sebagai Penilai 360'}</p>`;
 }
@@ -201,6 +266,7 @@ function openPicks() {
 $('#lihatBtn').addEventListener('click', openPicks);
 $('#pickSearch').addEventListener('input', renderPicks);
 $('#pickList').addEventListener('click', async (e) => {
+  if (locked()) return;
   const edit = e.target.closest('[data-edit-rel]');
   if (edit) return openRel(edit, edit.dataset.editRel);
   const del = e.target.closest('[data-del]');
@@ -214,11 +280,23 @@ $('#pickList').addEventListener('click', async (e) => {
 });
 $('#pickDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 
-// Konfirmasi pemilihan (Figma Desktop 1394/1395)
-$('#konfPilihYa').addEventListener('click', async () => {
+// Konfirmasi pemilihan (Figma "Konfirmasi Pemilihan - Alternatif 3", Desktop 1430–1432)
+const renderKonfPilih = () => { $('#konfPilihTable').innerHTML = pickedTable(state.picks.filter((p) => match(person(p.id), query($('#konfPilihSearch'))))); };
+function openKonfPilih() {
+  $('#konfPilihSearch').value = '';
+  renderKonfPilih();
+  $('#konfPilihDialog').showModal();
+}
+$('#konfPilihSearch').addEventListener('input', renderKonfPilih);
+$('#konfPilihDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
+$('#konfPilihSubmit').addEventListener('click', async () => {
   if (!validPicks(state.picks) || state.submitted) return;
+  if (!await confirmBox('Apakah Anda sudah selesai dengan pemilihan Nominee 360?', 'Pekerja yang terpilih akan diberitahukan setelah submit pemilihan ini', false, 'Submit', 'Tidak, Saya Ingin Cek Kembali')) return;
   state.submitted = true;
+  state.approval = null; // submit ulang sesudah revisi menunggu keputusan baru
   persist();
+  $('#konfPilihDialog').close();
+  renderPilih();
   const go = await successBox('Nominee 360 sudah tersubmit!', 'Silakan menunggu approval dari Evaluator Anda dan Anda bisa melihat progress pengisian di Rating Nominee', 'Lanjut ke Rating Nominee');
   location.hash = go ? 'penilaian' : 'pilih';
 });
@@ -246,13 +324,14 @@ const base = () => `nilai-${ri + 1}`;
 
 function renderRatee() {
   const p = RATEES[ri];
-  document.querySelectorAll('.ratee-name').forEach((el) => { el.textContent = p.name; });
-  document.querySelectorAll('.ratee-sub').forEach((el) => { el.textContent = `${p.nopek} • ${p.dept}`; });
+  document.querySelectorAll('.ratee-info').forEach((el) => { el.innerHTML = `<b>${esc(p.name)}</b> • ${esc(p.nopek)} • <b>${esc(p.title)}</b>`; });
 }
 
 function renderSoal() {
   const q = QUESTIONS[current], r = rating();
   $('#qText').textContent = q.text;
+  $('#qPrinciple').textContent = q.principle;
+  $('#qDef').textContent = PRINCIPLES[q.principle];
   $('#qOptions').innerHTML = q.options.map((o, i) => `
     <button type="button" class="option" role="radio" aria-checked="${r.answers[current] === i}" data-opt="${i}" ${r.submitted ? 'disabled' : ''}>
       <b>${LETTERS[i]}</b><span>${esc(o)}</span></button>`).join('');
@@ -264,7 +343,8 @@ function renderSoal() {
     <button type="button" data-go="${i}" class="${r.answers[i] !== null ? 'answered' : ''}"${i === current ? ' aria-current="step"' : ''}
       aria-label="Soal ${i + 1}${r.answers[i] !== null ? ', sudah dijawab' : ''}">${i + 1}${r.answers[i] !== null ? icon('material-symbols:check-rounded') : ''}</button>`).join('');
 
-  const prev = current > 0 ? `<a class="btn-outline" href="#${base()}-soal-${current}">${icon('tabler:arrow-left')}Sebelumnya</a>` : '';
+  const prev = current > 0 ? `<a class="btn-outline" href="#${base()}-soal-${current}">${icon('tabler:arrow-left')}Sebelumnya</a>`
+    : `<a class="btn-outline" href="#penilaian">${icon('tabler:arrow-left')}Kembali ke List Penilaian 360</a>`;
   let right;
   if (current < QUESTIONS.length - 1) right = `<a class="btn" href="#${base()}-soal-${current + 2}">Selanjutnya ${icon('tabler:arrow-right')}</a>`;
   else if (allAnswered()) right = `<a class="btn" href="#${base()}-catatan">Menuju Catatan Penilai ${icon('tabler:arrow-right')}</a>`;
@@ -299,35 +379,37 @@ function renderKonfirmasi() {
         : `<span class="option"><b>${LETTERS[r.answers[i]]}</b><span>${esc(q.options[r.answers[i]])}</span></span>`}</li>`).join('');
   $('#viewKeep').textContent = r.notes.keep.trim() || '-';
   $('#viewChange').textContent = r.notes.change.trim() || '-';
-  $('#kfBack').href = $('#kfBackFoot').href = `#${base()}-catatan`;
-  $('#kfActions').innerHTML = `${r.submitted ? `<button type="button" class="btn-outline" data-edit>${icon('mdi:pencil')}Edit</button>` : ''}
+  // Kekuatan Utama & Perlu Pengembangan hanya tampil setelah submit (Figma Desktop 1773).
+  $('#resultBox').hidden = !r.submitted;
+  if (r.submitted) { const res = principleResult(r.answers); $('#viewTop').textContent = res.top; $('#viewLow').textContent = res.low; }
+  $('#kfTitle').textContent = r.submitted ? 'Konfirmasi Penilaian Behavior Survey' : 'Konfirmasi Penilaian';
+  $('#kfBackFoot').href = `#${base()}-catatan`;
+  // Figma Desktop 1789: setelah submit tidak ada Edit, hanya kembali ke list.
+  $('#kfActions').innerHTML = `${r.submitted ? '<a class="btn" href="#penilaian">Kembali ke List Penilaian 360</a>' : ''}
     <button type="button" class="btn" data-submit ${r.submitted ? 'disabled' : ''}>${icon('material-symbols:send-rounded')}Submit</button>`;
 }
 $('#kfActions').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
-  if (!b) return;
-  if ('edit' in b.dataset) {
-    rating().submitted = false;
-    persist();
-    location.hash = `${base()}-soal-1`;
-    return;
-  }
-  if (!('submit' in b.dataset) || rating().submitted) return;
+  if (!b || !('submit' in b.dataset) || rating().submitted) return;
   if (!await confirmBox('Apakah Anda ingin mengirimkan hasil survey Anda?', `Penilaian ini akan dikirimkan sebagai Penilaian 360 untuk ${RATEES[ri].name}.`)) return;
   rating().submitted = true;
   persist();
   renderKonfirmasi();
   syncStep();
-  if (await successBox('Survey Anda sudah tersubmit', 'Silakan untuk kembali ke pemilihan pekerja untuk diberikan nilai 360', 'Kembali ke Penilaian 360')) location.hash = 'penilaian';
+  const stay = 'Tetap di halaman ini dan lihat hasil penilaian';
+  // Figma Desktop 1793: penilaian terakhir langsung diarahkan ke Realisasi Target.
+  if (state.ratings.every((x) => x.submitted)) {
+    if (await successBox('Survey Anda sudah tersubmit', 'Semua penilaian 360 sudah selesai. Silakan untuk melanjutkan ke Realisasi Target', 'Menuju Realisasi Target', stay)) location.href = '../Individual%20Goal/index.html';
+  } else if (await successBox('Survey Anda sudah tersubmit', 'Silakan untuk kembali ke pemilihan pekerja untuk diberikan nilai 360', 'Kembali ke Penilaian 360', stay)) location.hash = 'penilaian';
 });
 
 // Tahapan Nominate 360 dicentang setelah pilihan di-submit dan semua Penilaian 360 terkirim (Figma Desktop 1414).
 const syncStep = () => { $('#nomStep .check').hidden = !(state.submitted && state.ratings.every((r) => r.submitted)); };
 
-/* ---------- Routing: #pilih (kosong), #konfirmasi-pilihan, #penilaian, #nilai-N-soal-M, #nilai-N-catatan, #nilai-N-konfirmasi ---------- */
-const VIEWS = { pilih: '#viewPilih', 'konfirmasi-pilihan': '#viewKonfPilih', penilaian: '#viewPenilaian', soal: '#viewSoal', catatan: '#viewCatatan', konfirmasi: '#viewKonfirmasi' };
+/* ---------- Routing: #pilih (kosong), #penilaian, #nilai-N-soal-M, #nilai-N-catatan, #nilai-N-konfirmasi ---------- */
+const VIEWS = { pilih: '#viewPilih', penilaian: '#viewPenilaian', soal: '#viewSoal', catatan: '#viewCatatan', konfirmasi: '#viewKonfirmasi' };
 function route() {
-  const h = location.hash.slice(1) || 'pilih';
+  const h = APPROVE ? 'pilih' : location.hash.slice(1) || 'pilih';
   document.querySelectorAll('[popover]').forEach((p) => p.matches(':popover-open') && p.hidePopover());
   let view = VIEWS[h] && !['soal', 'catatan', 'konfirmasi'].includes(h) ? h : null;
   const m = h.match(/^nilai-(\d+)-(soal-(\d+)|catatan|konfirmasi)$/);
@@ -340,13 +422,10 @@ function route() {
     if (view === 'soal' && !m[3]) return location.replace(`#${base()}-soal-${QUESTIONS.length}`);
   }
   if (!view) return location.replace('#pilih');
-  // Konfirmasi pemilihan hanya untuk pilihan yang lengkap dan belum dikirim.
-  if (view === 'konfirmasi-pilihan' && (state.submitted || !validPicks(state.picks))) return location.replace('#pilih');
 
   Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== view; });
   document.querySelectorAll('#switchPop a').forEach((a) => a.toggleAttribute('aria-current', a.dataset.view === view));
   if (view === 'pilih') renderPilih();
-  if (view === 'konfirmasi-pilihan') $('#konfPilihTable').innerHTML = pickedTable(state.picks);
   if (view === 'penilaian') renderPenilaian();
   if (['soal', 'catatan', 'konfirmasi'].includes(view)) renderRatee();
   if (view === 'soal') renderSoal();

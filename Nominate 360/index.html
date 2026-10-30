@@ -41,7 +41,6 @@
       <li class="current" id="nomStep"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
       <li><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target</a></li>
       <li><a href="../Self%20Review/index.html"><i data-icon="material-symbols:person-rounded"></i>Self Review</a></li>
-      <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
       <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
     </ol>
 
@@ -67,25 +66,15 @@
         <span class="foot-actions">
           <button type="button" class="btn-outline" id="lihatBtn"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Lihat Pilihan 360 Saya</button>
           <button type="button" class="btn" id="pilihSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+          <!-- Mode Evaluator (Figma Redesign-Evaluator "Approve Nominee 360", Desktop 1476/1485/1583) -->
+          <button type="button" class="btn-outline danger" id="tolakBtn" hidden><i data-icon="material-symbols:close-rounded"></i>Tidak Setuju</button>
+          <button type="button" class="btn-outline ok" id="setujuBtn" hidden><i data-icon="material-symbols:check-rounded"></i>Setuju</button>
+          <button type="button" class="btn-outline danger" id="ubahBtn" hidden><i data-icon="material-symbols:close-rounded"></i>Ubah Persetujuan</button>
         </span>
       </div>
       <div class="footer-bar" id="pilihDoneFoot" hidden>
-        <span class="foot-text">Pilihan Anda sedang dilakukan proses approval dari Evaluator</span>
+        <span class="foot-text" id="pilihDoneText"></span>
         <button type="button" class="btn-outline" disabled title="Pilihan tidak bisa diubah selama menunggu persetujuan Evaluator"><i data-icon="mdi:pencil"></i>Edit</button>
-      </div>
-    </div>
-
-    <!-- 2. Konfirmasi pemilihan (Figma Desktop 1394) -->
-    <div id="viewKonfPilih" hidden>
-      <section class="board-wrap">
-        <div class="board-head"><a href="#pilih" class="back" aria-label="Kembali ke Pemilihan Nominee 360"><i data-icon="tabler:arrow-left"></i></a>
-          <h1>Konfirmasi Pemilihan Penilaian 360 Anda</h1></div>
-        <div class="sr-body table-body"><table class="grid" id="konfPilihTable"></table></div>
-      </section>
-      <div class="footer-bar">
-        <span class="foot-text">Apakah Anda yakin untuk upload pemilihan ini ke Evaluator?</span>
-        <a class="btn-outline danger" href="#pilih"><i data-icon="material-symbols:close-rounded"></i>Tidak</a>
-        <button type="button" class="btn-outline ok" id="konfPilihYa"><i data-icon="material-symbols:check-rounded"></i>Ya</button>
       </div>
     </div>
 
@@ -105,16 +94,18 @@
     <div id="viewSoal" hidden>
       <div class="survey">
         <section class="board-wrap">
-          <div class="board-head"><a href="#penilaian" class="back" aria-label="Kembali ke Penilaian 360"><i data-icon="tabler:arrow-left"></i></a>
-            <div class="head-title"><h1 class="ratee-name"></h1><small class="ratee-sub"></small></div></div>
+          <div class="board-head"><h1>Penilaian Behavior Survey</h1><small class="ratee-info"></small></div>
           <div class="sr-body question">
             <img class="wave wave-right" src="assets/wave-right.svg" alt="">
-            <h2 id="qText"></h2>
-            <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+            <div class="q-inner">
+              <p class="q-meta"><span class="chip" id="qPrinciple"></span><span><b>Definisi:</b> <span id="qDef"></span></span></p>
+              <h2 id="qText"></h2>
+              <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+            </div>
           </div>
         </section>
         <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
-          <p class="nav-title">Servant Leadership Survey</p>
+          <p class="nav-title">Behavior Survey</p>
           <p class="nav-count"><span>Survey Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
           <div class="progress"><i id="navBar"></i></div>
           <div class="nav-grid" id="navGrid"></div>
@@ -123,10 +114,10 @@
       <div class="footer-bar split" id="qFoot"></div>
     </div>
 
-    <!-- 5. Catatan Penilai (sama dengan Self Review) -->
+    <!-- 5. Catatan Penilai (Figma Desktop 1787) -->
     <div id="viewCatatan" hidden>
       <section class="board-wrap">
-        <div class="board-head"><div class="head-title"><h1 class="ratee-name"></h1><small class="ratee-sub"></small></div><small class="head-note">Catatan Penilai</small></div>
+        <div class="board-head"><h1>Penilaian Behavior Survey</h1><small class="ratee-info"></small><small class="head-note">Catatan Penilai</small></div>
         <div class="sr-body notes">
           <label for="noteKeep">Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata. (Opsional)</label>
           <textarea id="noteKeep" placeholder="Isi pendapat Anda"></textarea>
@@ -135,24 +126,24 @@
         </div>
       </section>
       <div class="footer-bar split">
-        <a class="btn-outline" href="#" id="ctBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian</a>
+        <a class="btn-outline" href="#" id="ctBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Penilaian Behavior Survey</a>
         <a class="btn" href="#" id="ctNext">Selanjutnya <i data-icon="tabler:arrow-right"></i></a>
       </div>
     </div>
 
-    <!-- 6. Konfirmasi / summary (Figma Desktop 1404, isi mengikuti Konfirmasi Self Review) -->
+    <!-- 6. Konfirmasi (Figma Desktop 1788 sebelum submit / 1789 setelah submit) -->
     <div id="viewKonfirmasi" hidden>
       <section class="board-wrap">
-        <div class="board-head"><a href="#" class="back" id="kfBack" aria-label="Kembali ke catatan penilai"><i data-icon="tabler:arrow-left"></i></a>
-          <h1>Konfirmasi Penilaian Anda</h1></div>
+        <div class="board-head"><h1 id="kfTitle">Konfirmasi Penilaian</h1><small class="ratee-info"></small></div>
         <div class="sr-body confirm-grid">
-          <div>
-            <p class="ratee-bar"><b class="ratee-name"></b><span class="ratee-sub"></span></p>
-            <ol class="answers" id="answerList"></ol>
-          </div>
+          <ol class="answers" id="answerList"></ol>
           <div class="notes-box"><h2 class="label">Catatan Penilai</h2>
             <p>Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata.</p><div class="note-view" id="viewKeep"></div>
             <p>Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata.</p><div class="note-view" id="viewChange"></div>
+            <div class="result" id="resultBox" hidden><!-- Figma Desktop 1773: hasil setelah submit -->
+              <p><span>Kekuatan Utama</span><b class="pill ok" id="viewTop"></b></p>
+              <p><span>Perlu Pengembangan</span><b class="pill dev" id="viewLow"></b></p>
+            </div>
           </div>
         </div>
       </section>
@@ -192,7 +183,18 @@
     <div class="picks-body" id="pickList"></div>
   </dialog>
 
-  <!-- Konfirmasi (submit survey / hapus pekerja) -->
+  <!-- Konfirmasi pemilihan (Figma section "Konfirmasi Pemilihan - Alternatif 3", Desktop 1430) -->
+  <dialog id="konfPilihDialog" class="picks konf-pilih">
+    <div class="picks-head">
+      <h2>Konfirmasi Pemilihan Penilaian 360 Anda</h2>
+      <form method="dialog"><button class="icon-btn close" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></form>
+    </div>
+    <label class="search konf-search"><i data-icon="material-symbols:search-rounded"></i><input type="search" id="konfPilihSearch" placeholder="Cari Nopek/Nama Pekerja" aria-label="Cari Nopek/Nama Pekerja"></label>
+    <div class="table-body konf-body"><table class="grid" id="konfPilihTable"></table></div>
+    <div class="picks-foot"><button type="button" class="btn" id="konfPilihSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button></div>
+  </dialog>
+
+  <!-- Konfirmasi (submit survey / hapus pekerja / submit pemilihan) -->
   <dialog id="confirmDialog" class="confirm">
     <form method="dialog">
       <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
@@ -200,6 +202,17 @@
       <p class="muted" id="confirmText"></p>
       <button value="yes" class="btn" id="confirmYes">Ya</button>
       <button value="no" class="btn-outline" id="confirmNo">Tidak</button>
+    </form>
+  </dialog>
+
+  <!-- Alasan tidak setuju dari Evaluator (Figma Desktop 1482) -->
+  <dialog id="reasonDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:chat-rounded"></i></div>
+      <h2>Berikan alasan Anda</h2>
+      <label class="reason"><textarea id="reasonInput" maxlength="200" rows="3" placeholder="Isi alasan Anda (opsional)" aria-label="Alasan tidak menyetujui"></textarea><small id="reasonCount">0/200</small></label>
+      <button value="send" class="btn-outline danger"><i data-icon="material-symbols:send-rounded"></i>Kirim</button>
+      <button value="back" class="btn">Kembali</button>
     </form>
   </dialog>
 
@@ -213,14 +226,14 @@
     </form>
   </dialog>
 
-  <!-- Sukses (Figma Desktop 1395 nominee / 1411 survey) -->
+  <!-- Sukses (Figma Desktop 1395 nominee / 1791 & 1793 survey) -->
   <dialog id="successDialog" class="confirm">
     <form method="dialog">
       <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
       <h2 id="successTitle"></h2>
       <p class="muted" id="successText"></p>
       <button value="go" class="btn" id="successGo"></button>
-      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+      <button value="stay" class="btn-outline" id="successStay"></button>
     </form>
   </dialog>
 

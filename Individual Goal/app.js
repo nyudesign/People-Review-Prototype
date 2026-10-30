@@ -573,7 +573,7 @@ console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { tar
 
 function renderRekap() {
   const rows = columns.flatMap((col) => col.items.map((it) => ({ it, cells: [it.name, JENIS[col.title] || col.title, it.polarity || 'MAX',
-    `${it.weight} %`, amount(it, 'target'), amount(it, 'value'), `${performa(it)} %`, it.periodType || 'Annual'] })));
+    it.periodType || 'Annual', `${it.weight} %`, amount(it, 'target'), amount(it, 'value'), `${performa(it)} %`, `${fmt(+weighted(it).toFixed(2))} %`] })));
   const total = sum(rows.map(({ it }) => weighted(it)));
   $('#rkTotal').innerHTML = `${fmt(+total.toFixed(2))}<small>/${sum(rows.map(({ it }) => it.weight)) * PERF_MAX / 100} %</small>`;
   $('#rkSubmit').disabled = locked();
@@ -581,7 +581,7 @@ function renderRekap() {
   const shown = rows.filter(({ cells }) => !q || cells.join(' ').toLowerCase().includes(q));
   $('#rkRows').innerHTML = shown.length ? shown.map(({ it, cells }) => `<tr>${cells.map((c) => `<td>${esc(c)}</td>`).join('')}
     <td><button type="button" class="btn-outline" data-periods="${it.id}">Lihat ${it.periods.length} Realisasi</button></td></tr>`).join('')
-    : '<tr><td colspan="9" class="empty">Tidak ada hasil pencarian</td></tr>';
+    : '<tr><td colspan="10" class="empty">Tidak ada hasil pencarian</td></tr>';
 }
 function openRekap() {
   $('#rkSearch').value = '';
@@ -677,9 +677,11 @@ function fillDemo() {
   columns.forEach((col) => {
     if (col.evidence && !col.file) Object.assign(col, demoFile());
     col.items.forEach((it) => {
+      // Realisasi demo = performa maksimal (110%), jadi Total Weighted Performance = Σ bobot × 110% (Figma 110/110 %).
+      const k = it.polarity === 'MIN' ? 100 / PERF_MAX : PERF_MAX / 100;
       it.periods.forEach((p) => {
-        p.processes?.forEach((pr) => { pr.value = pr.target; });
-        p.value = p.processes ? periodValue(p) : p.target;
+        p.processes?.forEach((pr) => { pr.value = +(pr.target * k).toFixed(2); });
+        p.value = p.processes ? periodValue(p) : +(p.target * k).toFixed(2);
       });
       if ('file' in it && !it.file) Object.assign(it, demoFile());
       it.saved = true;

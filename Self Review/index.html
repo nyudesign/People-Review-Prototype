@@ -41,7 +41,6 @@
       <li class="done"><a href="../Nominate%20360/index.html"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
       <li class="done"><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
       <li class="current" id="selfStep"><i data-icon="material-symbols:person-rounded"></i>Self Review<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
-      <li class="disabled"><i data-icon="ri:survey-fill"></i>Survey</li>
       <li class="disabled"><i data-icon="mdi:speak"></i>CoPI Feedback</li>
     </ol>
 
@@ -66,8 +65,11 @@
           <div class="board-head"><h1>Penilaian Behavior Survey untuk Anda</h1></div>
           <div class="sr-body question">
             <img class="wave wave-right" src="assets/wave-right.svg" alt="">
-            <h2 id="qText"></h2>
-            <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+            <div class="q-inner">
+              <p class="q-meta"><span class="chip" id="qPrinciple"></span><span><b>Definisi:</b> <span id="qDef"></span></span></p>
+              <h2 id="qText"></h2>
+              <div class="options" id="qOptions" role="radiogroup" aria-labelledby="qText"></div>
+            </div>
           </div>
         </section>
         <aside class="board-wrap nav-panel" aria-label="Navigasi soal">
@@ -108,6 +110,10 @@
           <div class="notes-box"><h2 class="label">Catatan Penilai</h2>
             <p>Perilaku apa yang perlu DIPERTAHANKAN oleh pekerja ini? Berikan contoh nyata.</p><div class="note-view" id="viewKeep"></div>
             <p>Perilaku apa yang perlu MULAI atau BERHENTI dilakukan? Berikan contoh nyata.</p><div class="note-view" id="viewChange"></div>
+            <div class="result" id="resultBox" hidden><!-- Figma Desktop 1773: hasil setelah submit -->
+              <p><span>Kekuatan Utama</span><b class="pill ok" id="viewTop"></b></p>
+              <p><span>Perlu Pengembangan</span><b class="pill dev" id="viewLow"></b></p>
+            </div>
           </div>
         </div>
       </section>
@@ -134,9 +140,9 @@
     <form method="dialog">
       <div class="ok-ico"><i data-icon="material-symbols:check-rounded"></i></div>
       <h2>Self Review Anda sudah terkirim!</h2>
-      <p class="muted">Silakan untuk melanjutkan ke tahap Survey Website People Review</p>
-      <button value="survey" class="btn">Menuju ke Survey</button>
-      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+      <p class="muted">Silakan untuk melanjutkan ke<br>tahap CoPI Feedback</p>
+      <button value="copi" class="btn">Menuju ke CoPI Feedback</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini dan lihat hasil Self Review</button>
     </form>
   </dialog>
 

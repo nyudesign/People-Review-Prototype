@@ -315,19 +315,18 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 /* Rekap realisasi sasaran kerja (Figma "Finalisasi Hasil KPI") */
 .status-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: clamp(11px, 0.875vw, 14px); }
 .status-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-/* Modal rekap: tabel 9 kolom (Figma "Cek Hasil KPI new version", lebar 1480px di layar 1920). */
+/* Modal rekap: tabel 10 kolom (Figma "Cek Hasil KPI new version", lebar 1480px di layar 1920). */
 dialog.rekap-dlg { width: min(1480px, calc(100vw - 32px)); }
 .rk-search { padding: 16px 24px; }
 .rk-search .search { width: 100%; }
 .rk-table-wrap { flex: 1; min-height: 0; overflow: auto; }
-.rk-table { width: 100%; border-collapse: collapse; text-align: center; font-size: clamp(12px, 0.938vw, 15px); }
-.rk-table th { position: sticky; top: 0; background: #fff; padding: 14px 8px; font-weight: 500; white-space: nowrap; }
+.rk-table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: center; font-size: clamp(12px, 0.938vw, 15px); }
+.rk-table th { position: sticky; top: 0; background: #fff; padding: 14px 8px; font-weight: 500; }
 .rk-table td { padding: 20px 8px; color: var(--ink-2); }
-.rk-table td:first-child { width: 120px; }
 .rk-table tbody tr:nth-child(odd) { background: #eef3f6; }
 .rk-table tbody tr:nth-child(even) { background: #f8fbfb; }
-.rk-table .btn-outline { white-space: nowrap; font-size: clamp(11px, 0.75vw, 13px); }
-.rk-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 24px; }
+.rk-table .btn-outline { font-size: clamp(11px, 0.75vw, 13px); }
+.rk-foot { display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 16px 24px; }
 .rk-total { display: inline-flex; align-items: center; gap: 16px; font-weight: 500; }
 .rk-total b { background: var(--primary-dark); color: #fff; border-radius: 8px; padding: 8px 12px; font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
 .rk-total small { font-size: clamp(11px, 0.75vw, 12px); }

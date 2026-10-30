@@ -109,8 +109,9 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 
 /* ===== Survei: disalin dari Self Review/style.css supaya tampilan soal & summary identik ===== */
 main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 16px; }
-.head-title small { display: block; color: var(--muted); font-size: 11px; }
-.board-head .head-title { flex: 1; }
+/* Figma Desktop 1778: Nama • Nopek • Jabatan pekerja yang dinilai di kanan header */
+.ratee-info { font-size: clamp(10px, 0.75vw, 12px); color: var(--ink); }
+.ratee-info b { font-weight: 500; }
 .sr-body { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #fff; padding: 16px 24px; }
 .board-wrap > .sr-body:last-child { border-radius: 0 0 12px 12px; }
 .spacer { flex: 1; }
@@ -125,6 +126,13 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .survey { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) clamp(230px, 20vw, 293px); grid-template-rows: minmax(0, 1fr); gap: 16px; }
 .question { display: flex; flex-direction: column; justify-content: center; gap: clamp(16px, 1.5vw, 24px); padding: clamp(20px, 2.5vw, 48px) clamp(24px, 4vw, 64px); overflow-y: auto; }
 .question h2 { font-size: clamp(14px, 1.25vw, 20px); position: relative; }
+/* Blok soal di tengah kartu; lebar pertanyaan dibatasi supaya tidak melebar di layar lebar */
+.q-inner { display: flex; flex-direction: column; gap: clamp(16px, 1.5vw, 24px); width: min(760px, 100%); margin-inline: auto; position: relative; }
+.q-inner .options { width: 100%; }
+/* Figma Desktop 1722: chip prinsip + definisi di atas soal (jarak 12px ke soal) */
+.q-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-bottom: calc(12px - clamp(16px, 1.5vw, 24px)); font-size: 14px; line-height: 1.5; color: #466386; position: relative; }
+.q-meta .chip { padding: 4px 12px; border-radius: 12px; background: #e3eff6; color: #3c8dbc; font-weight: 500; }
+.q-meta b { font-weight: 500; }
 .options { display: flex; flex-direction: column; gap: clamp(8px, 0.875vw, 14px); width: min(500px, 100%); position: relative; }
 .option { display: flex; align-items: stretch; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); text-align: left; overflow: hidden; }
 .option b { display: grid; place-items: center; width: clamp(34px, 2.75vw, 44px); background: var(--ribbon); color: #fff; flex-shrink: 0; }
@@ -173,6 +181,10 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .notes-box { border: 1px solid var(--line); border-radius: 10px; padding: 12px; align-self: start; position: sticky; top: 0; }
 .notes-box p { margin: 0 0 8px; font-size: clamp(11px, 0.812vw, 13px); }
 .note-view { min-height: clamp(80px, 15vh, 120px); margin-bottom: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 4px; background: #fdfdfd; font-size: clamp(11px, 0.812vw, 13px); white-space: pre-wrap; overflow-wrap: anywhere; }
+.result p { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 10px; font-size: clamp(12px, 0.875vw, 14px); }
+.result .pill { padding: clamp(5px, 0.5vw, 8px) 12px; border-radius: 12px; font-size: clamp(13px, 1vw, 16px); font-weight: 500; }
+.pill.ok { background: #d9fede; color: #007606; }
+.pill.dev { background: #f7fed9; color: #866b02; border-radius: 8px; }
 
 /* ===== Khusus Nominate 360 (Figma section "Nominate 360 - alternative") ===== */
 .view-switch { background: none; border: 0; padding: 0; display: inline-flex; align-items: center; gap: 8px; font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; color: var(--ink); }
@@ -188,6 +200,8 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .badge.waiting::before { background: #f5b800; }
 .badge.ok { background: #d3fbd8; color: #11742f; }
 .badge.ok::before { background: #1fd660; }
+.badge.rev { background: #fde1e1; color: var(--danger); }
+.board-head h1.view-switch { flex: none; } /* judul mode Evaluator: Syarat Pemilihan tetap di sebelahnya */
 
 /* Empty state "Cari Penilai Anda dengan Tepat" */
 .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
@@ -213,10 +227,15 @@ main > div { flex: 1; min-height: 0; display: flex; flex-direction: column; gap:
 .counts span { font-size: 12px; }
 .counts b { font-size: clamp(14px, 1.125vw, 18px); }
 .counts small { font-size: clamp(11px, 0.812vw, 13px); }
-.counts .has { color: var(--primary); }
 .footer-bar { align-items: center; gap: 8px; flex-wrap: wrap; }
 .foot-text { font-size: clamp(13px, 1vw, 16px); font-weight: 500; margin-right: 8px; }
 .btn-outline.ok { color: #11742f; border-color: #11742f; }
+/* Mode Evaluator: pill evaluee & alasan revisi (sama dengan Realisasi Target) */
+.evaluee-pill { box-sizing: border-box; height: 40px; padding: 0 12px; font-weight: 500; color: var(--primary-dark); }
+.reason { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin-bottom: 6px; }
+.reason textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); resize: vertical; }
+.reason textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.reason small { color: var(--muted); font-size: clamp(11px, 0.75vw, 12px); }
 .btn-outline:disabled { color: #a7b6cc; border-color: #cfd8e3; cursor: not-allowed; }
 
 /* Popover */
@@ -242,6 +261,11 @@ dialog.picks { width: min(720px, calc(100vw - 32px)); height: calc(100vh - 64px)
 .picks-head h2 { font-size: clamp(16px, 1.25vw, 20px); flex: 1; }
 .picks-head .search { width: min(300px, 50%); }
 .picks-head .close { font-size: 24px; }
+/* Konfirmasi pemilihan (Figma Desktop 1430): modal lebar, tabel + Submit */
+dialog.konf-pilih { width: min(1484px, calc(100vw - 64px)); }
+.konf-search { margin: 16px 24px; }
+.konf-body { flex: 1; background: var(--bg); }
+.picks-foot { display: flex; justify-content: flex-end; padding: 12px 24px; border-top: 1px solid var(--line); }
 .picks-body { flex: 1; overflow-y: auto; padding: 12px 24px 24px; display: flex; flex-direction: column; gap: 16px; }
 .pick-card { flex-shrink: 0; position: relative; border: 1px solid var(--line); border-radius: 12px; background: #fdfdfd; overflow: hidden; }
 .pick-card h3 { font-size: clamp(14px, 1.125vw, 18px); padding: 16px 16px 0; }
@@ -254,7 +278,6 @@ dialog.picks { width: min(720px, calc(100vw - 32px)); height: calc(100vh - 64px)
 .tag.rel:hover { background: var(--primary-dark); }
 .pick-foot { border-top: 1px solid var(--line); padding: 12px 16px; background: #fff; }
 .pick-foot .btn-outline { font-size: 12px; }
-.ratee-bar { margin: 0 0 4px; padding: 10px 16px; border: 1px solid var(--line); border-radius: 8px; display: flex; gap: 12px; flex-wrap: wrap; }
 .err-ico { font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); line-height: 1; }
 
 @media (max-width: 1100px) {
