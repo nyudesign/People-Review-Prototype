@@ -50,26 +50,37 @@
         <h1>Sasaran Kerja</h1>
         <button type="button" class="btn-outline add-btn" id="addGoal"><i data-icon="akar-icons:plus"></i>Tambah</button>
         <span class="spacer"></span>
+        <button type="button" class="btn-outline msg-btn" id="msgBtn" hidden>Lihat Pesan</button>
+        <span class="chip head-status" id="headStatus" hidden><i></i><span></span></span>
         <span class="chip chip-blue chip-icon">KPI Non-Budget Holder <button type="button" class="info-btn" data-tip="nbh" aria-label="Info KPI Non-Budget Holder"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="search" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari sasaran kerja"></label>
         <div class="filter-wrap" id="boardFilter"></div>
       </div>
       <div class="board" id="board"></div>
     </section>
-    <div class="footer-bar" id="boardFooter"><button type="button" class="btn" id="next">Selanjutnya <i data-icon="tabler:arrow-right"></i></button></div>
+    <div class="footer-bar" id="boardFooter">
+      <button type="button" class="btn" id="next">Selanjutnya <i data-icon="tabler:arrow-right"></i></button>
+      <button type="button" class="btn-outline danger" id="reset" hidden><i data-icon="material-symbols:close-rounded"></i>Atur Kembali Sasaran Kerja</button>
+      <!-- Mode Evaluator: Approve Individual Goal Setting (Figma section "Approve IGS baru", Desktop 1845–1852) -->
+      <button type="button" class="btn-outline danger" id="tolakBtn" hidden><i data-icon="material-symbols:close-rounded"></i>Tidak Setuju</button>
+      <button type="button" class="btn-outline ok" id="setujuBtn" hidden><i data-icon="material-symbols:check-rounded"></i>Setuju</button>
+      <button type="button" class="btn-outline danger" id="ubahBtn" hidden><i data-icon="material-symbols:close-rounded"></i>Ubah Persetujuan</button>
+      <p class="muted small" id="waitNote" hidden>Evaluee belum mengirimkan sasaran kerja</p>
+    </div>
 
-    <!-- Proses Project Control (Figma Desktop 1421: kolom per periode target) -->
+    <!-- Proses Project Control (Figma Desktop 1421, 1800: kolom per periode target) -->
     <section class="board-wrap" id="processView" hidden>
       <div class="board-head">
-        <button type="button" class="back icon-btn" id="pBack" aria-label="Kembali"><i data-icon="tabler:arrow-left"></i></button>
         <h1 id="pTitle"></h1>
-        <button type="button" class="btn-outline add-btn" id="addProcess"><i data-icon="akar-icons:plus"></i>Tambah</button>
+        <button type="button" class="btn-outline add-btn" id="addProcess"><i data-icon="akar-icons:plus"></i>Tambah Proses</button>
         <span class="spacer"></span>
         <span id="pAvatars" class="avatars"></span>
         <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="pSearch" type="search" placeholder="Cari aktivitas dan sub-aktivitas Anda" aria-label="Cari proses"></label>
+        <div class="filter-wrap" id="processFilter"></div>
       </div>
       <div class="board" id="pBoard"></div>
     </section>
+    <div class="footer-bar start" id="processFooter" hidden><button type="button" class="btn-outline" id="pBack"><i data-icon="tabler:arrow-left"></i>Kembali ke Sasaran Kerja</button></div>
   </main>
 
   <template id="filterTpl">
@@ -88,10 +99,11 @@
 
   <!-- Buat Sasaran Kerja/Proyek (Figma Desktop 1259–1267, 1244–1255) -->
   <dialog id="goalDialog" class="form-dlg">
-    <div class="dlg-head"><h2 id="goalTitle">Buat Sasaran Kerja</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-head"><h2 id="goalTitle">Buat Sasaran Kerja/Proyek</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
     <form id="goalForm" class="dlg-body" novalidate>
-      <label class="field">Nama Sasaran Kerja<input name="name" placeholder="Isi nama sasaran kerja Anda" required></label>
-      <label class="field">Deskripsi<textarea name="desc" rows="3" placeholder="Deskripsikan sasaran kerja Anda"></textarea></label>
+      <h3>Identitas Sasaran Kerja/Proyek</h3>
+      <label class="field">Nama Sasaran Kerja/Proyek<input name="name" placeholder="Isi nama sasaran kerja/proyek Anda" required></label>
+      <label class="field">Deskripsi<textarea name="desc" rows="3" placeholder="Deskripsikan sasaran kerja/proyek Anda"></textarea></label>
       <div class="row row-3">
         <div class="field"><span class="with-ico">Tipe <button type="button" class="info-btn" data-tip="type" aria-label="Info Tipe"><i class="info" data-icon="material-symbols:info-outline-rounded"></i></button></span>
           <select name="type" aria-label="Tipe" required><option value="">Pilih tipe sasaran kerja</option><option>Cascading KPI</option><option>Project Control</option><option>Extramiles</option></select></div>
@@ -152,22 +164,101 @@
     <div class="dlg-actions"><button type="submit" form="goalForm" class="btn" id="goalSubmit">Buat Sasaran Kerja</button></div>
   </dialog>
 
-  <!-- Buat Proses (Figma Desktop 1223–1226) -->
+  <!-- Buat Proses (Figma Desktop 1801–1804) -->
   <dialog id="processDialog" class="form-dlg">
-    <div class="dlg-head"><h2>Buat Proses</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-head"><h2 id="processTitle">Buat Proses</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
     <form id="processForm" class="dlg-body" novalidate>
       <label class="field">Nama Proses<input name="name" placeholder="Isi nama proses" required></label>
       <label class="field">Deskripsi<textarea name="desc" rows="3" placeholder="Deskripsikan proses Anda"></textarea></label>
       <div class="field">Penugasan Anggota Tim<div class="picker" id="assignPicker"></div></div>
-      <div class="field">Satuan Target
-        <select name="unit" aria-label="Satuan Target" required><option value="">Pilih satuan target</option><option>%</option><option>Learning Hour</option><option>MMBOPD</option><option>Rp</option></select></div>
       <div class="field">Target per Periode
         <div id="prPeriods" class="target-rows"></div>
         <button type="button" class="add-row" id="prAddPeriod"><i data-icon="akar-icons:plus"></i>Tambah Periode Target</button>
       </div>
       <p id="processError" class="error" hidden></p>
     </form>
-    <div class="dlg-actions"><button type="submit" form="processForm" class="btn">Buat Sasaran Kerja</button></div>
+    <div class="dlg-actions"><button type="submit" form="processForm" class="btn" id="processSubmit">Buat Sasaran Kerja</button></div>
+  </dialog>
+
+  <!-- Lihat Detail sasaran kerja / proses (Figma Desktop 1424, 1814; pola sama dengan detail di Individual Goal) -->
+  <dialog id="detailDialog">
+    <div class="dlg-head"><h2 id="detailTitle">Detail</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-body" id="detailBody" tabindex="-1" autofocus></div>
+    <div class="dlg-foot">
+      <div class="tabs"><button type="button" class="tab active" data-feed="comments">Komentar</button><button type="button" class="tab" data-feed="activity">Aktivitas</button></div>
+      <ul id="feed" class="feed"></ul>
+      <form id="commentForm" class="comment-form">
+        <input id="commentInput" placeholder="Isi komentar Anda" aria-label="Isi komentar Anda" required>
+        <button class="send" aria-label="Kirim"><i data-icon="material-symbols:send-rounded"></i></button>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Rekap Penetapan Sasaran Kerja (Figma Desktop 1429) -->
+  <dialog id="rekapDialog" class="rekap-dlg">
+    <div class="dlg-head"><h2>Rekap Penetapan Sasaran Kerja Anda</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="rekap-body">
+      <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rekapSearch" type="search" placeholder="Cari sasaran kerja, jenis, target, atau lainnya" aria-label="Cari sasaran kerja"></label>
+      <div class="table-scroll"><table class="rekap">
+        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th>Polaritas</th><th>Bobot</th><th>Target</th><th>Periode Monitor Target</th><th>Target Per Periode</th></tr></thead>
+        <tbody id="rekapRows"></tbody>
+      </table></div>
+    </div>
+    <div class="dlg-actions"><button type="button" class="btn" id="submitGoals"><i data-icon="material-symbols:send-rounded"></i>Submit</button></div>
+  </dialog>
+
+  <!-- Target Per Periode (Figma Desktop 1428) -->
+  <dialog id="periodDialog" class="period-dlg">
+    <div class="dlg-head"><h2>Target Per Periode</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+    <div class="dlg-body"><h3 class="link" id="periodName"></h3><div id="periodRows" class="period-list"></div></div>
+  </dialog>
+
+  <!-- Konfirmasi kirim & sukses (Figma Desktop 1808, 1809) -->
+  <dialog id="sendDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda yakin ingin mengirimkan sasaran kerja Anda?</h2>
+      <p class="muted">Sasaran kerja Anda akan dikirimkan kepada Evaluator untuk melakukan persetujuan</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+  <dialog id="doneDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:check-rounded"></i></div>
+      <h2>Sasaran Kerja Anda sudah tersubmit!</h2>
+      <p class="muted">Silakan untuk melanjutkan ke Nominate 360</p>
+      <button value="next" class="btn">Menuju Nominate 360</button>
+      <button value="stay" class="btn-outline">Tetap di halaman ini</button>
+    </form>
+  </dialog>
+
+  <!-- Dialog Evaluator (Figma Desktop 1846–1850): konfirmasi & sukses diisi lewat askBox() -->
+  <dialog id="askDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico" id="askIco"></div>
+      <h2 id="askTitle"></h2>
+      <p class="muted" id="askText"></p>
+      <button value="yes" id="askYes"></button>
+      <button value="no" id="askNo"></button>
+    </form>
+  </dialog>
+  <dialog id="reasonDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:chat-rounded"></i></div>
+      <h2>Berikan alasan Anda</h2>
+      <label class="reason"><textarea id="reasonInput" maxlength="200" rows="3" placeholder="Isi alasan Anda (opsional)" aria-label="Alasan tidak menyetujui"></textarea><small id="reasonCount">0/200</small></label>
+      <button value="yes" class="btn-outline danger"><i data-icon="material-symbols:send-rounded"></i>Kirim</button>
+      <button value="no" class="btn">Kembali</button>
+    </form>
+  </dialog>
+  <dialog id="msgDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:chat-rounded"></i></div>
+      <h2>Pesan Revisi</h2>
+      <p class="muted" id="msgText"></p>
+      <button value="ok" class="btn">Tutup</button>
+    </form>
   </dialog>
 
   <dialog id="deleteDialog" class="confirm">

@@ -6,6 +6,7 @@
   <title>Sintesis Evaluator Final – People Review</title>
   <!-- Shell (sidebar, topbar, stepper, tombol, dialog konfirmasi) sama dengan halaman Realisasi Target -->
   <link rel="stylesheet" href="../Individual%20Goal/style.css">
+  <link rel="stylesheet" href="../dropdown.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -40,17 +41,21 @@
 
     <!-- Figma "Sintesis Evaluator Final" Desktop 1822/1823: ringkasan read-only + feedback -->
     <section class="board-wrap sx" id="formView" hidden>
-      <!-- Figma terbaru (1823): judul "Realisasi", urutan IBS → Kekuatan → Individual Goal → Butuh Pengembangan → Rating; semua akordion tertutup saat dibuka -->
+      <!-- Figma 1853/1854: judul "Realisasi", urutan IBS → Kekuatan → Butuh Pengembangan → Individual Goal → Rating; IBS terbuka saat dibuka -->
       <div class="sx-col">
         <h2>Realisasi</h2>
         <div class="sx-left">
-          <details class="sx-acc">
+          <details class="sx-acc" open>
             <summary>Indeks Behaviour Survey (IBS)<span class="big">95<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
             <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata</th><th>Bobot</th><th>Rata-rata x Bobot</th></tr></thead><tbody id="besRows"></tbody></table>
           </details>
           <details class="sx-acc">
             <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
             <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
+          </details>
+          <details class="sx-acc">
+            <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
+            <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
           </details>
           <details class="sx-acc">
             <summary>Individual Goal<span class="big"><span id="goalTotal">110</span><small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
@@ -60,20 +65,25 @@
             </table>
           </details>
           <details class="sx-acc">
-            <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
-          </details>
-          <details class="sx-acc">
             <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
             <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
           </details>
         </div>
       </div>
-      <label class="sx-right">
+      <!-- Figma 1853–1859: Feedback + Rencana Pengembangan (Assignment, Learning, Coaching per periode) -->
+      <div class="sx-right">
         <h2>Feedback</h2>
-        <textarea id="feedback" maxlength="200" placeholder="Jelaskan pertimbangan rating dari Anda"></textarea>
-        <small id="fbCount" class="sx-count">0/200</small>
-      </label>
+        <textarea id="feedback" aria-label="Feedback" placeholder="Jelaskan alasan dan feedback berdasarkan hasil kinerja Evaluee"></textarea>
+        <hr class="sx-sep">
+        <h2>Rencana Pengembangan untuk Periode Berikutnya</h2>
+        <div class="sx-plan" id="plan">
+          <section class="sx-box"><header>Assignment</header><div class="sx-body" id="planAssignment"></div></section>
+          <section class="sx-box"><header>Learning</header><div class="sx-body" id="planLearning"></div></section>
+          <section class="sx-box"><header>Coaching
+            <select id="coachPeriod" aria-label="Periode coaching"><option>Semester</option><option>Triwulan</option><option>Bulan</option></select></header>
+            <div class="sx-body" id="planCoaching"></div></section>
+        </div>
+      </div>
     </section>
     <div class="footer-bar" id="formFooter" hidden>
       <button type="button" class="btn" id="submitBtn" disabled><i data-icon="material-symbols:send-rounded"></i>Submit</button>
@@ -106,7 +116,19 @@
     </form>
   </dialog>
 
+  <!-- Figma 1858 -->
+  <dialog id="delDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Anda yakin untuk menghapus daftar pengembangan ini?</h2>
+      <p class="muted">Tema pengembangan yang sudah diisi akan dihapus</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
+    </form>
+  </dialog>
+
   <script src="../Individual%20Goal/icons.js"></script>
+  <script src="../dropdown.js"></script>
   <script src="../review.js"></script>
   <script src="app.js"></script>
   <script src="../profile.js"></script>

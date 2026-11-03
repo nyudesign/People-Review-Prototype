@@ -1,9 +1,9 @@
 /* Sintesis Evaluator Final — tambahan di atas ../Individual Goal/style.css */
-.sx { background: #fff; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(12px, 1.25vw, 20px); padding: clamp(12px, 1.25vw, 20px); }
+.sx { background: #fff; display: grid; grid-template-columns: minmax(0, 539fr) minmax(0, 874fr); /* Figma 1853: kiri 539 : kanan 874 */ gap: clamp(12px, 1.25vw, 20px); padding: clamp(12px, 1.25vw, 20px); }
 .sx-col { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-.sx-left { flex: 1; background: var(--panel); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
+.sx-left { flex: 1; background: #f4f8fb; border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
 
-.sx-acc { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; flex-shrink: 0; }
+.sx-acc { background: #fff; border: 1px solid var(--line); border-radius: 20px; overflow-x: auto; flex-shrink: 0; }
 .sx-acc summary { display: flex; align-items: center; gap: 12px; padding: 14px 18px; font-weight: 500; cursor: pointer; list-style: none; }
 .sx-acc summary::-webkit-details-marker { display: none; }
 .sx-acc summary .big { margin-left: auto; }
@@ -19,9 +19,9 @@
 .sx-table .btn-outline { gap: 8px; white-space: nowrap; }
 
 .sx-right { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
-.sx-col h2, .sx-right h2 { font-size: clamp(16px, 1.25vw, 20px); }
-.sx-right textarea { flex: 1; min-height: 200px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); resize: none; }
-.sx-right textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.sx-col h2, .sx-right h2 { font-size: clamp(14px, 1.125vw, 18px); } /* Figma 1853: 18px */
+#feedback { height: clamp(96px, 12vh, 132px); padding: 12px; border: 1px solid var(--line); border-radius: 12px; font: inherit; color: var(--ink); resize: none; } /* Figma 1853: tinggi 132 */
+#feedback:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
 .sx-count { align-self: flex-end; color: var(--primary); font-size: 12px; }
 .sx-count.max { color: var(--danger); }
 #formFooter { padding-top: var(--gap); }
@@ -42,4 +42,27 @@
   .sx { grid-template-columns: minmax(0, 1fr); }
   .sx-table { font-size: 12px; }
   .sx-done::after { width: 180px; height: 180px; }
+}
+
+/* Figma 1853–1859: Feedback + Rencana Pengembangan */
+.sx-sep { height: 1px; border: 0; margin: 4px 14.2%; background: linear-gradient(90deg, #f7f7f8, #dee5ed 49.5%, #f7f7f8); } /* Figma 1853: 626/874, memudar ke ujung */
+.sx-plan { flex: 1; min-height: 280px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); gap: clamp(12px, 1.04vw, 20px); }
+.sx-box { border: 1px solid var(--line); border-radius: 12px; display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.sx-box header { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: clamp(44px, 2.7vw, 52px); padding: 8px 12px; border-bottom: 1px solid var(--line); font-weight: 500; }
+.sx-box header .dd { width: min(152px, 60%); font-weight: 400; }
+.sx-box header .dd-btn { min-height: 32px; padding: 4px 36px 4px 12px; background-position: right 8px center; background-size: 20px; }
+.sx-body { flex: 1; overflow-y: auto; padding: 0 clamp(8px, .625vw, 12px) 8px; display: flex; flex-direction: column; gap: 16px; }
+.sx-body h3 { font-size: .875em; font-weight: 700; margin: 0 0 -8px; } /* jarak judul → item 8px, antar kelompok 16px */
+/* Ukuran Figma (1920) mengecil di layar kecil agar kotak isian tetap lebar */
+.sx-item { position: relative; display: flex; align-items: flex-start; gap: clamp(4px, .42vw, 8px); }
+.sx-item textarea { flex: 1; min-width: 0; field-sizing: content; padding: clamp(6px, .42vw, 8px); border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); resize: none; }
+.sx-item textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.sx-more .icon-btn { width: clamp(20px, 1.67vw, 32px); height: clamp(20px, 1.67vw, 32px); justify-content: center; align-items: center; font-size: clamp(20px, 1.67vw, 32px); }
+.sx-menu { position: absolute; left: 4px; right: 0; top: 34px; z-index: 5; /* Figma 1855: selebar baris item */ background: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); padding: 10px; }
+.sx-menu .btn-outline { gap: 8px; width: 100%; justify-content: flex-start; padding: 10px 12px; }
+.sx-add { flex: none; display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; padding: 8px 12px; border: 1px dashed #64a7ce; border-radius: 8px; background: #ecf4f9; color: var(--primary); font: inherit; cursor: pointer; }
+.sx textarea::placeholder { color: #bccadc; }
+.sx-add .ico { font-size: clamp(18px, 1.25vw, 24px); }
+@media (max-width: 600px) {
+  .sx-plan { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-auto-rows: minmax(200px, auto); }
 }

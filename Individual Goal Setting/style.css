@@ -302,4 +302,124 @@ fieldset:disabled .drop { opacity: .6; }
 .drop { border: 1px dashed var(--muted); background: #eef4fa; font-weight: 400; }
 .dlg-actions { display: flex; justify-content: flex-end; padding: 16px 28px; border-top: 1px solid var(--line); }
 .form-dlg .error { margin: 0; }
-.card-body > .title-row:first-child { padding-right: 84px; } /* judul + avatar tidak tertimpa pita Bobot */
+.ribbon + .card-body > .title-row:first-child { padding-right: 84px; } /* judul + avatar tidak tertimpa pita Bobot */
+
+/* Revisi Figma: badge "Bobot/Target Terisi", batas terlampaui, footer proses, checkbox ketua, dropdown periode */
+.chip.fill { display: inline-flex; align-items: baseline; gap: 4px; font-weight: 400; }
+.chip.fill b { font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
+.chip-over { background: var(--danger); color: #fff; } /* Figma Desktop 1806 */
+.footer-bar.start { justify-content: flex-start; }
+.target-row > .dd { flex: 0 0 clamp(120px, 9vw, 160px); }
+/* Judul & badge kolom tetap 1 baris */
+.col-head { gap: 12px; }
+.col-head h2, .chip.fill { white-space: nowrap; }
+.chip.fill { flex: none; }
+/* Checkbox pilih sasaran kerja/proyek untuk dikirim ke evaluator (Figma Desktop 1418) */
+.card .pick { align-self: flex-start; width: 20px; height: 20px; margin: 0; accent-color: var(--primary); cursor: pointer; }
+.column { min-width: max-content; } /* header & tombol 1 baris: kolom melebar, papan scroll ke samping */
+.card-actions { gap: clamp(6px, 0.625vw, 12px); }
+.card-actions > .btn-outline { white-space: nowrap; padding-inline: clamp(6px, 0.73vw, 14px); }
+@media (max-width: 1440px) { .chip.fill { padding: 4px 8px; font-size: 10px; } .chip.fill b { font-size: 15px; } }
+/* Detail + Komentar/Aktivitas — ukuran dari Figma Desktop 1424/1814 (frame 1920, modal 894px) */
+#detailDialog { width: min(clamp(640px, 46.6vw, 894px), calc(100vw - 32px)); border-radius: 12px; } /* Figma: 894 dari 1920 */
+#detailDialog .dlg-head { padding: clamp(16px, 1.094vw, 21px) clamp(21px, 1.458vw, 28px); }
+#detailDialog .dlg-head h2 { font-size: clamp(17px, 1.198vw, 23px); font-weight: 500; line-height: 1.5; }
+#detailDialog .x { font-size: clamp(24px, 1.667vw, 32px); }
+#detailBody { display: flex; flex-direction: column; padding: clamp(10px, 0.729vw, 14px) clamp(21px, 1.458vw, 28px) clamp(21px, 1.458vw, 28px); font-size: clamp(12px, 0.833vw, 16px); line-height: 1.5; }
+#detailBody h3 { font-size: clamp(15px, 1.042vw, 20px); font-weight: 500; color: #31749b; }
+#detailBody .desc { margin: clamp(6px, 0.417vw, 8px) 0 0; color: #9bb0ca; }
+.meta { display: flex; flex-wrap: wrap; gap: clamp(9px, 0.625vw, 12px); margin-top: clamp(6px, 0.417vw, 8px); }
+.meta .chip { padding: clamp(3px, 0.208vw, 4px) clamp(6px, 0.417vw, 8px); border-radius: 12px; background: #eef2f6; color: #233143; font-size: clamp(12px, 0.833vw, 16px); font-weight: 500; line-height: 1.5; }
+.totals-list { display: flex; flex-direction: column; gap: clamp(6px, 0.417vw, 8px); margin-top: clamp(18px, 1.25vw, 24px); }
+.totals-list > div { display: flex; justify-content: space-between; align-items: center; min-height: clamp(26px, 1.823vw, 35px); color: var(--ink); }
+.totals-list > div:first-child > span:first-child { font-size: clamp(14px, 0.938vw, 18px); font-weight: 500; }
+.totals-list b { font-size: clamp(17px, 1.198vw, 23px); font-weight: 400; }
+.totals-list small { font-size: clamp(10px, 0.729vw, 14px); color: var(--ink); }
+.detail-actions { display: flex; justify-content: flex-end; margin-top: clamp(12px, 0.833vw, 16px); }
+.detail-actions .btn-outline { padding: clamp(8px, 0.521vw, 10px) clamp(12px, 0.833vw, 16px); font-size: clamp(12px, 0.833vw, 16px); }
+.dlg-foot { background: #f4f8fb; border-top: 1px solid var(--line); border-radius: 0 0 12px 12px; padding: 0 clamp(21px, 1.458vw, 28px) clamp(18px, 1.25vw, 24px); font-size: clamp(12px, 0.833vw, 16px); line-height: 1.5; }
+.tabs { display: flex; border-bottom: 1px solid var(--line); }
+.tab { width: clamp(107px, 7.448vw, 143px); padding: clamp(8px, 0.521vw, 10px) 0; background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; color: #9bb0ca; font-size: clamp(12px, 0.833vw, 16px); font-weight: 400; }
+.tab.active { color: #31749b; border-color: #31749b; font-weight: 500; }
+.feed { list-style: none; margin: 0; padding: clamp(9px, 0.625vw, 12px) 0 0; max-height: clamp(162px, 11.25vw, 216px); overflow-y: auto; }
+.feed li { display: flex; align-items: center; gap: clamp(6px, 0.417vw, 8px); padding: clamp(6px, 0.417vw, 8px) 0; color: var(--ink); }
+.feed .avatar { width: clamp(18px, 1.25vw, 24px); height: clamp(18px, 1.25vw, 24px); font-size: clamp(7px, 0.469vw, 9px); flex: none; }
+.feed .who { display: flex; align-items: center; gap: clamp(6px, 0.417vw, 8px); color: #7996b9; }
+.feed .who b { font-weight: 500; }
+.feed .who i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.feed p { margin: clamp(3px, 0.208vw, 4px) 0 0; }
+.comment-form { display: flex; align-items: center; gap: clamp(15px, 1.042vw, 20px); margin-top: clamp(15px, 1.042vw, 20px); min-height: clamp(36px, 2.5vw, 48px); padding: clamp(6px, 0.417vw, 8px) clamp(15px, 1.042vw, 20px); background: #fdfdfd; border: 1px solid var(--line); border-radius: 8px; }
+.comment-form input { flex: 1; border: 0; outline: 0; background: none; font: inherit; color: var(--ink); }
+.comment-form input::placeholder { color: #bccadc; }
+.send { display: inline-grid; place-items: center; width: clamp(42px, 2.917vw, 56px); height: clamp(24px, 1.667vw, 32px); border: 0; border-radius: 100px; background: #3c8dbc; color: #fff; font-size: clamp(12px, 0.833vw, 16px); }
+#detailBody:focus { outline: none; }
+/* Judul bagian form & chip nama + NIP (Figma Desktop 1248–1255, 1814) */
+.form-dlg h3, .team-view h3 { font-size: clamp(15px, 1.042vw, 20px); font-weight: 500; color: #466386; }
+.picker { min-height: clamp(57px, 3.958vw, 76px); padding: 12px; gap: 20px; }
+.pchip { gap: 8px; padding: 4px 12px 4px 8px; border-radius: 8px; background: #eef2f6; }
+.pchip .avatar { width: 24px; height: 24px; font-size: 9px; }
+.pname { display: flex; flex-direction: column; color: #0c1d27; line-height: 1.5; }
+.pname small { font-size: clamp(11px, 0.677vw, 13px); font-weight: 500; color: #7996b9; line-height: 1.5; }
+.pchip .icon-btn { font-size: 16px; color: var(--ink); }
+/* Detail Project Control: Daftar Kelompok Proyek (hanya baca) */
+.team-view { display: flex; flex-direction: column; margin-top: clamp(18px, 1.25vw, 24px); }
+.team-view h4 { margin: clamp(15px, 1.042vw, 20px) 0 12px; font-size: clamp(12px, 0.833vw, 16px); font-weight: 500; color: var(--ink); }
+.team-view h3 + h4 { margin-top: clamp(18px, 1.25vw, 24px); }
+.team-view .drop { border: 1px dashed #64a7ce; border-radius: 12px; background: #ecf4f9; padding: 38px 16px; }
+#assignPicker { min-height: 48px; padding: 6px 8px; gap: 8px; } /* Figma 1804: chip 1 baris tanpa NIP */
+#assignPicker .pname small { display: none; }
+#detailBody .team-view h3 { color: #466386; }
+/* Menu ••• (Figma Desktop 1799, 1813): item berupa tombol bergaris, Lihat Detail biru & Hapus merah */
+.menu { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: clamp(180px, 12.5vw, 240px); border-radius: 8px; box-shadow: 0 4px 16px rgba(25,58,77,.16); }
+.menu button { padding: clamp(6px, 0.52vw, 10px) 14px; border: 1px solid currentColor; border-radius: 6px; background: #fff; font-size: clamp(11px, 0.833vw, 16px); }
+.menu button.info { color: var(--primary); }
+.menu button.danger { color: var(--danger); }
+.menu button:hover { background: var(--panel); }
+.menu .ico { font-size: clamp(14px, 1.042vw, 20px); }
+/* Status pengajuan & tombol terkunci (Figma Desktop 1810, 1811) */
+.chip.status { align-self: flex-start; padding: 4px 10px; font-size: clamp(10px, 0.677vw, 13px); font-weight: 400; }
+.btn-outline:disabled { color: #7996b9; border-color: #7996b9; background: #fff; cursor: not-allowed; } /* Figma 1810 */
+.menu button:disabled { opacity: .45; cursor: not-allowed; }
+.footer-bar .btn-outline.danger { padding: 10px 16px; }
+/* Rekap Penetapan Sasaran Kerja (Figma Desktop 1429: modal 1482 dari 1920) */
+dialog.rekap-dlg { width: min(77.2vw, calc(100vw - 32px)); height: min(918px, calc(100vh - 32px)); }
+.rekap-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.rekap-body > .search { width: auto; max-width: none; margin: 12px 24px; }
+.table-scroll { flex: 1; min-height: 0; overflow: auto; background: #f4f8fb; }
+table.rekap { width: 100%; border-collapse: collapse; font-size: clamp(11px, 0.833vw, 16px); text-align: center; }
+.rekap th { position: sticky; top: 0; background: #fff; font-weight: 500; padding: clamp(10px, 0.94vw, 18px) 12px; }
+.rekap td { padding: 10px 12px; color: var(--ink); }
+.rekap tbody tr:nth-child(odd) { background: #eef2f6; }
+.rekap tbody tr:nth-child(even) { background: #fff; }
+.rekap td:first-child { max-width: 200px; }
+.rekap .btn-outline { padding: 8px 14px; white-space: nowrap; font-weight: 400; }
+dialog.period-dlg { width: min(680px, calc(100vw - 32px)); }
+.period-dlg .dlg-body h3 { font-size: clamp(14px, 1.042vw, 20px); font-weight: 500; margin-bottom: 12px; }
+.period-list { display: flex; flex-direction: column; gap: 12px; }
+.period-list > div { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border: 1px solid var(--line); border-radius: 8px; background: #fdfdfd; }
+.period-list b { font-size: clamp(20px, 1.5vw, 28px); font-weight: 400; }
+.period-list small { color: var(--muted); }
+.confirm .btn, .confirm .btn-outline { width: 100%; }
+/* Warna label status (Figma Desktop 1810, 1811, 1820) */
+.st-pending { background: #f7fed9; color: #866b02; }
+.st-approved { background: #d9fede; color: #007606; }
+.st-revisi { background: #ffa7a7; color: #9c0202; }
+.chip.status { font-size: clamp(11px, 0.677vw, 13px); padding: clamp(5px, 0.42vw, 8px) 10px; border-radius: 6px; }
+.head-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: clamp(11px, 0.812vw, 13px); font-weight: 500; } /* setinggi chip KPI Non-Budget Holder */
+.head-status[hidden] { display: none; }
+.head-status i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip-alert { padding: 8px; border-radius: 12px; background: #ea3f3f; color: #ecf4f9; font-size: clamp(11px, 0.677vw, 13px); } /* Figma 1805 */
+.chip-alert { white-space: nowrap; margin-right: clamp(96px, 6.8vw, 130px); } /* 1 baris & tidak menabrak pita Bobot; kolom melebar bila perlu */
+/* Kartu sempit: chip error pindah ke bawah pita Bobot supaya tetap 1 baris (pola sama dengan .chips di atas) */
+@container card (max-width: 440px) { .chip-alert { margin: 14px 0 0; } } /* tepat di bawah pita Bobot */
+/* Mode Evaluator: Approve Individual Goal Setting (Figma Desktop 1845–1852; gaya sama dengan Approve Nominee 360) */
+.footer-bar { gap: 12px; align-items: center; }
+.footer-bar .btn-outline { padding: 10px 16px; }
+.btn-outline.ok { color: #11742f; border-color: #11742f; }
+.evaluee-pill { box-sizing: border-box; height: 40px; padding: 0 12px; font-weight: 500; color: var(--primary-dark); }
+.msg-btn { padding: 6px 12px; font-size: clamp(11px, 0.812vw, 13px); }
+.reason { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin-bottom: 6px; }
+.reason textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; color: var(--ink); resize: vertical; }
+.reason textarea:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
+.reason small { color: var(--muted); font-size: clamp(11px, 0.75vw, 12px); }
+#askIco .ico { font-size: inherit; }

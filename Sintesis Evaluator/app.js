@@ -1,5 +1,5 @@
 // Dari desain Figma section "Sintesis Evaluator Final" (Redesign-Evaluator): Oka memberi feedback akhir untuk Heru.
-// Rute: # = form (Desktop 1822–1824), selesai = layar terkirim (1825), #belum-rekap = edge case (574).
+// Rute: # = form (Desktop 1853–1860), selesai = layar terkirim (1825), #belum-rekap = edge case (574).
 // shortcut: isi tabel & list masih contoh (Figma "xxx"); ganti dengan hasil Rekapitulasi Sintesis Evaluator saat halamannya ada.
 // Figma 1823: Individual Goal = Jenis, Weighted Performance, Evidence — satu baris per Jenis, sampai Development Commitment.
 // Nilai = Σ weighted performance item per Jenis, ditulis halaman Realisasi Target (saveSummary di ../Individual Goal/app.js).
@@ -12,7 +12,6 @@ const STRENGTHS = ['Komunikasi efektif dengan tim lintas fungsi', 'Analisis data
 const GROWTH = ['Manajemen waktu dan prioritas proyek', 'Delegasi pekerjaan ke anggota tim'];
 const BES = [['Behaviour Survey 360°', '4 Pekerja', '90%', '50%', '45%'], ['Behaviour Survey Evaluator', '1 Pekerja', '100%', '50%', '50%']];
 const RATINGS = [['Rating Development', '7'], ['Rating Rewards', '5.5x']];
-const MAX = 200;
 
 const $ = (s) => document.querySelector(s);
 document.querySelectorAll('[data-icon]').forEach((el) => {
@@ -38,18 +37,61 @@ $('#goalRows').addEventListener('click', (e) => {
   if (name) window.open(URL.createObjectURL(new Blob([`Evidence: ${name} (contoh prototype)`], { type: 'text/plain' })), '_blank');
 });
 
+// Figma 1853–1859: Rencana Pengembangan. Coaching dibagi per periode (Semester 2, Triwulan 4, Bulan 12 kelompok).
+const COUNT = { Semester: 2, Triwulan: 4, Bulan: 12 };
+const plan = { assignment: [], learning: [], period: 'Semester', coaching: [[], []] };
+const listOf = (key) => (/^c\d+$/.test(key) ? plan.coaching[+key.slice(1)] : plan[key]);
+// Figma 1853 terbaru: tanpa nomor urut; nomor tetap ada di aria-label untuk pembaca layar.
+const listHTML = (key, label) => listOf(key).map((v, i) => `<div class="sx-item">
+  <textarea rows="1" data-key="${key}" data-i="${i}" placeholder="Isi nama" aria-label="${label} ${i + 1}">${esc(v)}</textarea>
+  <div class="sx-more"><button type="button" class="icon-btn" data-more aria-label="Opsi ${label} ${i + 1}"><i class="ico">${ICONS['ri:more-fill']}</i></button>
+  <div class="sx-menu" hidden><button type="button" class="btn-outline danger" data-del="${key}" data-i="${i}"><i class="ico">${ICONS['mdi:trash']}</i>Hapus</button></div></div></div>`).join('')
+  + `<button type="button" class="sx-add" data-add="${key}"><i class="ico">${ICONS['akar-icons:plus']}</i>Tambah ${label}</button>`;
+function renderPlan(focusKey) {
+  $('#planAssignment').innerHTML = listHTML('assignment', 'Assignment');
+  $('#planLearning').innerHTML = listHTML('learning', 'Learning');
+  $('#planCoaching').innerHTML = plan.coaching.map((_, g) => `<h3>Coaching ${plan.period} ${g + 1}</h3>${listHTML(`c${g}`, 'Coaching')}`).join('');
+  if (focusKey) [...document.querySelectorAll(`textarea[data-key="${focusKey}"]`)].pop()?.focus();
+  onInput();
+}
+
 const fb = $('#feedback');
+const filled = (arr) => arr.length > 0 && arr.every((v) => v.trim());
+// Figma 1854/1857: Submit aktif bila feedback & tiap kolom punya minimal 1 item, tanpa item kosong.
 function onInput() {
-  $('#fbCount').textContent = `${fb.value.length}/${MAX}`;
-  $('#fbCount').classList.toggle('max', fb.value.length >= MAX);
-  $('#submitBtn').disabled = !fb.value.trim();
+  $('#submitBtn').disabled = !fb.value.trim() || !filled(plan.assignment) || !filled(plan.learning) || !filled(plan.coaching.flat());
 }
 fb.addEventListener('input', onInput);
+const closeMenus = (except) => document.querySelectorAll('.sx-menu').forEach((m) => { if (m !== except) m.hidden = true; });
+let pendingDel = null;
+$('#plan').addEventListener('input', (e) => {
+  const t = e.target.closest('textarea[data-key]');
+  if (t) { listOf(t.dataset.key)[+t.dataset.i] = t.value; onInput(); }
+});
+$('#plan').addEventListener('click', (e) => {
+  const add = e.target.closest('[data-add]');
+  if (add) { listOf(add.dataset.add).push(''); renderPlan(add.dataset.add); return; }
+  const more = e.target.closest('[data-more]');
+  if (more) { const m = more.nextElementSibling; closeMenus(m); m.hidden = !m.hidden; return; }
+  const del = e.target.closest('[data-del]');
+  if (del) { closeMenus(); pendingDel = [del.dataset.del, +del.dataset.i]; $('#delDialog').showModal(); }
+});
+document.addEventListener('click', (e) => { if (!e.target.closest('.sx-more')) closeMenus(); });
+$('#delDialog form').addEventListener('submit', (e) => {
+  if (e.submitter?.value === 'yes' && pendingDel) { listOf(pendingDel[0]).splice(pendingDel[1], 1); renderPlan(); }
+  pendingDel = null;
+});
+$('#coachPeriod').addEventListener('change', (e) => {
+  // shortcut: ganti periode mengosongkan isi coaching; simpan per periode bila pengguna perlu bolak-balik.
+  plan.period = e.target.value;
+  plan.coaching = Array.from({ length: COUNT[plan.period] }, () => []);
+  renderPlan();
+});
 $('#submitBtn').addEventListener('click', () => $('#submitDialog').showModal());
 $('#submitDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 $('#submitDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value !== 'yes') return;
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ status: 'sent', feedback: fb.value.trim() })); } catch {}
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ status: 'sent', feedback: fb.value.trim(), plan })); } catch {}
   show('done');
   // Figma: layar terkirim (1825) → kembali ke Pilih Evaluee (1826).
   setTimeout(() => { location.href = '../index.html#pwtt-evaluator'; }, 3000);
@@ -66,6 +108,6 @@ function route() {
 }
 
 initReviewUI('Sintesis Evaluator Final', 'Sintesis Evaluator Final');
-onInput();
+renderPlan();
 window.addEventListener('hashchange', route);
 route();

@@ -66,7 +66,7 @@ if (APPROVE) {
   $('.flow-pill').firstChild.textContent = 'Alur Evaluator ';
   $('.topbar-right').insertAdjacentHTML('afterbegin', '<span class="flow-pill evaluee-pill">Heru Kautsar - 19050193</span>');
   $('#stepper').innerHTML = [
-    ['tabler:award-filled', 'Approve Individual Goal Setting', null, 'done'],
+    ['tabler:award-filled', 'Approve Individual Goal Setting', '../Individual%20Goal%20Setting/index.html', 'done'],
     ['streamline-flex:user-collaborate-group-solid', 'Approve Nominee 360', null, 'current'],
     ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
     ['ri:survey-fill', 'Behaviour Survey', '../Behavior%20Survey/index.html'],
@@ -170,8 +170,10 @@ const pickedTable = (picks) => th([...BASE_COLS, 'Hubungan Kerja'])
   + `<tbody>${picks.map((p) => `<tr>${baseCells(person(p.id))}<td>${esc(p.rel)}</td></tr>`).join('')
     || `<tr><td colspan="6" class="none">Tidak ada pekerja yang cocok</td></tr>`}</tbody>`;
 
+// Kata kunci yang diterapkan: hasil pencarian pekerja baru muncul setelah Enter (bukan saat mengetik).
+let pilihQ = '';
 function renderPilih() {
-  const q = query($('#pilihSearch'));
+  const q = pilihQ;
   const done = !APPROVE && state.submitted;
   // Status: Disetujui / Revisi dari Evaluator (Figma Desktop 1485 / 1583), atau menunggu keputusan.
   const st = { approved: ['ok', 'Disetujui'], revision: ['rev', 'Revisi'] }[state.approval] || (done ? ['waiting', 'Menunggu Persetujuan'] : null);
@@ -215,7 +217,13 @@ function renderPilih() {
   }).join('');
   syncStep();
 }
-$('#pilihSearch').addEventListener('input', renderPilih);
+$('#pilihSearch').addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  pilihQ = query(e.target);
+  renderPilih();
+});
+// Kolom dikosongkan (ketik hapus / tombol ×): langsung kembali ke tampilan awal.
+$('#pilihSearch').addEventListener('input', (e) => { if (!e.target.value && pilihQ) { pilihQ = ''; renderPilih(); } });
 $('#pilihTable').addEventListener('click', async (e) => {
   const pick = e.target.closest('[data-pick]');
   if (pick) {

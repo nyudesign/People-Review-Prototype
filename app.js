@@ -44,13 +44,14 @@ const REVIEW_HERU = IG; // dibuka Oka → otomatis mode Review & Approve Realisa
 const SINTESIS = './Sintesis%20Evaluator/index.html';
 const BEHAVIOR = './Behavior%20Survey/index.html'; // dibuka Oka → Behaviour Survey Evaluator
 const NOMINATE = './Nominate%20360/index.html'; // dibuka Oka → mode Approve Nominee 360
+const IGS_HERU = './Individual%20Goal%20Setting/index.html'; // dibuka Oka → mode Approve Individual Goal Setting
 // Evaluee milik Oka (Figma "Homepage" → Pilih Evaluee). Approval Progress = shortcut ke halaman langkahnya.
 // approval(n, realisasiHref): n langkah pertama sudah disetujui (dicentang), langkah ke-n+1 aktif, sisanya abu-abu. C5B dihilangkan atas permintaan.
 // n = -1: evaluee belum submit Individual Goal Setting → semua langkah abu-abu.
 // Langkah yang sudah punya halaman (href) tidak dikunci.
 // shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Realisasi Target disetujui (permintaan user); kunci lagi bila alur sudah lengkap.
-const approval = (n, realisasiHref, sintesisHref, nominateHref, bsHref) => [
-  { group: 'Approval Progress', label: 'Individual Goal Setting' },
+const approval = (n, realisasiHref, sintesisHref, nominateHref, bsHref, igsHref) => [
+  { group: 'Approval Progress', label: 'Individual Goal Setting', href: igsHref },
   { group: 'Approval Progress', label: 'Nominate 360', href: nominateHref, gate: true },
   { group: 'Approval Progress', label: 'Realisasi Target', href: realisasiHref },
   { group: 'Penilaian', label: 'Penilaian Behavior Survey 360', href: bsHref },
@@ -75,7 +76,7 @@ const PEOPLE = {
     evaluees: [
       // pos = urutan di halaman Pilih Evaluee (Figma); beranda memakai urutan array.
       { name: 'Muhamad Fadlin Ananta', nip: '754933', title: 'Analyst I Perf.&amp; Comp.Mgt', steps: approval(-1), pos: 3 },
-      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, nominateHeru && NOMINATE, BEHAVIOR), review: REVIEW_HERU, open: true, pos: 1 },
+      { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, nominateHeru && NOMINATE, BEHAVIOR, IGS_HERU), review: REVIEW_HERU, open: true, pos: 1 },
       { name: 'Roehim Nuranas', nip: '752579', title: 'Sr Officer I Audit Relation', steps: approval(-1), pos: 2 },
     ],
     project: { label: 'Total Tugas', total: 27, done: 9, prog: 10 },
