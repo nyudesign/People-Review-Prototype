@@ -137,8 +137,7 @@ $('#kfActions').addEventListener('click', async (e) => {
   submitted = true;
   persist();
   renderKonfirmasi();
-  // shortcut: halaman CoPI Feedback belum dibuat, jadi "Menuju ke CoPI Feedback" hanya menutup dialog.
-  await ask($('#successDialog'));
+  if (await ask($('#successDialog')) === 'copi') location.href = '../CoPI%20Feedback/index.html';
 });
 
 /* ---------- Routing: #intro (kosong), #soal-N, #catatan, #konfirmasi ---------- */

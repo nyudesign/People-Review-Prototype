@@ -1,0 +1,37 @@
+/* CoPI Feedback (Evaluee) — tambahan di atas ../Individual Goal/style.css + ../Sintesis Evaluator/style.css */
+.sx-period { min-width: min(152px, 60%); padding: 4px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-weight: 400; } /* Figma 1821: periode Coaching read-only */
+
+/* Figma 1822/1830: tabel Likert; read-only setelah terkirim (1838) */
+.cp-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: clamp(12px, 1.04vw, 20px) clamp(16px, 1.25vw, 24px); }
+.cp-table { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cp-likert { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: clamp(13px, 1vw, 16px); }
+.cp-likert th { padding: 12px 20px; background: var(--primary-dark); color: #fff; font-weight: 500; }
+.cp-likert th:first-child { width: 31%; text-align: left; } /* Figma: 348 dari 1120 */
+.cp-likert td { height: clamp(80px, 11.1vh, 114px); padding: 12px; text-align: center; }
+.cp-likert tbody tr:nth-child(2n+3) td { background: var(--side); } /* Figma: baris ke-3 & ke-5 */
+.cp-likert label { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 500; cursor: pointer; }
+.cp-likert input { appearance: none; width: 32px; height: 32px; margin: 0; border: 1px solid var(--primary); border-radius: 50%; background: #fff; cursor: inherit; }
+.cp-likert input:checked { background: radial-gradient(circle, var(--primary) 7.5px, #fff 8.5px); }
+.cp-likert input:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cp-likert label:has(input:disabled) { cursor: default; }
+.cp-likert label:has(input:disabled:not(:checked)) { color: var(--muted); }
+.cp-likert input:disabled:not(:checked) { border-color: #9bb0ca; }
+
+/* Figma 1834/1833: jawaban di Konfirmasi */
+.cp-answers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.cp-answers li { display: flex; gap: 12px; }
+.cp-answers li:not(:last-child) { padding-bottom: 20px; border-bottom: 1px solid rgb(222 229 237 / .5); }
+.cp-answers li > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; } /* pill jawaban selebar Figma (500), tak ikut panjang teks */
+.cp-answers p { margin: 0; font-size: clamp(13px, 1vw, 16px); }
+.cp-answers li > div > p:first-child { padding-top: 4px; }
+.cp-num { flex: none; min-width: 44px; height: 32px; display: grid; place-items: center; border-radius: 8px; background: var(--side); font-weight: 500; font-size: clamp(13px, 1vw, 16px); }
+.cp-answers .cp-pick { display: flex; width: min(500px, 100%); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.cp-pick b { flex: none; width: 42px; display: grid; place-items: center; background: var(--primary-dark); color: #fff; font-size: clamp(16px, 1.04vw, 20px); font-weight: 500; }
+.cp-pick span { flex: 1; padding: 8px 12px; background: #fdfdfd; font-size: clamp(14px, .94vw, 18px); font-weight: 500; }
+.cp-usage { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 864fr) minmax(0, 557fr); grid-template-rows: minmax(0, 1fr); gap: 16px; padding: clamp(12px, 1.04vw, 20px) clamp(16px, 1.25vw, 24px); }
+.cp-list { min-height: 0; overflow-y: auto; }
+.cp-box { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: #feffff; }
+
+@media (max-width: 900px) {
+  .cp-usage { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; overflow-y: auto; }
+}

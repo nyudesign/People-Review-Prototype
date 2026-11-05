@@ -1,17 +1,17 @@
 // Dari desain Figma section "Sintesis Evaluator Final" (Redesign-Evaluator): Oka memberi feedback akhir untuk Heru.
-// Rute: # = form (Desktop 1853–1860), selesai = layar terkirim (1825), #belum-rekap = edge case (574).
-// shortcut: isi tabel & list masih contoh (Figma "xxx"); ganti dengan hasil Rekapitulasi Sintesis Evaluator saat halamannya ada.
-// Figma 1823: Individual Goal = Jenis, Weighted Performance, Evidence — satu baris per Jenis, sampai Development Commitment.
-// Nilai = Σ weighted performance item per Jenis, ditulis halaman Realisasi Target (saveSummary di ../Individual Goal/app.js).
-// Cadangan bila halaman itu belum pernah dibuka: data demo Realisasi Target (semua item performa 110%).
-const GOAL_DEMO = { 'Cascading KPI': 77, 'Project Control': 11, Extramiles: 0, 'HSSE Objective': 8.8, 'Community Involvement': 7.7, 'Development Commitment': 5.5 };
-const goalSummary = (() => { try { return JSON.parse(localStorage.getItem('pr-realisasi-summary-heru')); } catch { return null; } })() || GOAL_DEMO;
-const GOALS = Object.keys(GOAL_DEMO).map((jenis) => [jenis, goalSummary[jenis] || 0]);
-const pct = (n) => `${(+n.toFixed(2)).toLocaleString('id-ID')}%`;
-const STRENGTHS = ['Komunikasi efektif dengan tim lintas fungsi', 'Analisis data kinerja yang tajam'];
-const GROWTH = ['Manajemen waktu dan prioritas proyek', 'Delegasi pekerjaan ke anggota tim'];
-const BES = [['Behaviour Survey 360°', '4 Pekerja', '90%', '50%', '45%'], ['Behaviour Survey Evaluator', '1 Pekerja', '100%', '50%', '50%']];
-const RATINGS = [['Rating Development', '7'], ['Rating Rewards', '5.5x']];
+// Alur: Dialog Day (Desktop 1854/1857/1853) → Survei People Review (1867/1866) → Konfirmasi (1868/1869) → Submit (1870) → terkirim (1871).
+// Setelah terkirim semuanya read-only: Dialog Day (1862), survei (1874/1875), Konfirmasi + Edit (1872/1873).
+// Rute: # = Dialog Day, #survei-N, #konfirmasi, #terkirim, #belum-rekap = edge case (574).
+// Hasil Kinerja & Diskusi Dialog Day dari ../dialog-day.js (sama dengan CoPI Feedback milik Evaluee).
+// Catatan Figma: dasar survei = form sistem lama "Anda dapat memilih lebih dari satu pada A. dan B.", "untuk EVALUATOR saja"
+// → opsi "as Evaluator" (Evaluee di CoPI Feedback memakai opsi "as All User"). Satu soal = centang opsi + penjelasan.
+const SURVEY = ['Menurut saya, sistem People Review yang sudah baik adalah', 'Menurut saya, sistem People Review yang masih harus dikuatkan adalah'];
+const OPTIONS = [
+  'Penggunaan Akhlak Behaviour Survey untuk menilai perilaku',
+  'Pembagian Kelompok Penilaian untuk sintesis dan kalibrasi',
+  'Alokasi dan besaran (%) target distribusi di tiap rating kinerja',
+  'Basis target distribusi mengacu KPI yang dimulai dari Manager',
+];
 
 const $ = (s) => document.querySelector(s);
 document.querySelectorAll('[data-icon]').forEach((el) => {
@@ -19,27 +19,24 @@ document.querySelectorAll('[data-icon]').forEach((el) => {
   el.innerHTML = ICONS[el.dataset.icon];
 });
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const icon = (name) => `<i class="ico">${ICONS[name]}</i>`;
 
-// shortcut: tanpa backend, feedback & status kirim disimpan di localStorage browser ini; ganti dengan API saat ada.
+// shortcut: tanpa backend, isian, survei & status kirim disimpan di localStorage browser ini; ganti dengan API saat ada.
 const STORE_KEY = 'pr-sintesis-heru';
-const saved = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })();
+const blank = () => ({ status: 'draft', feedback: '', plan: { assignment: [], learning: [], period: 'Semester', coaching: [[], []] },
+  survey: SURVEY.map(() => ({ picks: [], note: '' })) });
+const state = { ...blank(), ...(() => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } })() };
+if (state.survey?.length !== SURVEY.length) state.survey = blank().survey; // simpanan versi lama belum punya survei
+state.survey.forEach((a) => { a.picks = a.picks.filter((p) => p < OPTIONS.length); }); // simpanan dari daftar opsi lama (8 opsi)
+const save = () => { try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {} };
+const sent = () => state.status === 'sent';
 
-$('#goalRows').innerHTML = GOALS.map(([jenis, wp]) => `<tr><td>${esc(jenis)}</td><td>${pct(wp)}</td>
-  <td><button type="button" class="btn-outline" data-file="${esc(jenis)}"><i class="ico">${ICONS['mdi:eye']}</i>Lihat File</button></td></tr>`).join('');
-$('#goalTotal').textContent = (+GOALS.reduce((t, [, wp]) => t + wp, 0).toFixed(2)).toLocaleString('id-ID');
-const rows = (list) => list.map((cells) => `<tr>${[cells].flat().map((c) => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
-$('#besRows').innerHTML = rows(BES);
-$('#strengthRows').innerHTML = rows(STRENGTHS);
-$('#growRows').innerHTML = rows(GROWTH);
-$('#ratingRows').innerHTML = rows(RATINGS);
-$('#goalRows').addEventListener('click', (e) => {
-  const name = e.target.closest('[data-file]')?.dataset.file;
-  if (name) window.open(URL.createObjectURL(new Blob([`Evidence: ${name} (contoh prototype)`], { type: 'text/plain' })), '_blank');
-});
+renderHasilKinerja();
+initDiskusi($('#discussBtn'), 'heru'); // 1862: utas yang sama dengan CoPI Feedback milik Heru
 
 // Figma 1853–1859: Rencana Pengembangan. Coaching dibagi per periode (Semester 2, Triwulan 4, Bulan 12 kelompok).
 const COUNT = { Semester: 2, Triwulan: 4, Bulan: 12 };
-const plan = { assignment: [], learning: [], period: 'Semester', coaching: [[], []] };
+const plan = state.plan;
 const listOf = (key) => (/^c\d+$/.test(key) ? plan.coaching[+key.slice(1)] : plan[key]);
 // Figma 1853 terbaru: tanpa nomor urut; nomor tetap ada di aria-label untuk pembaca layar.
 const listHTML = (key, label) => listOf(key).map((v, i) => `<div class="sx-item">
@@ -52,21 +49,27 @@ function renderPlan(focusKey) {
   $('#planLearning').innerHTML = listHTML('learning', 'Learning');
   $('#planCoaching').innerHTML = plan.coaching.map((_, g) => `<h3>Coaching ${plan.period} ${g + 1}</h3>${listHTML(`c${g}`, 'Coaching')}`).join('');
   if (focusKey) [...document.querySelectorAll(`textarea[data-key="${focusKey}"]`)].pop()?.focus();
-  onInput();
+  onChange();
 }
 
 const fb = $('#feedback');
+fb.value = state.feedback;
 const filled = (arr) => arr.length > 0 && arr.every((v) => v.trim());
-// Figma 1854/1857: Submit aktif bila feedback & tiap kolom punya minimal 1 item, tanpa item kosong.
-function onInput() {
-  $('#submitBtn').disabled = !fb.value.trim() || !filled(plan.assignment) || !filled(plan.learning) || !filled(plan.coaching.flat());
+console.assert(!filled([]) && !filled(['a', ' ']) && filled(['a']), 'minimal 1 item, tanpa item kosong');
+// Catatan Figma: Selanjutnya menyala setelah Feedback terisi, minimal 1 item Assignment & Learning, dan semua Coaching terisi
+// (tiap kelompok periode minimal 1 item); item kosong menahan tombol (1857).
+const formValid = () => !!state.feedback.trim() && filled(plan.assignment) && filled(plan.learning) && plan.coaching.every(filled);
+function onChange() {
+  state.feedback = fb.value;
+  save();
+  if ($('#dayNext') && !sent()) $('#dayNext').disabled = !formValid();
 }
-fb.addEventListener('input', onInput);
+fb.addEventListener('input', onChange);
 const closeMenus = (except) => document.querySelectorAll('.sx-menu').forEach((m) => { if (m !== except) m.hidden = true; });
 let pendingDel = null;
 $('#plan').addEventListener('input', (e) => {
   const t = e.target.closest('textarea[data-key]');
-  if (t) { listOf(t.dataset.key)[+t.dataset.i] = t.value; onInput(); }
+  if (t) { listOf(t.dataset.key)[+t.dataset.i] = t.value; onChange(); }
 });
 $('#plan').addEventListener('click', (e) => {
   const add = e.target.closest('[data-add]');
@@ -81,33 +84,132 @@ $('#delDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value === 'yes' && pendingDel) { listOf(pendingDel[0]).splice(pendingDel[1], 1); renderPlan(); }
   pendingDel = null;
 });
-$('#coachPeriod').addEventListener('change', (e) => {
+const period = $('#coachPeriod');
+period.value = plan.period;
+period.dispatchEvent(new Event('change', { bubbles: true })); // tombol dropdown kustom ikut menampilkan periode tersimpan
+period.addEventListener('change', (e) => {
   // shortcut: ganti periode mengosongkan isi coaching; simpan per periode bila pengguna perlu bolak-balik.
   plan.period = e.target.value;
   plan.coaching = Array.from({ length: COUNT[plan.period] }, () => []);
   renderPlan();
 });
-$('#submitBtn').addEventListener('click', () => $('#submitDialog').showModal());
+
+// Survei People Review (Evaluator). Terisi = minimal 1 opsi dicentang + penjelasan.
+let current = 0;
+const answered = (a) => a.picks.length > 0 && !!a.note.trim();
+console.assert(!answered({ picks: [], note: 'x' }) && !answered({ picks: [0], note: ' ' }) && answered({ picks: [0], note: 'x' }), 'survei terisi = centang + penjelasan');
+const allAnswered = () => state.survey.every(answered);
+function renderNav() {
+  const done = state.survey.filter(answered).length;
+  // Figma: judul panel "(Evaluator)" sebelum terkirim (1867), tanpa itu sesudahnya (1874).
+  $('#navTitle').textContent = sent() ? 'Survei People Review' : 'Survei People Review (Evaluator)';
+  $('#navPos').textContent = done;
+  $('#navTotal').textContent = SURVEY.length;
+  $('#navBar').style.width = `${(done / SURVEY.length) * 100}%`;
+  $('#navGrid').innerHTML = state.survey.map((a, i) => `<button type="button" data-go="#survei-${i + 1}" class="${answered(a) ? 'answered' : ''}"${i === current ? ' aria-current="step"' : ''}
+    aria-label="Survei ${i + 1}${answered(a) ? ', sudah diisi' : ''}">${i + 1}${answered(a) ? icon('material-symbols:check-rounded') : ''}</button>`).join('');
+}
+function renderSurvey() {
+  const a = state.survey[current];
+  $('#qText').textContent = SURVEY[current];
+  $('#qOpts').innerHTML = OPTIONS.map((o, i) => `<label class="sx-opt"><input type="checkbox" value="${i}"${a.picks.includes(i) ? ' checked' : ''}${sent() ? ' disabled' : ''}><span>${esc(o)}</span></label>`).join('');
+  $('#qNote').value = a.note;
+  $('#qNote').readOnly = sent() || !a.picks.length; // Figma 1867: kotak penjelasan aktif setelah ada opsi dicentang
+  renderNav();
+}
+$('#qOpts').addEventListener('change', () => {
+  const a = state.survey[current];
+  a.picks = [...$('#qOpts').querySelectorAll('input:checked')].map((c) => +c.value);
+  $('#qNote').readOnly = !a.picks.length;
+  save(); renderNav(); renderFoot();
+});
+$('#qNote').addEventListener('input', (e) => { state.survey[current].note = e.target.value; save(); renderNav(); renderFoot(); });
+$('#navGrid').addEventListener('click', (e) => { const b = e.target.closest('[data-go]'); if (b) location.hash = b.dataset.go; });
+
+// Konfirmasi: tab Dialog Day (1868) / Survei (1869, hanya opsi yang dicentang).
+function setTab(tab) {
+  $('#tabDay').setAttribute('aria-selected', tab === 'day');
+  $('#tabSurvey').setAttribute('aria-selected', tab === 'survey');
+  $('#formView').hidden = tab !== 'day';
+  $('#summary').hidden = tab !== 'survey';
+  if (tab === 'survey') {
+    $('#summary').innerHTML = SURVEY.map((q, i) => `<h2>${esc(q)}</h2>
+      ${state.survey[i].picks.map((p) => `<label class="sx-opt"><input type="checkbox" checked disabled><span>${esc(OPTIONS[p])}</span></label>`).join('')}
+      <h3>Jelaskan pilihan Anda</h3><div class="sx-note">${esc(state.survey[i].note)}</div>`).join('');
+  }
+}
+$('#tabs').addEventListener('click', (e) => { const t = e.target.closest('[role="tab"]'); if (t) setTab(t.id === 'tabSurvey' ? 'survey' : 'day'); });
+
+// Tombol bawah per tampilan; data-go = pindah rute.
+let view = 'day';
+const go = (href, html, cls = 'btn', attrs = '') => `<button type="button" class="${cls}" data-go="${href}"${attrs}>${html}</button>`;
+function renderFoot() {
+  const n = SURVEY.length, back = icon('tabler:arrow-left'), next = `Selanjutnya ${icon('tabler:arrow-right')}`;
+  let left = '', right;
+  if (view === 'day') right = go('#survei-1', next, 'btn', ` id="dayNext"${!sent() && !formValid() ? ' disabled' : ''}`);
+  else if (view === 'survey') {
+    // Figma: soal pertama kembali ke Dialog Day ("Sebelumnya" di 1867, "Kembali ke Dialog Day" setelah terkirim di 1875).
+    left = current ? go(`#survei-${current}`, `${back}Sebelumnya`, 'btn-outline') : go('#', `${back}${sent() ? 'Kembali ke Dialog Day' : 'Sebelumnya'}`, 'btn-outline');
+    const last = current === n - 1;
+    right = go(last ? '#konfirmasi' : `#survei-${current + 2}`, next, 'btn', last && !sent() && !allAnswered() ? ' disabled title="Isi semua survei terlebih dahulu"' : '');
+  } else {
+    left = go(`#survei-${n}`, `${back}Kembali ke Survei People Review`, 'btn-outline');
+    const submit = (attrs) => `<button type="button" class="btn"${attrs}>${icon('material-symbols:send-rounded')}Submit</button>`;
+    right = sent() ? `<button type="button" class="btn-outline" id="editBtn">${icon('mdi:pencil')}Edit</button>${submit(' disabled')}` : submit(' id="submitBtn"');
+  }
+  $('#foot').innerHTML = `${left}<span class="sx-acts">${right}</span>`;
+}
+$('#foot').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b || b.disabled) return;
+  if (b.dataset.go) location.hash = b.dataset.go;
+  else if (b.id === 'submitBtn') $('#submitDialog').showModal();
+  else if (b.id === 'editBtn') { state.status = 'draft'; save(); location.hash = ''; } // 1872: Edit membuka lagi Dialog Day yang bisa diubah
+});
 $('#submitDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 $('#submitDialog form').addEventListener('submit', (e) => {
   if (e.submitter?.value !== 'yes') return;
-  try { localStorage.setItem(STORE_KEY, JSON.stringify({ status: 'sent', feedback: fb.value.trim(), plan })); } catch {}
-  show('done');
-  // Figma: layar terkirim (1825) → kembali ke Pilih Evaluee (1826).
-  setTimeout(() => { location.href = '../index.html#pwtt-evaluator'; }, 3000);
+  state.status = 'sent';
+  save();
+  location.hash = 'terkirim';
 });
 
-function show(view) {
-  $('#formView').hidden = $('#formFooter').hidden = view !== 'form';
-  $('#doneView').hidden = view !== 'done';
-  $('#emptyView').hidden = view !== 'empty';
-}
 // shortcut: halaman Rekapitulasi Sintesis Evaluator belum ada, jadi rekap dianggap sudah dilakukan; edge case dibuka lewat #belum-rekap.
 function route() {
-  show(location.hash === '#belum-rekap' ? 'empty' : saved?.status === 'sent' ? 'done' : 'form');
+  const h = location.hash.slice(1), q = +(/^survei-(\d+)$/.exec(h)?.[1] || 0);
+  if (h === 'belum-rekap') view = 'empty';
+  else if (h === 'terkirim' && sent()) view = 'done';
+  else if (h === 'konfirmasi' || (q >= 1 && q <= SURVEY.length)) {
+    // Sebelum terkirim: survei butuh Dialog Day lengkap, Konfirmasi butuh semua survei terisi.
+    if (!sent() && !formValid()) return location.replace('#');
+    const gap = state.survey.findIndex((a) => !answered(a));
+    if (!q && !sent() && gap >= 0) return location.replace(`#survei-${gap + 1}`);
+    view = q ? 'survey' : 'konfirmasi';
+    if (q) current = q - 1;
+  } else if (h) return location.replace('#');
+  else view = 'day';
+
+  const ro = sent() || view === 'konfirmasi';
+  $('#formView').classList.toggle('ro', ro);
+  $('#formView').querySelectorAll('textarea').forEach((t) => { t.readOnly = ro; });
+  period.disabled = ro;
+  $('#dayTitle').textContent = view === 'konfirmasi' ? 'Konfirmasi Sintesis Evaluator Final' : 'Dialog Day';
+  $('#discussBtn').hidden = !(sent() && view === 'day');
+  $('#sentChip').hidden = !sent();
+  $('#tabs').hidden = view !== 'konfirmasi';
+  setTab('day');
+  if (view === 'survey') renderSurvey();
+  $('#dayView').hidden = view !== 'day' && view !== 'konfirmasi';
+  $('#surveyView').hidden = view !== 'survey';
+  $('#doneView').hidden = view !== 'done';
+  $('#emptyView').hidden = view !== 'empty';
+  $('#foot').hidden = view === 'done' || view === 'empty';
+  if (!$('#foot').hidden) renderFoot();
+  scrollTo(0, 0);
 }
 
 initReviewUI('Sintesis Evaluator Final', 'Sintesis Evaluator Final');
+$('.crumbs').innerHTML = 'Pengelolaan Kinerja • PWTT • End Year People Review • <span>Evaluator</span>'; // Figma 1853 dst.
 renderPlan();
 window.addEventListener('hashchange', route);
 route();

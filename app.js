@@ -9,7 +9,7 @@ const steps = [
   { label: 'Nominate 360', icon: 'streamline-flex:user-collaborate-group-solid', href: './Nominate%20360/index.html' },
   { label: 'Realisasi Target', icon: 'mingcute:target-fill', href: IG },
   { label: 'Self Review', icon: 'material-symbols:person-rounded', href: './Self%20Review/index.html' },
-  { label: 'CoPI Feedback', icon: 'mdi:speak' },
+  { label: 'CoPI Feedback', icon: 'mdi:speak', href: './CoPI%20Feedback/index.html' },
 ];
 // Performa (%) sama dengan kartu di Realisasi Target: performa() di review.js atas realisasi Year End.
 // Realisasi HSSE / PCI = total poin yang disimpan halamannya (`summary` di `pr-hsse-…` / `pr-pci-…`); Development Commitment = angka tetap yang sama dengan Realisasi Target.

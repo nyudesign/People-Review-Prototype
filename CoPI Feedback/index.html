@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CoPI Feedback – People Review</title>
+  <!-- Shell sama dengan halaman Realisasi Target; kartu Dialog Day, survei centang & layar terkirim sama dengan Sintesis Evaluator Final -->
+  <link rel="stylesheet" href="../Individual%20Goal/style.css">
+  <link rel="stylesheet" href="../Sintesis%20Evaluator/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="logo"><img src="../assets/logo-people-review.png" alt="People Review Pertamina" width="150" height="48"></div>
+    <nav>
+      <a href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Beranda</a>
+      <p class="nav-label">MENU UTAMA</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard</a>
+      <a href="#" class="active"><i data-icon="mdi:graph-box-multiple"></i>Pengelolaan Kinerja<i class="nav-caret" data-icon="tabler:chevron-up"></i></a>
+      <a href="../index.html#pwtt" class="sub active"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWTT</a>
+      <a href="#" class="sub"><i class="reply" data-icon="fluent:arrow-reply-24-filled"></i>PWT</a>
+      <p class="nav-label">MENU ADMIN</p>
+      <a href="#"><i data-icon="mdi:speedometer"></i>Dashboard Admin</a>
+      <a href="#"><i data-icon="solar:book-bold"></i>Report</a>
+      <a href="#"><i data-icon="mdi:gear"></i>Master</a>
+      <a href="#"><i data-icon="material-symbols:person-rounded"></i>Manajemen Role</a>
+    </nav>
+    <div class="user"><span class="avatar">HK</span><div><b>Heru Kautsar</b><small>19050193</small></div><button class="icon-btn more" aria-label="Menu pengguna"><i data-icon="ri:more-fill"></i></button></div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <p class="crumbs">Pengelolaan Kinerja • PWTT • <span>Evaluee</span></p>
+      <div class="topbar-right">
+        <div class="flow-pill">Alur Evaluee <button id="toggleFlow" class="btn-white"><i data-icon="mdi:eye-off"></i><span>Sembunyikan Alur</span></button></div>
+        <button class="icon-btn bell" aria-label="Notifikasi"><i data-icon="mdi:bell-outline"></i></button>
+      </div>
+    </header>
+
+    <ol class="stepper" id="stepper">
+      <li class="done"><a href="../Settings%20Evaluator/index.html"><i data-icon="material-symbols-light:frame-person-rounded"></i>Settings Evaluator<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
+      <li class="done"><a href="../Individual%20Goal%20Setting/index.html"><i data-icon="tabler:award-filled"></i>Individual Goal Setting<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
+      <li class="done"><a href="../Nominate%20360/index.html"><i data-icon="streamline-flex:user-collaborate-group-solid"></i>Nominate 360<i class="check" data-icon="material-symbols:check-rounded"></i></a></li>
+      <li id="stepRealisasi"><a href="../Individual%20Goal/index.html"><i data-icon="mingcute:target-fill"></i>Realisasi Target<i class="check" data-icon="material-symbols:check-rounded" hidden></i></a></li>
+      <li id="stepSelf"><a href="../Self%20Review/index.html"><i data-icon="material-symbols:person-rounded"></i>Self Review<i class="check" data-icon="material-symbols:check-rounded" hidden></i></a></li>
+      <li class="current" id="copiStep"><i data-icon="mdi:speak"></i>CoPI Feedback<i class="check" data-icon="material-symbols:check-rounded" hidden></i></li>
+    </ol>
+
+    <!-- Figma "CoPI Feedback + Survey" (Redesign-Evaluee): Dialog Day dari Evaluator (Desktop 1821). Kartu yang sama jadi
+         Konfirmasi CoPI Feedback dengan 3 tab (1835/1834/1833); judul, tombol & tab diatur app.js. -->
+    <section class="board-wrap sx-card" id="dayView" hidden>
+      <div class="board-head">
+        <h1 id="dayTitle">Dialog Day</h1>
+        <button type="button" class="btn-outline sx-discuss" id="discussBtn"><i data-icon="material-symbols:chat-rounded"></i>Buka Diskusi Dialog Day</button>
+        <div class="sx-tabs" id="tabs" role="tablist" aria-label="Isi konfirmasi">
+          <button type="button" role="tab" id="tabDay" aria-controls="formView">Dialog Day</button>
+          <button type="button" role="tab" id="tabCopi" aria-controls="sumCopi">Survei CoPI Feedback</button>
+          <button type="button" role="tab" id="tabUsage" aria-controls="sumUsage">Survei People Review</button>
+        </div>
+      </div>
+      <div class="sx" id="formView">
+        <div class="sx-col">
+          <h2>Hasil Kinerja</h2>
+          <div class="sx-left">
+            <details class="sx-acc" open>
+              <summary>Indeks Behaviour Survey (IBS)<span class="big">95<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata</th><th>Bobot</th><th>Rata-rata x Bobot</th></tr></thead><tbody id="besRows"></tbody></table>
+            </details>
+            <details class="sx-acc" open>
+              <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
+            </details>
+            <details class="sx-acc" open>
+              <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
+            </details>
+            <details class="sx-acc" open>
+              <summary>Individual Goal<span class="big"><span id="goalTotal">110</span><small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table">
+                <thead><tr><th>Jenis</th><th>Weighted Performance</th><th>Evidence</th></tr></thead>
+                <tbody id="goalRows"></tbody>
+              </table>
+            </details>
+            <details class="sx-acc" open>
+              <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
+            </details>
+          </div>
+        </div>
+        <div class="sx-right">
+          <h2>Feedback</h2>
+          <textarea id="feedback" aria-label="Feedback dari Evaluator" readonly></textarea>
+          <h2>Rencana Pengembangan untuk Periode Berikutnya</h2>
+          <div class="sx-plan">
+            <section class="sx-box"><header>Assignment</header><div class="sx-body" id="planAssignment"></div></section>
+            <section class="sx-box"><header>Learning</header><div class="sx-body" id="planLearning"></div></section>
+            <section class="sx-box"><header>Coaching<span class="sx-period" id="coachPeriod"></span></header><div class="sx-body" id="planCoaching"></div></section>
+          </div>
+        </div>
+      </div>
+      <!-- Figma 1834: tab Survei CoPI Feedback -->
+      <div class="sx-summary" id="sumCopi" hidden><ol class="cp-answers" id="copiAnswers"></ol></div>
+      <!-- Figma 1833: tab Survei People Review (tabel kiri, soal centang kanan) -->
+      <div class="cp-usage" id="sumUsage" hidden>
+        <div class="cp-list"><ol class="cp-answers" id="usageAnswers"></ol></div>
+        <div class="sx-summary cp-box" id="usageChecks"></div>
+      </div>
+    </section>
+
+    <!-- Figma 1822/1830: tabel Likert; 1826/1824 & 1827/1832: soal centang; read-only setelah terkirim (1838/1837) -->
+    <div class="sx-survey" id="surveyView" hidden>
+      <section class="board-wrap sx-card" id="likertCard">
+        <div class="board-head"><h1 id="lkTitle"></h1></div>
+        <div class="cp-scroll">
+          <div class="cp-table"><table class="cp-likert">
+            <thead><tr><th scope="col" id="lkHead"></th><th scope="col">Tidak Setuju</th><th scope="col">Netral</th><th scope="col">Setuju</th></tr></thead>
+            <tbody id="lkRows"></tbody>
+          </table></div>
+        </div>
+      </section>
+      <section class="board-wrap sx-card" id="checkCard">
+        <div class="board-head"><h1>Berikan Penilaian Anda saat Penggunaan People Review</h1></div>
+        <div class="sx-q">
+          <div class="sx-q-inner">
+            <div class="sx-q-part">
+              <p class="sx-step"><b>1</b><span>Pilih centang yang sesuai dengan pilihan Anda</span></p>
+              <h2 id="qText"></h2>
+              <div class="sx-opts" id="qOpts" role="group" aria-labelledby="qText"></div>
+            </div>
+            <div class="sx-q-part">
+              <p class="sx-step"><b>2</b><span>Isikan pendapat Anda dari opsi yang sudah Anda pilih</span></p>
+              <label for="qNote">Jelaskan pilihan Anda</label>
+              <textarea id="qNote" placeholder="Isi pendapat Anda"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside class="board-wrap sx-nav" aria-label="Navigasi survei">
+        <p class="nav-title" id="navTitle"></p>
+        <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+        <div class="progress"><i id="navBar"></i></div>
+        <div class="nav-grid" id="navGrid"></div>
+      </aside>
+    </div>
+
+    <div class="footer-bar" id="foot" hidden></div>
+
+    <!-- Figma 1772: terkirim; "Tetap di halaman ini" → Konfirmasi read-only -->
+    <section class="board-wrap sx-state sx-done" id="doneView" hidden>
+      <span class="sx-check"><i data-icon="material-symbols:check-rounded"></i></span>
+      <div>
+        <h1>Feedback sudah terkirim!</h1>
+        <p>Selamat!<br>Anda sudah menyelesaikan semua tahapan<br>dari pengisian People Review!</p>
+      </div>
+      <div class="sx-actions">
+        <a class="btn" href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Kembali ke Beranda</a>
+        <a class="btn-outline" href="#konfirmasi">Tetap di halaman ini</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Figma 1836 -->
+  <dialog id="submitDialog" class="confirm">
+    <form method="dialog">
+      <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
+      <h2>Apakah Anda ingin submit CoPI Feedback Anda?</h2>
+      <p class="muted">Pastikan Anda sudah mengisi survei CoPI Feedback dan lainnya dengan benar</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak, Saya Ingin Cek Kembali</button>
+    </form>
+  </dialog>
+
+  <script src="../Individual%20Goal/icons.js"></script>
+  <script src="../dialog-day.js"></script>
+  <script src="app.js"></script>
+  <script src="../profile.js"></script>
+</body>
+</html>

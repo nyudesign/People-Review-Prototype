@@ -39,61 +39,106 @@
 
     <ol class="stepper" id="stepper"></ol>
 
-    <!-- Figma "Sintesis Evaluator Final" Desktop 1822/1823: ringkasan read-only + feedback -->
-    <section class="board-wrap sx" id="formView" hidden>
-      <!-- Figma 1853/1854: judul "Realisasi", urutan IBS → Kekuatan → Butuh Pengembangan → Individual Goal → Rating; IBS terbuka saat dibuka -->
-      <div class="sx-col">
-        <h2>Realisasi</h2>
-        <div class="sx-left">
-          <details class="sx-acc" open>
-            <summary>Indeks Behaviour Survey (IBS)<span class="big">95<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata</th><th>Bobot</th><th>Rata-rata x Bobot</th></tr></thead><tbody id="besRows"></tbody></table>
-          </details>
-          <details class="sx-acc">
-            <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
-          </details>
-          <details class="sx-acc">
-            <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
-          </details>
-          <details class="sx-acc">
-            <summary>Individual Goal<span class="big"><span id="goalTotal">110</span><small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table">
-              <thead><tr><th>Jenis</th><th>Weighted Performance</th><th>Evidence</th></tr></thead>
-              <tbody id="goalRows"></tbody>
-            </table>
-          </details>
-          <details class="sx-acc">
-            <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
-            <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
-          </details>
+    <!-- Figma "Sintesis Evaluator Final": Dialog Day (Desktop 1854/1857/1853, 1855–1858, 1865). Kartu yang sama tampil read-only
+         untuk Konfirmasi (1868/1869) dan setelah terkirim (1862, 1872/1873); judul, chip, tab & tombol diatur app.js. -->
+    <section class="board-wrap sx-card" id="dayView" hidden>
+      <div class="board-head">
+        <h1 id="dayTitle">Dialog Day</h1>
+        <button type="button" class="btn-outline sx-discuss" id="discussBtn"><i data-icon="material-symbols:chat-rounded"></i>Buka Diskusi Dialog Day</button>
+        <span class="sx-sent" id="sentChip">Terkirim kepada Evaluee</span>
+        <div class="sx-tabs" id="tabs" role="tablist" aria-label="Isi konfirmasi">
+          <button type="button" role="tab" id="tabDay" aria-controls="formView">Dialog Day</button>
+          <button type="button" role="tab" id="tabSurvey" aria-controls="summary">Survei People Review (Evaluator)</button>
         </div>
       </div>
-      <!-- Figma 1853–1859: Feedback + Rencana Pengembangan (Assignment, Learning, Coaching per periode) -->
-      <div class="sx-right">
-        <h2>Feedback</h2>
-        <textarea id="feedback" aria-label="Feedback" placeholder="Jelaskan alasan dan feedback berdasarkan hasil kinerja Evaluee"></textarea>
-        <hr class="sx-sep">
-        <h2>Rencana Pengembangan untuk Periode Berikutnya</h2>
-        <div class="sx-plan" id="plan">
-          <section class="sx-box"><header>Assignment</header><div class="sx-body" id="planAssignment"></div></section>
-          <section class="sx-box"><header>Learning</header><div class="sx-body" id="planLearning"></div></section>
-          <section class="sx-box"><header>Coaching
-            <select id="coachPeriod" aria-label="Periode coaching"><option>Semester</option><option>Triwulan</option><option>Bulan</option></select></header>
-            <div class="sx-body" id="planCoaching"></div></section>
+      <!-- Figma 1853/1854: urutan IBS → Kekuatan → Butuh Pengembangan → Individual Goal → Rating; semua tertutup saat dibuka -->
+      <div class="sx" id="formView">
+        <div class="sx-col">
+          <h2>Hasil Kinerja</h2>
+          <div class="sx-left">
+            <details class="sx-acc">
+              <summary>Indeks Behaviour Survey (IBS)<span class="big">95<small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Jenis</th><th>Jumlah Pekerja</th><th>Rata-rata</th><th>Bobot</th><th>Rata-rata x Bobot</th></tr></thead><tbody id="besRows"></tbody></table>
+            </details>
+            <details class="sx-acc">
+              <summary>List Kekuatan Utama<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Kekuatan Utama</th></tr></thead><tbody id="strengthRows"></tbody></table>
+            </details>
+            <details class="sx-acc">
+              <summary>List Butuh Pengembangan<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Butuh Pengembangan</th></tr></thead><tbody id="growRows"></tbody></table>
+            </details>
+            <details class="sx-acc">
+              <summary>Individual Goal<span class="big"><span id="goalTotal">110</span><small>%</small></span><i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table">
+                <thead><tr><th>Jenis</th><th>Weighted Performance</th><th>Evidence</th></tr></thead>
+                <tbody id="goalRows"></tbody>
+              </table>
+            </details>
+            <details class="sx-acc">
+              <summary>Rating Kinerja<i data-icon="mdi:chevron-down"></i></summary>
+              <table class="sx-table"><thead><tr><th>Jenis</th><th>Rating</th></tr></thead><tbody id="ratingRows"></tbody></table>
+            </details>
+          </div>
+        </div>
+        <!-- Figma 1853–1859: Feedback + Rencana Pengembangan (Assignment, Learning, Coaching per periode) -->
+        <div class="sx-right">
+          <h2>Feedback</h2>
+          <textarea id="feedback" aria-label="Feedback" placeholder="Jelaskan alasan dan feedback berdasarkan hasil kinerja Evaluee"></textarea>
+          <h2>Rencana Pengembangan untuk Periode Berikutnya</h2>
+          <div class="sx-plan" id="plan">
+            <section class="sx-box"><header>Assignment</header><div class="sx-body" id="planAssignment"></div></section>
+            <section class="sx-box"><header>Learning</header><div class="sx-body" id="planLearning"></div></section>
+            <section class="sx-box"><header>Coaching
+              <select id="coachPeriod" aria-label="Periode coaching"><option>Semester</option><option>Triwulan</option><option>Bulan</option></select></header>
+              <div class="sx-body" id="planCoaching"></div></section>
+          </div>
         </div>
       </div>
+      <!-- Figma 1869: tab Survei di Konfirmasi, hanya opsi yang dicentang -->
+      <div class="sx-summary" id="summary" hidden></div>
     </section>
-    <div class="footer-bar" id="formFooter" hidden>
-      <button type="button" class="btn" id="submitBtn" disabled><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+
+    <!-- Figma 1867/1866: Survei People Review (Evaluator); read-only setelah terkirim (1874/1875) -->
+    <div class="sx-survey" id="surveyView" hidden>
+      <section class="board-wrap sx-card">
+        <div class="board-head"><h1>Berikan Penilaian Anda saat Penggunaan People Review</h1></div>
+        <div class="sx-q">
+          <div class="sx-q-inner">
+            <div class="sx-q-part">
+              <p class="sx-step"><b>1</b><span>Pilih centang yang sesuai dengan pilihan Anda</span></p>
+              <h2 id="qText"></h2>
+              <div class="sx-opts" id="qOpts" role="group" aria-labelledby="qText"></div>
+            </div>
+            <div class="sx-q-part">
+              <p class="sx-step"><b>2</b><span>Isikan pendapat Anda dari opsi yang sudah Anda pilih</span></p>
+              <label for="qNote">Jelaskan pilihan Anda</label>
+              <textarea id="qNote" placeholder="Isi pendapat Anda"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+      <aside class="board-wrap sx-nav" aria-label="Navigasi survei">
+        <p class="nav-title" id="navTitle"></p>
+        <p class="nav-count"><span>Survei Terisi</span><span><b id="navPos"></b><small>/<span id="navTotal"></span></small></span></p>
+        <div class="progress"><i id="navBar"></i></div>
+        <div class="nav-grid" id="navGrid"></div>
+      </aside>
     </div>
 
-    <!-- Desktop 1825: terkirim -->
+    <div class="footer-bar" id="foot" hidden></div>
+
+    <!-- Figma 1871: terkirim; "Tetap di halaman ini" → Konfirmasi read-only (1872) -->
     <section class="board-wrap sx-state sx-done" id="doneView" hidden>
       <span class="sx-check"><i data-icon="material-symbols:check-rounded"></i></span>
-      <h1>Nilai Rating Akhir Evaluee<br>sudah terkirim!</h1>
-      <p>Selamat Anda sudah selesai<br>dari pengisian People Review!</p>
+      <div>
+        <h1>Nilai Rating Akhir Evaluee<br>sudah terkirim!</h1>
+        <p>Selamat! Anda sudah menyelesaikan semua<br>tahapan dari pengisian People Review!</p>
+      </div>
+      <div class="sx-actions">
+        <a class="btn" href="../index.html"><i data-icon="material-symbols:home-rounded"></i>Kembali ke Beranda</a>
+        <a class="btn-outline" href="#konfirmasi">Tetap di halaman ini</a>
+      </div>
     </section>
 
     <!-- Desktop 574 (edge case): Rekapitulasi Nilai Sintesis belum dilakukan -->
@@ -105,7 +150,7 @@
     </section>
   </main>
 
-  <!-- Desktop 1824 -->
+  <!-- Figma 1870 -->
   <dialog id="submitDialog" class="confirm">
     <form method="dialog">
       <div class="warn-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></div>
@@ -128,6 +173,7 @@
   </dialog>
 
   <script src="../Individual%20Goal/icons.js"></script>
+  <script src="../dialog-day.js"></script>
   <script src="../dropdown.js"></script>
   <script src="../review.js"></script>
   <script src="app.js"></script>
