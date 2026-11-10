@@ -59,6 +59,9 @@
       <div class="board" id="board"></div>
     </section>
     <div class="footer-bar" id="boardFooter">
+      <!-- Jumlah item Cascading KPI/Project Control yang dicentang vs minimal (Figma Desktop 1418), diisi app.js -->
+      <div class="pick-count" id="pickCount"><span></span>Cascading KPI &amp; Project Control</div>
+      <span class="chip chip-alert pick-over" id="pickOver" hidden><i data-icon="material-symbols:error-rounded"></i>Item melebihi batas! (maksimal 8 item)</span>
       <button type="button" class="btn" id="next">Selanjutnya <i data-icon="tabler:arrow-right"></i></button>
       <button type="button" class="btn-outline danger" id="reset" hidden><i data-icon="material-symbols:close-rounded"></i>Atur Kembali Sasaran Kerja</button>
       <!-- Mode Evaluator: Approve Individual Goal Setting (Figma section "Approve IGS baru", Desktop 1845–1852) -->

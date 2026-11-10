@@ -414,6 +414,16 @@ dialog.period-dlg { width: min(680px, calc(100vw - 32px)); }
 @container card (max-width: 440px) { .chip-alert { margin: 14px 0 0; } } /* tepat di bawah pita Bobot */
 /* Mode Evaluator: Approve Individual Goal Setting (Figma Desktop 1845–1852; gaya sama dengan Approve Nominee 360) */
 .footer-bar { gap: 12px; align-items: center; }
+/* Figma Desktop 1418: angka 24px ink, "/4" 14px muted, "Item" 14px ink, label 18px Medium; Selanjutnya nonaktif #bccadc/#466386 */
+.pick-count { margin-right: auto; display: flex; flex-direction: column; align-items: center; color: var(--ink); font-size: clamp(14px, 0.9375vw, 18px); font-weight: 500; line-height: 1.5; }
+.pick-count > span { font-size: clamp(12px, 0.729vw, 14px); font-weight: 400; }
+.pick-count b { font-size: clamp(18px, 1.25vw, 24px); font-weight: 400; }
+.pick-count b + span { color: var(--muted); }
+/* Figma Desktop 1806: lebih dari 8 item → angka & "/4 Item" merah + chip peringatan di sebelahnya */
+.pick-count.over > span, .pick-count.over b + span { color: var(--danger); }
+.pick-count:has(+ .pick-over:not([hidden])) { margin-right: 0; }
+.pick-over { margin: 0 auto 0 0; }
+#next:disabled { background: #bccadc; color: #466386; }
 .footer-bar .btn-outline { padding: 10px 16px; }
 .btn-outline.ok { color: #11742f; border-color: #11742f; }
 .evaluee-pill { box-sizing: border-box; height: 40px; padding: 0 12px; font-weight: 500; color: var(--primary-dark); }

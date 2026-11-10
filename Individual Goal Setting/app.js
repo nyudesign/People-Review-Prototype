@@ -39,6 +39,8 @@ const CONTRIBUTORY = MANAGER ? [
 ];
 const KPI_TOTAL = 80; // total bobot Cascading KPI + Project Control (badge "x/80%" di Figma)
 const MIN_WEIGHT = 10;
+const MAX_PICK = 8; // maksimal item dicentang (Figma Desktop 1806: "Item melebihi batas! (maksimal 8 item)")
+const MIN_PICK = 4; // minimal item Cascading KPI dan/atau Project Control yang dicentang (Figma Desktop 1418: "1/4 Item")
 const TIPS = {
   nbh: 'Total bobot item Cascading KPI/Sasaran Kerja Spesifik pada IG Non Pemilik KPI : 85%\n\nSelisih antar item Cascading KPI/Sasaran Kerja Spesifik pada IG Non Pemilik KPI maksimal 20% dengan bobot minimum per item 10% & kelipatan bobot 5%',
   type: 'Cascading KPI: KPI yang diturunkan dari atasan kepada individu\nAdditional KPI 0%: KPI tambahan di luar KPI utama yang digunakan untuk mencatat kontribusi atau tanggung jawab tambahan\nProject Control: Mengukur efektivitas pengendalian dan pencapaian proyek berdasarkan target',
@@ -215,12 +217,17 @@ function render() {
     col('Extramiles', `<span class="chip fill chip-full">Bobot Terisi <b>${fmt(sum(extra.map((i) => i.weight)))}</b> %</span>`, typed('Extramiles'), 'Tidak ada item yang ditambahkan di sini'),
   ].join('');
   // Lanjut hanya bila bobot Cascading KPI + Project Control genap 80%, tiap proyek sudah punya proses,
-  // dan minimal 1 sasaran kerja/proyek dicentang untuk dikirim ke evaluator.
+  // dan minimal 4 item Cascading KPI dan/atau Project Control dicentang untuk dikirim ke evaluator (Figma Desktop 1418).
+  const picked = state.items.filter((i) => i.selected && isKpi(i)).length;
+  $('#pickCount').firstElementChild.innerHTML = `<b>${picked}</b><span>/${MIN_PICK}</span> Item`;
   const blocker = total !== KPI_TOTAL ? `Total bobot Cascading KPI dan Project Control harus ${KPI_TOTAL}% (saat ini ${total}%)`
-    : !state.items.some((i) => i.selected) ? 'Pilih sasaran kerja/proyek yang akan dikirim ke evaluator' : '';
+    : picked < MIN_PICK ? `Pilih minimal ${MIN_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})`
+    : picked > MAX_PICK ? `Maksimal ${MAX_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})` : '';
+  $('#pickCount').classList.toggle('over', picked > MAX_PICK);
   $('#next').disabled = !!blocker;
   $('#next').title = blocker;
-  $('#next').hidden = APPROVE || sent();
+  $('#next').hidden = $('#pickCount').hidden = APPROVE || sent();
+  $('#pickOver').hidden = APPROVE || sent() || picked <= MAX_PICK;
   $('#reset').hidden = APPROVE || !sent();
   // Chip status di header setelah dikirim, untuk Evaluee & Evaluator (Figma 1810, 1811, 1820 / 1845, 1851, 1852).
   const head = sent() && STATUS[state.status];
