@@ -128,9 +128,10 @@
       <div class="field">Bobot (%)
         <div class="weight">
           <input type="range" name="weight" min="0" max="80" step="5" value="0" aria-label="Bobot (%)">
-          <button type="button" class="icon-btn" data-step="-5" aria-label="Kurangi bobot"><i data-icon="akar-icons:minus"></i></button>
-          <output id="weightOut">0%</output>
-          <button type="button" class="icon-btn" data-step="5" aria-label="Tambah bobot"><i data-icon="akar-icons:plus"></i></button>
+          <button type="button" class="icon-btn" data-step="-5" aria-label="Kurangi bobot"><i data-icon="ic:round-minus"></i></button>
+          <!-- Figma 11109:177270: kotak input angka + "%" di antara minus/plus; disinkronkan ke slider -->
+          <label class="weight-box"><input type="number" id="weightNum" min="0" max="80" step="5" inputmode="numeric" aria-label="Isi bobot (%)"><span>%</span></label>
+          <button type="button" class="icon-btn" data-step="5" aria-label="Tambah bobot"><i data-icon="ic:round-plus"></i></button>
         </div>
         <small class="muted" id="weightHint"></small>
       </div>

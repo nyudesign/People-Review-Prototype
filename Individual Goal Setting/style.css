@@ -279,8 +279,14 @@ dialog.form-dlg { width: min(896px, calc(100vw - 32px)); height: min(928px, calc
 .add-row:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
 .add-row:disabled { color: #bccadc; cursor: not-allowed; }
 .weight { display: flex; align-items: center; gap: 12px; }
-.weight output { min-width: 40px; text-align: center; font-weight: 500; }
-.weight .icon-btn { font-size: clamp(19px, 1.5vw, 24px); }
+.weight .icon-btn { font-size: clamp(24px, 1.667vw, 32px); color: var(--ink); }
+/* Figma 11109:177270: minus 32px, kotak 120x40 (#fcfefe, border #dee5ed, radius 4, padding 8/12), plus 32px, jarak 4px */
+.weight .icon-btn + .weight-box { margin: 0 -8px; }
+.weight-box { box-sizing: border-box; flex: none; width: 120px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; font-size: clamp(14px, 0.833vw, 16px); font-weight: 500; line-height: 1.5; color: #466386; cursor: text; }
+.weight-box:focus-within { border-color: var(--primary); }
+.weight .weight-box input { width: 56px; padding: 0; border: 0; border-radius: 0; background: none; font-size: inherit; line-height: inherit; text-align: right; color: var(--ink); appearance: textfield; -moz-appearance: textfield; }
+.weight-box input::-webkit-inner-spin-button, .weight-box input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.weight-box span { width: 36px; text-align: right; }
 .weight input[type="range"] { flex: 1; height: 4px; appearance: none; border-radius: 2px; background: linear-gradient(var(--ribbon), var(--ribbon)) 0 / var(--p, 0%) 100% no-repeat, #c5d1df; cursor: pointer; }
 .weight input[type="range"]::-webkit-slider-thumb { appearance: none; width: 32px; height: 32px; border-radius: 50%; background: var(--ribbon); }
 .weight input[type="range"]::-moz-range-thumb { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--ribbon); }
@@ -332,7 +338,8 @@ fieldset:disabled .drop { opacity: .6; }
 .meta .chip { padding: clamp(3px, 0.208vw, 4px) clamp(6px, 0.417vw, 8px); border-radius: 12px; background: #eef2f6; color: #233143; font-size: clamp(12px, 0.833vw, 16px); font-weight: 500; line-height: 1.5; }
 .totals-list { display: flex; flex-direction: column; gap: clamp(6px, 0.417vw, 8px); margin-top: clamp(18px, 1.25vw, 24px); }
 .totals-list > div { display: flex; justify-content: space-between; align-items: center; min-height: clamp(26px, 1.823vw, 35px); color: var(--ink); }
-.totals-list > div:first-child > span:first-child { font-size: clamp(14px, 0.938vw, 18px); font-weight: 500; }
+.totals-list > div:first-child > span:first-child, .totals-list.plain > div > span:first-child { /* plain: tanpa baris total, semua periode setara (Figma) */ font-size: clamp(14px, 0.938vw, 18px); font-weight: 500; }
+.target-label { font-size: clamp(12px, 0.729vw, 14px); font-weight: 400; line-height: 1.5; color: var(--ink); } /* Figma 11322:261002 */
 .totals-list b { font-size: clamp(17px, 1.198vw, 23px); font-weight: 400; }
 .totals-list small { font-size: clamp(10px, 0.729vw, 14px); color: var(--ink); }
 .detail-actions { display: flex; justify-content: flex-end; margin-top: clamp(12px, 0.833vw, 16px); }

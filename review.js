@@ -36,6 +36,41 @@ document.querySelectorAll('a[href="../Individual%20Goal/index.html"]').forEach((
 });
 const REVIEW = (() => { try { return LOGIN !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
 
+// Talent Development (Figma "Talent Development – Khusus Evaluator yang ingin Realisasi Target", Desktop 1839–1841)
+// menggantikan Development Commitment untuk Evaluator: Beranda, Realisasi Target & halaman Development Commitment.
+// IDP (Individual Development Plan) per NIP: [skor %, plan, real] tiap IDP_PARTS + Realisasi Development (%).
+// Dipakai juga oleh Development Commitment Evaluee (Figma 978): komponen & kartunya sama.
+// shortcut: angka contoh (Oka, Putri, Fitria dari Figma 1839–1840, Platto 1841; Heru 100 = angka Development Commitment
+// di Beranda & Realisasi Target); nantinya dari Capability Development Plan.
+const IDP_PARTS = [['Assignment', 70], ['Coaching', 20], ['Training', 5], ['Self Learning', 5]];
+const IDP = {
+  19050193: { name: 'Heru Kautsar', rows: [[100, 3, 3], [100, 3, 3], [100, 3, 3], [100, 3, 3]], dev: 100 },
+  752579: { name: 'Roehim Nuranas', rows: [[60, 5, 3], [50, 2, 1], [40, 5, 2], [8, 4, 1]], dev: 54 },
+  754933: { name: 'Muhamad Fadlin Ananta', rows: [[40, 5, 2], [25, 4, 1], [20, 5, 1], [0, 2, 0]], dev: 34 },
+  748958: { name: 'Putri Rizqiandini', rows: [[10, 3, 3], [30, 3, 3], [5, 3, 3], [5, 3, 3]], dev: 20 },
+  749285: { name: 'Fitria Lisdiyanti', rows: [[81, 5, 5], [22, 4, 1], [14, 5, 0], [5, 3, 3]], dev: 62 },
+  749291: { name: 'Platto Mutaqin', rows: [[28, 3, 1], [24, 5, 4], [60, 1, 1], [60, 1, 1]], dev: 27 },
+  1905416: { name: 'Oka Fitrio', rows: [[10, 3, 3], [30, 3, 3], [5, 3, 3], [5, 3, 3]], dev: 20 },
+  751806: { name: 'Reni Oktavia', rows: [[80, 5, 4], [50, 2, 1], [60, 5, 3], [9, 3, 1]], dev: 69 },
+  753120: { name: 'Hendra Prabowo', rows: [[60, 5, 3], [75, 4, 3], [40, 5, 2], [6, 5, 2]], dev: 59 },
+  777777: { name: 'Aryomekka Firdaus', rows: [[90, 5, 4], [70, 3, 2], [80, 5, 4], [4, 2, 1]], dev: 81 },
+};
+console.assert(IDP_PARTS.reduce((s, [, w]) => s + w, 0) === 100 && Object.values(IDP).every((p) => p.rows.length === IDP_PARTS.length), 'IDP: bobot 100% & satu baris per komponen');
+// NIP Evaluator + Evaluee-nya (urutan halaman Pilih Evaluee); harus sama dengan PEOPLE[...].evaluees di app.js.
+const TEAM = {
+  oka: { nip: '1905416', subs: ['19050193', '752579', '754933', '748958', '749285', '749291'] },
+  aryo: { nip: '777777', subs: ['1905416', '751806', '753120'] },
+};
+// Mode review (Oka membuka milik Heru) tetap Development Commitment karena datanya milik Evaluee.
+const MANAGER = !REVIEW && Object.hasOwn(TEAM, LOGIN);
+// Rumus tooltip Figma 1841: (Realisasi Development × 50%) + (Rata-rata Realisasi Development Subordinate × 50%).
+function talentDev(mine, subs) {
+  const avg = subs.reduce((s, d) => s + d, 0) / subs.length;
+  return { mine, avg, td: mine * 0.5 + avg * 0.5 };
+}
+console.assert(talentDev(20, [20, 62, 27, 70]).avg === 44.75 && talentDev(20, [20, 62, 27, 70]).td === 32.375, 'Figma 1840–1841: 44,75 & 32,38');
+const teamDev = (user) => talentDev(IDP[TEAM[user].nip].dev, TEAM[user].subs.map((nip) => IDP[nip].dev));
+
 // Header evaluator sesuai Figma section "Review & Approve Realisasi Target"; langkah sebelum `current` = done, sesudahnya disabled.
 // Langkah yang sudah punya halaman jadi tautan (semua halaman evaluator ada satu folder di bawah root).
 // shortcut: Sintesis Evaluator Final dinyalakan dulu tanpa menunggu Behaviour Survey (permintaan user); matikan bila alur sudah lengkap.

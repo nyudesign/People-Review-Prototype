@@ -97,6 +97,7 @@ main { --pad-y: clamp(16px, 2.35vh, 24px); --pad-l: clamp(24px, 2.5vw, 48px); --
 .stepper li.current { background: var(--panel); color: var(--ink); }
 .stepper li.disabled { color: #bccadc; }
 .stepper.hidden { display: none; }
+.stepper li a { display: inline-flex; align-items: center; gap: 8px; color: inherit; text-decoration: none; } /* sama dengan Individual Goal/style.css */
 
 .board-wrap { flex: 1; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; min-height: 0; }
 .board-head { display: flex; align-items: center; gap: clamp(12px, 1.04vw, 20px); padding: clamp(8px, 1.17vh, 12px) clamp(16px, 1.25vw, 24px); border-bottom: 1px solid var(--line); background: #fcfefe; border-radius: 12px 12px 0 0; flex-wrap: wrap; }
@@ -424,3 +425,88 @@ a.btn, a.btn-outline { text-decoration: none; }
 /* Mode evaluator (../review.js) */
 .evaluee-pill { box-sizing: border-box; height: 40px; padding: 0 12px; font-weight: 500; color: var(--primary-dark); } /* setinggi pill alur di sebelahnya */
 .dev-foot[hidden] { display: none; }
+
+/* Kartu IDP Development Commitment (Figma 978) & Talent Development (akun Evaluator, Figma 1839–1841). Ukuran = px Figma × --u, dengan --u = lebar main ÷ 1585
+   (lebar main di Figma; 280px = lebar .sidebar), maksimal 1px: tata letaknya sama dengan Figma di layar laptop.
+   Teks 13–14px Figma minimal 9px supaya tetap terbaca. Class .idp dipasang app.js. */
+.idp { --u: clamp(0.62px, (100vw - 280px) / 1585, 1px); }
+.idp .board-wrap { border-radius: calc(20 * var(--u)); }
+.idp .board-head { gap: calc(20 * var(--u)); padding: calc(12 * var(--u)) calc(24 * var(--u)); border-radius: calc(20 * var(--u)) calc(20 * var(--u)) 0 0; }
+.idp .board-head h1 { font-size: calc(20 * var(--u)); white-space: nowrap; }
+.idp #tdSearchBox { flex: 0 1 auto; width: calc(435 * var(--u)); gap: calc(12 * var(--u)); padding: 0 calc(12 * var(--u)); border-radius: calc(12 * var(--u)); }
+.idp #tdSearchBox .ico { font-size: calc(24 * var(--u)); }
+.idp #tdSearchBox input { padding: calc(12 * var(--u)) 0; font-size: calc(16 * var(--u)); line-height: 1.5; }
+.td-tabs { display: flex; gap: calc(8 * var(--u)); }
+.td-tabs button { padding: calc(8 * var(--u)) calc(20 * var(--u)); background: #fff; border: 1px solid var(--line); border-radius: calc(12 * var(--u)); color: var(--ink); font-size: calc(16 * var(--u)); font-weight: 500; line-height: 1.5; white-space: nowrap; }
+.td-tabs [aria-selected="true"] { background: #e3eff6; border-color: var(--primary); color: var(--primary-dark); }
+
+/* Baris Assignment/Coaching/Training, donut & legend (sama di kedua jenis kartu) */
+.idp .dev-row + .dev-row { margin-top: calc(36 * var(--u)); }
+.idp .dev-row-head { flex-wrap: wrap; gap: calc(4 * var(--u)) calc(20 * var(--u)); margin-bottom: calc(12 * var(--u)); }
+.idp .dev-row-head > div:first-child { gap: calc(4 * var(--u)); font-size: calc(16 * var(--u)); line-height: 1.2; }
+.idp .dev-row-head .big { font-size: calc(20 * var(--u)); line-height: 1.5; }
+.idp .dev-row-head small { font-size: max(9px, calc(14 * var(--u))); }
+.idp .dev-chips { gap: calc(8 * var(--u)); }
+.idp .dev-chip { gap: calc(8 * var(--u)); padding: calc(8 * var(--u)) calc(12 * var(--u)); border-radius: calc(12 * var(--u)); font-size: max(9px, calc(14 * var(--u))); line-height: 1.5; }
+.idp .dev-chip b { padding: 0 calc(6 * var(--u)); border-radius: calc(4 * var(--u)); }
+.idp .dev-bar { height: calc(12 * var(--u)); border-radius: calc(20 * var(--u)); }
+.idp .dev-side { flex: none; margin: 0; gap: calc(32 * var(--u)); }
+.idp .donut b { font-size: calc(23 * var(--u)); }
+.idp .dev-legend { gap: calc(8 * var(--u)); padding: calc(16 * var(--u)); border-radius: calc(16 * var(--u)); font-size: calc(16 * var(--u)); line-height: 1.5; }
+.idp .dev-legend .dot { width: calc(8 * var(--u)); height: calc(8 * var(--u)); }
+.idp .dev-legend .big { margin-left: 0; font-size: calc(23 * var(--u)); }
+.idp .dev-legend small { font-size: max(9px, calc(14 * var(--u))); }
+
+/* Kartu IDP Saya (Figma 1839): judul selebar kartu, bar & donut di bawahnya (isi .dev-main ikut baris kartu). */
+.idp .dev-wrap { padding: calc(24 * var(--u)); }
+.idp .dev-card { width: calc(1083 * var(--u)); gap: 0 calc(36 * var(--u)); padding: calc(36 * var(--u)); border-radius: calc(20 * var(--u)); }
+.idp .dev-card .dev-main { display: contents; }
+.idp .dev-main h2 { flex: 1 0 100%; font-size: calc(20 * var(--u)); line-height: 1.5; }
+.idp .dev-main > p { flex: 1 0 100%; margin: calc(4 * var(--u)) 0 calc(16 * var(--u)); font-size: max(9px, calc(13 * var(--u))); line-height: 1.5; }
+.idp #devRows { flex: 1 1 calc(500 * var(--u)); min-width: 0; }
+.idp .dev-card .donut { width: calc(304 * var(--u)); }
+
+/* Kartu IDP Subordinate (Figma 1840): 2 kolom, bar kiri & donut kanan; turun ke bawah bila kartu terlalu sempit. */
+.td-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(20 * var(--u)); padding: calc(20 * var(--u)) calc(24 * var(--u)); align-content: start; }
+.td-card { display: flex; flex-direction: column; gap: calc(8 * var(--u)); padding: calc(24 * var(--u)); background: #feffff; border: 1px solid var(--line); border-radius: calc(20 * var(--u)); }
+.td-card-head { display: flex; justify-content: space-between; align-items: center; gap: calc(16 * var(--u)); }
+.td-card-head h2 { font-size: calc(20 * var(--u)); line-height: 1.5; }
+.td-who { padding: calc(8 * var(--u)) calc(12 * var(--u)); border-radius: calc(12 * var(--u)); background: var(--soft-blue); color: var(--primary); font-size: max(9px, calc(14 * var(--u))); font-weight: 500; line-height: 1.5; white-space: nowrap; }
+.td-card-body { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: calc(20 * var(--u)); }
+.td-card-body > .dev-main { flex: 1 1 calc(300 * var(--u)); min-width: 0; }
+.td-card .donut { width: calc(174 * var(--u)); } /* kolom donut selebar legend (hug, seperti Figma) */
+.td-card .dev-legend { padding: calc(8 * var(--u)) calc(16 * var(--u)); }
+.td-empty { grid-column: 1 / -1; text-align: center; }
+
+/* Pagination (flex: none menimpa aturan nav sidebar) */
+.td-pager { flex: none; display: flex; justify-content: center; align-items: center; gap: calc(12 * var(--u)); padding: calc(12 * var(--u)) calc(20 * var(--u)); background: #feffff; border-top: 1px solid var(--line); border-radius: 0 0 calc(20 * var(--u)) calc(20 * var(--u)); }
+.td-pager .icon-btn { font-size: calc(40 * var(--u)); color: var(--ink-2); border-radius: 50%; }
+.td-pager .icon-btn:disabled { color: #c5d1df; cursor: default; }
+.pg, .pg-gap { width: calc(40 * var(--u)); color: #060f13; font-size: calc(16 * var(--u)); font-weight: 500; text-align: center; }
+.pg { aspect-ratio: 1; padding: 0; border: 0; border-radius: 50%; background: none; }
+.pg:hover:not([aria-current]) { background: var(--panel); }
+.pg[aria-current="page"] { background: var(--primary); color: var(--panel); }
+.pg-prev { transform: rotate(90deg); }
+.pg-next { transform: rotate(-90deg); }
+
+/* Footer: tombol kembali + ringkasan Talent Development */
+.idp-foot { display: flex; justify-content: space-between; align-items: center; gap: calc(20 * var(--u)); flex-wrap: wrap; }
+.idp-foot > .btn-outline { gap: calc(8 * var(--u)); padding: calc(12 * var(--u)) calc(20 * var(--u)); border-radius: calc(8 * var(--u)); font-size: calc(16 * var(--u)); line-height: 1.5; text-decoration: none; }
+.idp-foot > .btn-outline .ico { font-size: calc(24 * var(--u)); }
+.td-stats { display: flex; gap: calc(20 * var(--u)); flex-wrap: wrap; }
+.td-stat { display: flex; flex-direction: column; align-items: center; text-align: center; font-size: calc(18 * var(--u)); font-weight: 500; line-height: 1.5; }
+.td-num { font-size: calc(23 * var(--u)); font-weight: 400; }
+.td-num small { font-size: max(9px, calc(14 * var(--u))); }
+.td-tipwrap { position: relative; display: inline-flex; vertical-align: middle; margin-left: calc(8 * var(--u)); }
+.td-tipwrap .info-btn .ico { font-size: calc(24 * var(--u)); color: var(--primary); }
+/* Tooltip di atas ikon info, panah tepat di tengah ikon (Figma 1841: tepi kanan tooltip 41px dari pusat ikon). */
+.td-tip { position: absolute; right: calc(50% - 41 * var(--u)); bottom: calc(100% + 14 * var(--u)); width: min(calc(404 * var(--u)), calc(100vw - 32px)); --arrow-x: calc(100% - 41 * var(--u)); gap: calc(8 * var(--u)); padding: calc(16 * var(--u)) calc(12 * var(--u)); border-radius: calc(12 * var(--u)); color: var(--ink); text-align: left; font-weight: 400; }
+.td-tip > span { font-size: max(9px, calc(16 * var(--u))); line-height: 1.5; }
+.td-tip b { font-weight: 500; }
+.td-tip .x { font-size: calc(24 * var(--u)); }
+@media (max-width: 900px) {
+  .idp { --u: 0.75px; } /* sidebar pindah ke atas: skala tetap, kartu satu kolom */
+  .td-grid { grid-template-columns: 1fr; }
+  .idp .dev-card { width: 100%; }
+  .td-tabs { flex-wrap: wrap; }
+}

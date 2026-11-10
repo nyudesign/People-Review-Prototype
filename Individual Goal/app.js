@@ -20,10 +20,11 @@ const columns = [
     // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
     item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
       href: '../HSSE%20Objective/index.html' }),
-    item({ id: 'pci', name: 'Community Involvement', weight: 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
+    // Evaluator (MANAGER di ../review.js): Talent Development menggantikan Development Commitment, bobot sama dengan Individual Goal Setting.
+    item({ id: 'pci', name: 'Community Involvement', weight: MANAGER ? 5 : 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
-    item({ id: 'dev', name: 'Development Commitment', weight: 5, periods: [{ label: 'Year End', target: 100, value: 100 }],
-      href: '../Development%20Commitment/index.html' }),
+    item({ id: 'dev', ...(MANAGER ? { name: 'Talent Development', weight: 7 } : { name: 'Development Commitment', weight: 5 }),
+      periods: [{ label: 'Year End', target: 100, value: 100 }], href: '../Development%20Commitment/index.html' }),
   ] },
   { title: 'Cascading KPI', badge: '80/80%', evidence: true, file: null, items: [
     item({ id: 'rbf', name: 'Remodelling Business Flow People Review', desc: 'Model ulang bisnis proses dalam People Review sebagai dasar Re-engineering',
@@ -727,6 +728,8 @@ function loadPoin() {
   });
 }
 loadPoin();
+// Talent Development selalu dihitung dari data IDP (bukan snapshot tersimpan), sama dengan halamannya.
+if (MANAGER) findItem('dev').periods[0].value = teamDev(LOGIN).td;
 if (REVIEW) initReviewUI('Review Realisasi Target');
 window.addEventListener('hashchange', route);
 route();

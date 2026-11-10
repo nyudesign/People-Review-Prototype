@@ -9,6 +9,11 @@ const RK_DATA = {
   752579: { fungsi: 'Penunjang Bisnis • Internal Audit • Audit Relation', ig: 98, bs: 102, dev: 'B' },
   754933: { fungsi: 'Penunjang Bisnis • Human Capital • Performance & Competency Mgt', ig: 104, bs: 100, dev: 'A' },
   1905416: { fungsi: 'Penunjang Bisnis • Human Capital • Performance & Competency Mgt', ig: 108, bs: 104, dev: 'A' },
+  748958: { fungsi: 'Penunjang Bisnis • Human Capital • Performance & Competency Mgt', ig: 96, bs: 98, dev: 'B' },
+  749285: { fungsi: 'Penunjang Bisnis • Human Capital • Performance & Competency Mgt', ig: 102, bs: 101, dev: 'A' },
+  749291: { fungsi: 'Penunjang Bisnis • Human Capital • Performance & Competency Mgt', ig: 94, bs: 97, dev: 'C' },
+  751806: { fungsi: 'Penunjang Bisnis • Human Capital • Talent Development & Recruitment', ig: 103, bs: 105, dev: 'A' },
+  753120: { fungsi: 'Penunjang Bisnis • Human Capital • Talent Development & Recruitment', ig: 99, bs: 100, dev: 'B' },
 };
 const RK_LIST = ME.evaluees.map((p) => ({ ...p, ...RK_DATA[p.nip] }));
 const DEV = ['A+', 'A', 'B', 'C', 'D'];

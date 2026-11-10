@@ -170,7 +170,8 @@ function goalCard(it) {
           : `<input type="checkbox" class="pick" data-pick="${it.id}"${it.selected ? ' checked' : ''} aria-label="Pilih ${esc(it.name)} untuk dikirim ke evaluator">`}
         <div class="title-row"><h3>${esc(it.name)}</h3>${tm.length ? `<span class="avatars">${avatarsHTML(tm)}</span>` : ''}</div>
         ${it.library ? `<div class="library">KPI Library ${icon('tabler:arrow-right')} ${esc(it.library)}</div>` : ''}
-        <div class="perf"><span>Target Anda${isRate(it.unit) && it.periods.length > 1 ? ` <small>(${esc(it.periods.at(-1).label)})</small>` : ''}</span><span>${unitHTML(targetSum(it.periods, it.unit), it.unit)}</span></div>
+        ${isKpi(it) ? '' /* Figma Desktop 1418/1807: card Cascading KPI & Project Control tanpa baris Target Anda */
+          : `<div class="perf"><span>Target Anda${isRate(it.unit) && it.periods.length > 1 ? ` <small>(${esc(it.periods.at(-1).label)})</small>` : ''}</span><span>${unitHTML(targetSum(it.periods, it.unit), it.unit)}</span></div>`}
         <button type="button" class="toggle" data-toggle="${it.id}">Lihat ${it.periods.length} Target Per Periode ${icon(openPeriods.has(it.id) ? 'tabler:chevron-up' : 'mdi:chevron-down')}</button>
       </div>
       <div class="card-foot">
@@ -510,7 +511,7 @@ let file = null;
 function drawWeight() {
   const r = gf.elements.weight;
   r.style.setProperty('--p', `${(r.value / KPI_TOTAL) * 100}%`);
-  $('#weightOut').textContent = `${r.value}%`;
+  $('#weightNum').value = r.value;
   const left = KPI_TOTAL - kpiTotal(editing?.id) - Number(r.value);
   $('#weightHint').textContent = gf.elements.type.value && gf.elements.type.value !== 'Extramiles'
     // Dihitung seolah item ini ikut dicentang, karena Bobot Terisi hanya menghitung item yang dicentang.
@@ -518,6 +519,8 @@ function drawWeight() {
       + ` (minimum ${MIN_WEIGHT}% per item, kelipatan 5%)` : '';
 }
 gf.elements.weight.addEventListener('input', drawWeight);
+// Ketik bobot langsung: slider membulatkan ke kelipatan 5 & batas 0–80, lalu nilainya ditulis balik ke kotak.
+$('#weightNum').addEventListener('change', (e) => { gf.elements.weight.value = e.target.value || 0; drawWeight(); });
 document.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
   gf.elements.weight.value = Math.max(0, Number(gf.elements.weight.value) + Number(b.dataset.step));
   drawWeight();
@@ -605,7 +608,7 @@ function showDetail(it, isProc = false) {
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ''}
     ${meta.length ? `<div class="meta">${meta.map((m) => `<span class="chip chip-grey">${esc(m)}</span>`).join('')}</div>` : ''}
     ${isProc ? `<div class="meta">${it.members.map((n) => `<span class="chip chip-grey">${esc(n)}</span>`).join('')}</div>` : ''}
-    <div class="totals-list"><div><span>${isRate(unit) && it.periods.length > 1 ? `Target Akhir (${esc(it.periods.at(-1).label)})` : 'Total Target'}</span><span>${unitHTML(targetSum(it.periods, unit), unit)}</span></div>
+    <div class="totals-list${isProc || !isKpi(it) ? '' : ' plain'}">${isProc || !isKpi(it) ? `<div><span>${isRate(unit) && it.periods.length > 1 ? `Target Akhir (${esc(it.periods.at(-1).label)})` : 'Total Target'}</span><span>${unitHTML(targetSum(it.periods, unit), unit)}</span></div>` : '<span class="target-label">Target Anda</span>' /* Figma: detail Cascading KPI & Project Control tanpa baris total, diganti label */}
       ${it.periods.map((r) => `<div><span>${esc(r.label)}</span><span>${unitHTML(r.target, unit)}</span></div>`).join('')}</div>
     ${!isProc && it.type === 'Project Control' ? `<div class="detail-actions"><button type="button" class="btn-outline" id="detailProcess">${icon('streamline-flex:user-collaborate-group-solid')}Lihat Proses</button></div>
     <section class="team-view"><h3>Daftar Kelompok Proyek</h3>

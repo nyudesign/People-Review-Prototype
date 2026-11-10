@@ -13,11 +13,13 @@ const steps = [
 ];
 // Performa (%) sama dengan kartu di Realisasi Target: performa() di review.js atas realisasi Year End.
 // Realisasi HSSE / PCI = total poin yang disimpan halamannya (`summary` di `pr-hsse-…` / `pr-pci-…`); Development Commitment = angka tetap yang sama dengan Realisasi Target.
+// Evaluator (TEAM di review.js) memakai Talent Development (teamDev) di halaman yang sama.
 const savedPoin = (id) => { try { return JSON.parse(localStorage.getItem(`pr-${id}-${window.PR_USER}`))?.summary?.total ?? null; } catch { return null; } };
 const yearEnd = (target, value) => performa({ periods: [{ target, value }] });
 const contributory = [
   { name: 'HSSE Objective', value: yearEnd(YEAR_END_TARGET.hsse, savedPoin('hsse')), href: './HSSE%20Objective/index.html?from=beranda' },
-  { name: 'Development Commitment', value: yearEnd(100, 100), href: './Development%20Commitment/index.html?from=beranda' },
+  { ...(TEAM[window.PR_USER] ? { name: 'Talent Development', value: yearEnd(100, teamDev(window.PR_USER).td) } : { name: 'Development Commitment', value: yearEnd(100, 100) }),
+    href: './Development%20Commitment/index.html?from=beranda' },
   { name: 'Community Involvement', value: yearEnd(YEAR_END_TARGET.pci, savedPoin('pci')), href: './Project%20Community%20Involvement/index.html?from=beranda' },
 ];
 const nominees = [
@@ -78,6 +80,10 @@ const PEOPLE = {
       { name: 'Muhamad Fadlin Ananta', nip: '754933', title: 'Analyst I Perf.&amp; Comp.Mgt', steps: approval(-1), pos: 3 },
       { name: 'Heru Kautsar', nip: '19050193', title: 'Sr Analyst II Performance &amp; Competency Mgt', steps: approval(realisasi?.status === 'approved' ? 3 : 2, REVIEW_HERU, SINTESIS, nominateHeru && NOMINATE, BEHAVIOR, IGS_HERU), review: REVIEW_HERU, open: true, pos: 1 },
       { name: 'Roehim Nuranas', nip: '752579', title: 'Sr Officer I Audit Relation', steps: approval(-1), pos: 2 },
+      // shortcut: nama & NIP dari kartu contoh Figma Talent Development (Desktop 1840), jabatan masih contoh.
+      { name: 'Putri Rizqiandini', nip: '748958', title: 'Analyst II Performance &amp; Competency Mgt', steps: approval(-1), pos: 4 },
+      { name: 'Fitria Lisdiyanti', nip: '749285', title: 'Sr Analyst I Performance &amp; Competency Mgt', steps: approval(-1), pos: 5 },
+      { name: 'Platto Mutaqin', nip: '749291', title: 'Officer I Performance &amp; Competency Mgt', steps: approval(-1), pos: 6 },
     ],
     project: { label: 'Total Tugas', total: 27, done: 9, prog: 10 },
   },
@@ -87,7 +93,12 @@ const PEOPLE = {
     name: 'Aryomekka Firdaus', nip: '777777', title: 'VP Talent Development &amp; Recruitment', chairman: true,
     // shortcut: atasan Chairman belum ada di desain; isi contoh sampai ada data organisasi.
     evaluator: { name: 'I Made Wisnu Suryadana', nip: '700001', title: 'SVP Human Capital' },
-    evaluees: [{ name: 'Oka Fitrio', nip: '1905416', title: 'Manager Performance &amp; Competency Mgt', steps: approval(-1), pos: 1 }],
+    evaluees: [
+      { name: 'Oka Fitrio', nip: '1905416', title: 'Manager Performance &amp; Competency Mgt', steps: approval(-1), pos: 1 },
+      // shortcut: Evaluee contoh atas permintaan user; NIP & jabatan contoh sampai ada data organisasi.
+      { name: 'Reni Oktavia', nip: '751806', title: 'Manager Recruitment', steps: approval(-1), pos: 2 },
+      { name: 'Hendra Prabowo', nip: '753120', title: 'Manager Talent Management', steps: approval(-1), pos: 3 },
+    ],
     project: { label: 'Total Tugas', total: 12, done: 4, prog: 3 },
   },
 };

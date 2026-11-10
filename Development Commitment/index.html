@@ -49,8 +49,14 @@
       <div class="board-head">
         <a href="../Individual%20Goal/index.html" class="back" aria-label="Kembali ke Realisasi Target"><i data-icon="tabler:arrow-left"></i></a>
         <h1 class="head-title">Development Commitment</h1>
+        <!-- Talent Development (akun Evaluator, lihat app.js): kotak cari khusus tab Subordinate + tab IDP -->
+        <label class="search" id="tdSearchBox" hidden><i data-icon="material-symbols:search-rounded"></i><input id="tdSearch" type="search" placeholder="Cari Nopek atau Nama Pekerja Anda" aria-label="Cari Nopek atau Nama Pekerja"></label>
+        <div class="td-tabs" id="tdTabs" role="tablist" hidden>
+          <button type="button" role="tab" aria-selected="true" data-tab="me">Individual Development Plan Saya</button>
+          <button type="button" role="tab" aria-selected="false" data-tab="sub">Individual Development Plan Subordinate</button>
+        </div>
       </div>
-      <div class="hsse-list dev-wrap">
+      <div class="hsse-list dev-wrap" id="tabMe">
         <article class="dev-card">
           <div class="dev-main">
             <h2>Hasil Realisasi</h2>
@@ -60,8 +66,11 @@
           <div class="dev-side" id="devTotal"></div>
         </article>
       </div>
+      <div class="hsse-list td-grid" id="tabSub" hidden></div>
+      <nav class="td-pager" id="tdPager" aria-label="Halaman Evaluee" hidden></nav>
     </section>
     <div class="footer-bar dev-foot" id="foot" hidden><a class="btn" href="../Individual%20Goal/index.html">Kembali ke Realisasi Target</a></div>
+    <div class="idp-foot" id="idpFoot" hidden></div>
   </main>
 
   <script src="icons.js"></script>
