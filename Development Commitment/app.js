@@ -1,7 +1,7 @@
 // Tampilan dari desain Figma section "Development Commitment" (frame "Desktop - 978"). Halaman hanya menampilkan data, tanpa isian.
-// Akun Evaluator (MANAGER di ../review.js) melihat Talent Development di halaman ini (Figma Desktop 1839–1841):
+// KPI Budget Holder (BUDGET di ../review.js, tipe jabatan pemilik data) melihat Talent Development di halaman ini (Figma Desktop 1839–1841):
 // tab IDP Saya, tab IDP Subordinate (5 Evaluee per halaman, sticky note Figma) dan ringkasan Talent Development di footer.
-// Data IDP, TEAM & rumus teamDev ada di ../review.js.
+// Data IDP, TEAM, OWNER & rumus teamDev ada di ../review.js.
 const $ = (s) => document.querySelector(s);
 const icon = (name, cls = '') => `<i class="ico ${cls}">${ICONS[name]}</i>`;
 const num = (n) => n.toLocaleString('id-ID', { maximumFractionDigits: 2 }); // 44.75 → "44,75"
@@ -37,8 +37,8 @@ const totalHTML = (value, max) => {
   <div class="dev-legend"><span class="dot"></span>Realisasi Development <span><b class="big">${value}</b><small class="muted">/${max} %</small></span></div>`;
 };
 
-// Kartu Hasil Realisasi (Figma 978 Development Commitment = 1839 Talent Development): IDP milik Evaluator atau milik Heru (juga mode review).
-const mine = IDP[MANAGER ? TEAM[LOGIN].nip : '19050193'];
+// Kartu Hasil Realisasi (Figma 978 Development Commitment = 1839 Talent Development): IDP milik akun login, atau milik Heru di mode review.
+const mine = IDP[TEAM[OWNER].nip];
 document.body.classList.add('idp'); // ukuran mengikuti Figma (lihat .idp di style.css)
 $('#devRows').innerHTML = rowsHTML(mine.rows);
 $('#devTotal').innerHTML = totalHTML(mine.dev, PERF_MAX);
@@ -53,7 +53,7 @@ else {
   $('#idpFoot').hidden = false;
   $('#idpFoot').innerHTML = `<a class="btn-outline" href="${BACK.url}">${icon('tabler:arrow-left')}Kembali ke ${BACK.label}</a>`;
 }
-if (MANAGER) initTalentDev();
+if (BUDGET) initTalentDev();
 
 // Sama dengan pageNumbers di ../app.js: 1, sekitar halaman aktif (minimal sampai 3), dan halaman terakhir; celahnya jadi "…".
 function pageNumbers(cur, last) {
@@ -65,13 +65,14 @@ function pageNumbers(cur, last) {
 
 function initTalentDev() {
   const SUB_PAGE = 5; // sticky note Figma: "1 Page isi 5 Evaluee"
-  const { mine: myDev, avg, td } = teamDev(LOGIN);
+  const { mine: myDev, avg, td } = teamDev(OWNER);
   let tab = 'me', page = 1;
 
-  document.title = 'Talent Development – People Review';
+  document.title = `${REVIEW ? 'Review ' : ''}Talent Development – People Review`;
   $('.head-title').textContent = 'Talent Development';
   $('#tdTabs').hidden = false;
-  $('#idpFoot').insertAdjacentHTML('beforeend', `
+  // Mode review: ringkasan di footer yang tampil (#foot, di kiri tombol Kembali ke Realisasi Target).
+  (REVIEW ? $('#foot') : $('#idpFoot')).insertAdjacentHTML(REVIEW ? 'afterbegin' : 'beforeend', `
     <div class="td-stats">
       <div class="td-stat"><span class="td-num">${num(myDev)} <small>%</small></span>Realisasi Development Saya</div>
       <div class="td-stat"><span class="td-num">${num(avg)} <small>%</small></span>Rata-Rata Realisasi Development Subordinate</div>
@@ -86,7 +87,7 @@ function initTalentDev() {
     $('#tabMe').hidden = tab !== 'me';
     $('#tabSub').hidden = $('#tdSearchBox').hidden = tab !== 'sub';
     const q = $('#tdSearch').value.trim().toLowerCase();
-    const list = TEAM[LOGIN].subs.filter((nip) => !q || nip.includes(q) || IDP[nip].name.toLowerCase().includes(q));
+    const list = TEAM[OWNER].subs.filter((nip) => !q || nip.includes(q) || IDP[nip].name.toLowerCase().includes(q));
     const pages = Math.max(1, Math.ceil(list.length / SUB_PAGE));
     page = Math.min(page, pages);
     $('#tabSub').innerHTML = list.slice((page - 1) * SUB_PAGE, page * SUB_PAGE).map((nip) => `

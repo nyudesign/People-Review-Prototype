@@ -21,13 +21,22 @@ const nipOf = (name) => PEOPLE.find((p) => p.name === name)?.nip || '';
 // Chip nama + NIP (Figma Desktop 1252–1255, 1814).
 const personChip = (n, rm = '') => `<span class="pchip"><span class="avatar">${esc(initials(n))}</span><span class="pname">${esc(n)}<small>${esc(nipOf(n))}</small></span>${rm}</span>`;
 // Individual Contributory sudah ditentukan sistem (Figma Desktop 1418), tidak diatur di halaman ini.
-// Bobot beda untuk Evaluator/manager (akun yang punya evaluee: Oka, Aryo — lihat PEOPLE di ../app.js) dan Evaluee.
 // profile.js (yang mengisi window.PR_USER) dimuat sesudah file ini, jadi baca sessionStorage langsung.
 // Mode Evaluator (Figma "Approve IGS baru"): Oka membuka sasaran kerja Heru dari jalur Evaluator di Beranda
 // (sessionStorage 'pr-review', sama dengan ../review.js & Nominate 360) lalu menyetujui atau meminta revisi.
 const APPROVE = (() => { try { return sessionStorage.getItem('pr-login') !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
-const MANAGER = !APPROVE && (() => { try { return ['oka', 'aryo'].includes(sessionStorage.getItem('pr-login')); } catch { return false; } })();
-const CONTRIBUTORY = MANAGER ? [
+// Tipe jabatan KPI pemilik sasaran kerja (kartu Data Diri di Beranda, 'pr-jabatan-<user>'); bawaan sama dengan jabatanOf di
+// ../review.js: akun yang punya Evaluee (Oka, Aryo) = Budget Holder. Sesuai tabel IG, Budget Holder (Pemilik KPI): kolom
+// Cascading KPI diganti KPI Bisnis/Fungsi yang hanya berisi KPI Function (bobot 80%, tidak bisa diubah), tanpa Project Control,
+// dan Individual Contributory Talent Development 7% / HSSE 8% / Community Involvement 5%. Item Cascading KPI/Project Control
+// lama tetap tersimpan, hanya tidak ditampilkan/dihitung selama tipe Budget Holder.
+const BUDGET = (() => {
+  try {
+    const owner = APPROVE ? 'heru' : sessionStorage.getItem('pr-login') || 'heru';
+    return (localStorage.getItem(`pr-jabatan-${owner}`) || (['oka', 'aryo'].includes(owner) ? 'bh' : 'nbh')) === 'bh';
+  } catch { return false; }
+})();
+const CONTRIBUTORY = BUDGET ? [
   { name: 'HSSE Objective', weight: 8, target: 200, unit: 'Poin' },
   // shortcut: target Talent Development belum ada di sumber data, sementara 100% seperti Development Commitment.
   { name: 'Talent Development', weight: 7, target: 100, unit: '%' },
@@ -43,6 +52,7 @@ const MAX_PICK = 8; // maksimal item dicentang (Figma Desktop 1806: "Item melebi
 const MIN_PICK = 4; // minimal item Cascading KPI dan/atau Project Control yang dicentang (Figma Desktop 1418: "1/4 Item")
 const TIPS = {
   nbh: 'Total bobot item Cascading KPI/Sasaran Kerja Spesifik pada IG Non Pemilik KPI : 85%\n\nSelisih antar item Cascading KPI/Sasaran Kerja Spesifik pada IG Non Pemilik KPI maksimal 20% dengan bobot minimum per item 10% & kelipatan bobot 5%',
+  bh: 'Bobot KPI Bisnis/Fungsi (KPI Function) pada IG Pemilik KPI : 80%\n\nSasaran kerja yang bisa ditambahkan hanya Extramiles',
   type: 'Cascading KPI: KPI yang diturunkan dari atasan kepada individu\nAdditional KPI 0%: KPI tambahan di luar KPI utama yang digunakan untuk mencatat kontribusi atau tanggung jawab tambahan\nProject Control: Mengukur efektivitas pengendalian dan pencapaian proyek berdasarkan target',
   polarity: 'MAX: Apabila semakin tinggi angka realisasi terhadap target, maka semakin tinggi angka performa yang dicapai\n\nMIN: Apabila semakin rendah angka realisasi terhadap target, maka semakin tinggi angka performa yang dicapai',
   library: 'Tidak perlu terisi untuk saat ini',
@@ -72,7 +82,7 @@ const avatarsHTML = (names) => names.slice(0, 3).map((n) => `<span class="avatar
 const team = (it) => [...new Set([it.leader, ...it.members].filter(Boolean))];
 const isKpi = (it) => it.type !== 'Extramiles'; // Extramiles tidak dihitung ke total 80%
 // Bobot Terisi hanya menghitung sasaran kerja/proyek yang dicentang (yang akan dikirim ke evaluator).
-const kpiTotal = (exceptId) => sum(state.items.filter((i) => i.selected && isKpi(i) && i.id !== exceptId).map((i) => i.weight));
+const kpiTotal = (exceptId) => (BUDGET ? KPI_TOTAL : sum(state.items.filter((i) => i.selected && isKpi(i) && i.id !== exceptId).map((i) => i.weight)));
 // Status pengajuan ke evaluator (Figma Desktop 1810/1811/1820): draft → pending (Menunggu Persetujuan) → approved (Disetujui) / revisi (Revisi).
 const STATUS = { pending: ['Menunggu Persetujuan', 'st-pending'], approved: ['Disetujui', 'st-approved'], revisi: ['Revisi', 'st-revisi'] };
 const sent = () => !!STATUS[state.status]; // sudah dikirim: tampil label status, tombol Atur Kembali
@@ -157,6 +167,19 @@ const filter = makeFilter($('#boardFilter'), FILTER_TABS, () => render());
 /* ---------- Board Sasaran Kerja ---------- */
 const openPeriods = new Set(); // kartu yang daftar target per periodenya terbuka
 let menuOpen = null; // kartu yang menu •••-nya terbuka
+// Budget Holder: kartu tetap KPI Function (tanpa centang/Edit/Hapus, seperti Individual Contributory) di kolom KPI Bisnis/Fungsi,
+// chip tipe ikut berganti.
+// shortcut: target KPI Function belum ada di sumber data (nantinya dari KPI Bisnis/Fungsi); sementara Year End 100%, sama dengan Realisasi Target.
+const FN_TARGET = 100;
+const FN_CARD = `<article class="card"><span class="ribbon">Bobot ${KPI_TOTAL}%</span><div class="card-body">
+  <h3>KPI Function</h3>
+  <div class="perf"><span>Target Anda <small>(Year End)</small></span><span>${unitHTML(FN_TARGET, '%')}</span></div></div></article>`;
+if (BUDGET) {
+  const tipBtn = $('#kpiChip [data-tip]');
+  $('#kpiChip').firstChild.textContent = 'KPI Budget Holder ';
+  tipBtn.dataset.tip = 'bh';
+  tipBtn.setAttribute('aria-label', 'Info KPI Budget Holder');
+}
 
 function goalCard(it) {
   const tm = team(it);
@@ -206,14 +229,17 @@ function render() {
   // Evaluator hanya melihat sasaran kerja yang dikirim (dicentang) Evaluee.
   const typed = (type) => state.items.filter((i) => i.type === type && match(i) && (!APPROVE || (sent() && i.selected))).map(goalCard).join('');
   const extra = state.items.filter((i) => i.type === 'Extramiles' && i.selected);
-  const contributory = filter.applied.some((s) => s.size) ? [] : CONTRIBUTORY.filter((c) => !q || c.name.toLowerCase().includes(q));
+  // Kartu tetap dari sistem (Individual Contributory, KPI Function) disembunyikan saat filter aktif atau tidak cocok pencarian.
+  const fixed = (name) => !filter.applied.some((s) => s.size) && (!q || name.toLowerCase().includes(q));
+  const contributory = CONTRIBUTORY.filter((c) => fixed(c.name));
   $('#board').innerHTML = [
     col('Individual Contributory', fillChip('Bobot Terisi', sum(CONTRIBUTORY.map((c) => c.weight)), 20), contributory.map((c) => `
       <article class="card"><span class="ribbon">Bobot ${c.weight}%</span><div class="card-body">
         <h3>${esc(c.name)}</h3><div class="perf"><span>Target Anda <small>(Year End)</small></span><span>${unitHTML(c.target, c.unit)}</span></div>
       </div></article>`).join(''), 'Tidak ada sasaran kerja yang ditemukan'),
-    col('Cascading KPI', kpiBadge, typed('Cascading KPI'), 'Tidak ada Goals yang ditambahkan di sini'),
-    col('Project Control', kpiBadge, typed('Project Control'), 'Tidak ada proyek yang ditambahkan di sini'),
+    BUDGET ? col('KPI Bisnis/Fungsi', kpiBadge, fixed('KPI Function') ? FN_CARD : '', 'Tidak ada sasaran kerja yang ditemukan')
+      : col('Cascading KPI', kpiBadge, typed('Cascading KPI'), 'Tidak ada Goals yang ditambahkan di sini'),
+    BUDGET ? '' : col('Project Control', kpiBadge, typed('Project Control'), 'Tidak ada proyek yang ditambahkan di sini'),
     // Extramiles tanpa batas bobot: desain "Bobot Terisi" tanpa pembagi, hijau seperti Individual Contributory.
     col('Extramiles', `<span class="chip fill chip-full">Bobot Terisi <b>${fmt(sum(extra.map((i) => i.weight)))}</b> %</span>`, typed('Extramiles'), 'Tidak ada item yang ditambahkan di sini'),
   ].join('');
@@ -221,14 +247,16 @@ function render() {
   // dan minimal 4 item Cascading KPI dan/atau Project Control dicentang untuk dikirim ke evaluator (Figma Desktop 1418).
   const picked = state.items.filter((i) => i.selected && isKpi(i)).length;
   $('#pickCount').firstElementChild.innerHTML = `<b>${picked}</b><span>/${MIN_PICK}</span> Item`;
-  const blocker = total !== KPI_TOTAL ? `Total bobot Cascading KPI dan Project Control harus ${KPI_TOTAL}% (saat ini ${total}%)`
+  // Budget Holder: KPI Function sudah mengisi 80%, syarat jumlah item tidak berlaku.
+  const blocker = BUDGET ? '' : total !== KPI_TOTAL ? `Total bobot Cascading KPI dan Project Control harus ${KPI_TOTAL}% (saat ini ${total}%)`
     : picked < MIN_PICK ? `Pilih minimal ${MIN_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})`
     : picked > MAX_PICK ? `Maksimal ${MAX_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})` : '';
   $('#pickCount').classList.toggle('over', picked > MAX_PICK);
   $('#next').disabled = !!blocker;
   $('#next').title = blocker;
-  $('#next').hidden = $('#pickCount').hidden = APPROVE || sent();
-  $('#pickOver').hidden = APPROVE || sent() || picked <= MAX_PICK;
+  $('#next').hidden = APPROVE || sent();
+  $('#pickCount').hidden = APPROVE || sent() || BUDGET;
+  $('#pickOver').hidden = APPROVE || sent() || BUDGET || picked <= MAX_PICK;
   $('#reset').hidden = APPROVE || !sent();
   // Chip status di header setelah dikirim, untuk Evaluee & Evaluator (Figma 1810, 1811, 1820 / 1845, 1851, 1852).
   const head = sent() && STATUS[state.status];
@@ -258,7 +286,9 @@ $('#board').addEventListener('change', (e) => {
 /* ---------- Rekap → konfirmasi → terkirim (Figma Desktop 1429, 1808, 1809) ---------- */
 // Isi rekap: sasaran kerja/proyek yang dicentang + Individual Contributory (tetap, target tahunan).
 const rekapItems = () => [
-  ...state.items.filter((i) => i.selected).map((i) => ({ name: i.name, kind: i.type === 'Cascading KPI' ? 'Cascading KPI / IG' : i.type, polarity: i.polarity,
+  // Budget Holder: KPI Function (jenis KPI Bisnis/Fungsi, ditetapkan sistem) menggantikan Cascading KPI & Project Control.
+  ...(BUDGET ? [{ name: 'KPI Function', kind: 'KPI Bisnis/Fungsi', polarity: 'MAX', weight: KPI_TOTAL, unit: '%', periodType: 'Annual', periods: [{ label: 'Annual', target: FN_TARGET }] }] : []),
+  ...state.items.filter((i) => i.selected && !(BUDGET && isKpi(i))).map((i) => ({ name: i.name, kind: i.type === 'Cascading KPI' ? 'Cascading KPI / IG' : i.type, polarity: i.polarity,
     weight: i.weight, unit: i.unit, periodType: i.periodType, periods: i.periods })),
   ...CONTRIBUTORY.map((c) => ({ name: c.name, kind: 'Individual Contributory', polarity: 'MAX', weight: c.weight, unit: c.unit,
     periodType: 'Annual', periods: [{ label: 'Annual', target: c.target }] })),
@@ -549,7 +579,8 @@ function openGoal(it = null) {
   members.set(it?.members || [ME]); // nama sendiri terisi otomatis, boleh dipindah ke Ketua
   syncLeader();
   // Setelah dikirim (menunggu/disetujui) tetap bisa menambah, tapi tipe yang terbuka hanya Extramiles (catatan Figma Desktop 1811).
-  const onlyExtra = !it && locked();
+  // Budget Holder: KPI Bisnis/Fungsi sudah ditetapkan & tanpa Project Control, jadi selalu hanya Extramiles.
+  const onlyExtra = BUDGET || (!it && locked());
   if (onlyExtra) setSelect(gf.elements.type, 'Extramiles');
   gf.elements.type.disabled = onlyExtra;
   setFile(it?.file || null);

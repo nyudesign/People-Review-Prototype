@@ -20,11 +20,12 @@ const columns = [
     // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
     item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
       href: '../HSSE%20Objective/index.html' }),
-    // Evaluator (MANAGER di ../review.js): Talent Development menggantikan Development Commitment, bobot sama dengan Individual Goal Setting.
-    item({ id: 'pci', name: 'Community Involvement', weight: MANAGER ? 5 : 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
+    // KPI Budget Holder (BUDGET di ../review.js): Talent Development menggantikan Development Commitment, bobot sama dengan Individual Goal Setting.
+    item({ id: 'pci', name: 'Community Involvement', weight: BUDGET ? 5 : 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
-    item({ id: 'dev', ...(MANAGER ? { name: 'Talent Development', weight: 7 } : { name: 'Development Commitment', weight: 5 }),
-      periods: [{ label: 'Year End', target: 100, value: 100 }], href: '../Development%20Commitment/index.html' }),
+    // Development Commitment = Realisasi Development IDP pemilik data (Heru 100).
+    item({ id: 'dev', ...(BUDGET ? { name: 'Talent Development', weight: 7 } : { name: 'Development Commitment', weight: 5 }),
+      periods: [{ label: 'Year End', target: 100, value: IDP[TEAM[OWNER].nip].dev }], href: '../Development%20Commitment/index.html' }),
   ] },
   { title: 'Cascading KPI', badge: '80/80%', evidence: true, file: null, items: [
     item({ id: 'rbf', name: 'Remodelling Business Flow People Review', desc: 'Model ulang bisnis proses dalam People Review sebagai dasar Re-engineering',
@@ -44,6 +45,14 @@ const columns = [
       type: 'Extramiles', polarity: 'MAX', periodType: 'Semester', weight: 0 }),
   ] },
 ];
+// KPI Budget Holder (BUDGET di ../review.js), sama dengan Individual Goal Setting: kolom Cascading KPI diganti KPI Bisnis/Fungsi
+// (juga jenis di rekap & ringkasan Dialog Day) yang hanya berisi KPI Function (bobot 80%), dan tidak ada Project Control.
+// shortcut: target KPI Function belum ada di sumber data; sementara 1 periode Year End 100% (sama dengan Individual Goal Setting).
+if (BUDGET) {
+  Object.assign(columns.find((c) => c.title === 'Cascading KPI'), { title: 'KPI Bisnis/Fungsi', items: [item({ id: 'kpif', name: 'KPI Function',
+    polarity: 'MAX', weight: 80, periods: [{ label: 'Year End', target: 100, value: null }] })] });
+  columns.splice(columns.findIndex((c) => c.title === 'Project Control'), 1);
+}
 
 const $ = (s) => document.querySelector(s);
 const icon = (name, cls = '') => `<i class="ico ${cls}">${ICONS[name]}</i>`;
@@ -53,7 +62,8 @@ const hydrateIcons = (root) => root.querySelectorAll('[data-icon]').forEach((el)
   el.innerHTML = ICONS[el.dataset.icon];
 });
 hydrateIcons(document);
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+if (BUDGET) $('#kpiChip').firstChild.textContent = 'KPI Budget Holder '; // tipe jabatan pemilik data (../review.js)
+const esc =(s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const sum = (a) => a.reduce((x, y) => x + y, 0);
 const fmt = (n) => (n == null ? 0 : n).toLocaleString('id-ID');
 const initials = (name) => name.split(' ').map((w) => w[0]).join('');
@@ -729,7 +739,7 @@ function loadPoin() {
 }
 loadPoin();
 // Talent Development selalu dihitung dari data IDP (bukan snapshot tersimpan), sama dengan halamannya.
-if (MANAGER) findItem('dev').periods[0].value = teamDev(LOGIN).td;
+if (BUDGET) findItem('dev').periods[0].value = teamDev(OWNER).td;
 if (REVIEW) initReviewUI('Review Realisasi Target');
 window.addEventListener('hashchange', route);
 route();

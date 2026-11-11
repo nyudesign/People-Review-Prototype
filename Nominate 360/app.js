@@ -20,7 +20,7 @@ const CANDIDATES = [
   ['Bagus Pratama', '752581', 'Sr Officer Supply Chain', 'Shared Services Procurement', 'Logistic Infrastructure', 'PT Pertamina Patra Niaga'],
   ['Dewi Lestari', '752582', 'Analyst II Culture & Change', 'Culture & Change Management', 'Human Capital', 'PT Kilang Pertamina Internasional'],
 ].map(([name, nopek, title, dept, dir, company]) => ({ id: nopek, name, nopek, title, dept, dir, company }));
-// Pekerja yang memilih Anda sebagai Penilai 360 — sama dengan tab "Penilaian BeS 360" di Beranda (besTargets di ../app.js).
+// Pekerja yang memilih Anda sebagai Penilai 360 — sama dengan tab "Menilai Rekan 360" di Beranda (besTargets di ../app.js).
 // done = status awal (Beranda: Completed); Beranda membaca status terkini dari penyimpanan halaman ini.
 const RATEES = [
   ['Zahara', '1905416', 'Sr Expert', 'Upstream Development', 'Logistic Infrastructure', false],

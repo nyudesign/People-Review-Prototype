@@ -146,10 +146,21 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .empty-state p { margin: 0 0 10px; color: #a3b1c2; line-height: 1.5; }
 .hpanel h3 { font-size: clamp(12px, 0.938vw, 15px); margin-bottom: -4px; }
 .box { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
-.me { display: flex; gap: 20px; flex-wrap: wrap; font-size: clamp(13px, 1vw, 16px); }
+.me { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.me > div { align-items: flex-start; }
+/* Chip tipe jabatan (Figma: teks setara tombol, tanpa titik). */
+.chip-jb { margin-top: 4px; background: #e3eff6; color: var(--primary); font-size: inherit; padding: 6px 10px; }
+.chip-jb::before { content: none; }
 .evaluator { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.evaluator > div:first-child, .pc-head > div { display: flex; flex-direction: column; gap: 4px; }
-.evaluator small { font-size: clamp(11px, 0.812vw, 13px); color: var(--ink-2); }
+.evaluator > div:first-child, .pc-head > div, .me > div { display: flex; flex-direction: column; gap: 4px; }
+.evaluator small, .me small { font-size: clamp(11px, 0.812vw, 13px); color: var(--ink-2); }
+/* Dialog Pilih Tipe Jabatan (Figma Desktop 1842–1843): lebar 682 dari 1920. overflow visible: daftar dropdown boleh keluar dialog. */
+.jb-dlg { width: min(500px, calc(100vw - 32px)); border: 0; border-radius: 16px; padding: 0; color: var(--ink); overflow: visible; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+.jb-dlg::backdrop { background: rgba(25,58,77,.35); }
+.jb-field { display: flex; flex-direction: column; gap: 10px; padding: 16px 20px; font-weight: 500; }
+.jb-field .dd-btn { min-height: 42px; border-radius: 10px; background-color: var(--bg); }
+.jb-foot { display: flex; justify-content: flex-end; padding: 12px 20px; border-top: 1px solid var(--line); }
+.jb-foot .btn { border-radius: 8px; padding: 10px 16px; }
 .name { font-size: clamp(13px, 1vw, 16px); }
 .ev-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .pc-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }

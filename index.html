@@ -60,11 +60,16 @@
         <div class="home-left">
           <div class="htabs" role="tablist" id="homeTabs">
             <button type="button" role="tab" class="htab" data-tab="diri" aria-selected="true">Data Diri Anda</button>
-            <button type="button" role="tab" class="htab dot" data-tab="nominee" aria-selected="false">BeS oleh Nominee 360</button>
-            <button type="button" role="tab" class="htab dot" data-tab="bes" aria-selected="false">Penilaian BeS 360</button>
+            <!-- Nama tab atas permintaan user (Figma: "BeS oleh Nominee 360" / "Penilaian BeS 360") -->
+            <button type="button" role="tab" class="htab dot" data-tab="nominee" aria-selected="false">Penilai 360 Anda</button>
+            <button type="button" role="tab" class="htab dot" data-tab="bes" aria-selected="false">Menilai Rekan 360</button>
           </div>
           <div class="hpanel" id="tab-diri">
-            <div class="box me" id="meBox"></div>
+            <!-- Figma Desktop 1672: kartu Data Diri + tipe jabatan KPI -->
+            <div class="box me">
+              <div id="meBox"></div>
+              <button type="button" class="btn-outline" id="ubahJabatan">Ubah Tipe Jabatan<i data-icon="tabler:arrow-right"></i></button>
+            </div>
             <h3>Evaluator Anda</h3>
             <div class="box evaluator">
               <div id="evalBox"></div>
@@ -244,6 +249,17 @@
       <button type="button" class="btn" id="baPrint" disabled><i data-icon="material-symbols:print-rounded"></i>Cetak Berita Acara</button>
     </div>
   </main>
+
+  <!-- Desktop 1842–1843: Pilih Tipe Jabatan (dibaca Individual Goal Setting lewat localStorage 'pr-jabatan-<user>') -->
+  <dialog id="jabatanDlg" class="jb-dlg" aria-labelledby="jbTitle">
+    <form method="dialog">
+      <div class="rk-list-head"><h2 id="jbTitle">Pilih Tipe Jabatan</h2><button value="close" class="icon-btn" aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
+      <label class="jb-field">Jenis Jabatan
+        <select id="jbSelect"><option value="bh">KPI Budget Holder</option><option value="nbh">KPI Non-Budget Holder</option></select>
+      </label>
+      <div class="jb-foot"><button value="save" class="btn">Simpan</button></div>
+    </form>
+  </dialog>
 
   <!-- Desktop 1644: Simpan -->
   <dialog id="savedDlg" class="rk-dlg">

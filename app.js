@@ -12,13 +12,17 @@ const steps = [
   { label: 'CoPI Feedback', icon: 'mdi:speak', href: './CoPI%20Feedback/index.html' },
 ];
 // Performa (%) sama dengan kartu di Realisasi Target: performa() di review.js atas realisasi Year End.
-// Realisasi HSSE / PCI = total poin yang disimpan halamannya (`summary` di `pr-hsse-…` / `pr-pci-…`); Development Commitment = angka tetap yang sama dengan Realisasi Target.
-// Evaluator (TEAM di review.js) memakai Talent Development (teamDev) di halaman yang sama.
+// Realisasi HSSE / PCI = total poin yang disimpan halamannya (`summary` di `pr-hsse-…` / `pr-pci-…`); Development Commitment = Realisasi Development IDP sendiri (review.js).
+// Tipe jabatan KPI (kartu Data Diri, Figma Desktop 1672 & 1842–1843; jabatanOf di review.js): Budget Holder memakai
+// Talent Development (teamDev) di halaman yang sama. Individual Goal Setting membaca kunci 'pr-jabatan-<user>' yang sama.
+const JABATAN = { bh: 'KPI Budget Holder', nbh: 'KPI Non-Budget Holder' };
+let jabatan = jabatanOf(window.PR_USER);
 const savedPoin = (id) => { try { return JSON.parse(localStorage.getItem(`pr-${id}-${window.PR_USER}`))?.summary?.total ?? null; } catch { return null; } };
 const yearEnd = (target, value) => performa({ periods: [{ target, value }] });
-const contributory = [
+const contributory = () => [
   { name: 'HSSE Objective', value: yearEnd(YEAR_END_TARGET.hsse, savedPoin('hsse')), href: './HSSE%20Objective/index.html?from=beranda' },
-  { ...(TEAM[window.PR_USER] ? { name: 'Talent Development', value: yearEnd(100, teamDev(window.PR_USER).td) } : { name: 'Development Commitment', value: yearEnd(100, 100) }),
+  { ...(jabatan === 'bh' ? { name: 'Talent Development', value: yearEnd(100, teamDev(window.PR_USER).td) }
+    : { name: 'Development Commitment', value: yearEnd(100, IDP[TEAM[window.PR_USER].nip].dev) }),
     href: './Development%20Commitment/index.html?from=beranda' },
   { name: 'Community Involvement', value: yearEnd(YEAR_END_TARGET.pci, savedPoin('pci')), href: './Project%20Community%20Involvement/index.html?from=beranda' },
 ];
@@ -123,6 +127,10 @@ let role = null;
 const $ = (s) => document.querySelector(s);
 const icon = (name) => `<i class="ico">${ICONS[name]}</i>`;
 const status = (done) => done ? '<span class="chip chip-ok">Completed</span>' : '<span class="chip chip-warn">In Progress</span>';
+// Label status kartu tab 360 (permintaan user). mine = Anda yang menilai (tab Menilai Rekan 360): label halaman Nominate 360
+// (tabel Penilaian 360). Tab Penilai 360 Anda: rekan di kartu yang menilai Anda, jadi dibaca dari sudut rekan itu.
+const status360 = (done, mine) => `<span class="chip ${done ? 'chip-ok' : 'chip-warn'}">${
+  mine ? (done ? 'Selesai' : 'Menunggu Penilaian') : (done ? 'Sudah Menilai' : 'Belum Menilai')}</span>`;
 const notReady = () => alert('Halaman ini belum tersedia di prototype.');
 function hydrateIcons(root = document) {
   root.querySelectorAll('[data-icon]').forEach((el) => {
@@ -134,32 +142,50 @@ function hydrateIcons(root = document) {
 // Langkah tanpa halaman di prototype tetap bisa di-hover, tapi kliknya hanya memberi info.
 $("#steps").innerHTML = steps.filter((s) => !s.hidden).map((s) => `<li><a href="${s.href || '#'}"${s.href ? '' : ' data-missing'}>${icon(s.icon)}<span>${s.label}</span></a></li>`).join('');
 
-$('#icList').innerHTML = contributory.map((c) => `
+const drawIC = () => { $('#icList').innerHTML = contributory().map((c) => `
   <a class="ic" href="${c.href}">
     <span class="ic-name">${c.name}</span>
     <span><b class="big">${c.value}</b><small class="muted">/${PERF_MAX} %</small></span>
     ${icon('tabler:arrow-right')}
     <span class="ic-bar" role="progressbar" aria-label="Performa ${c.name}" aria-valuenow="${c.value}" aria-valuemin="0" aria-valuemax="${PERF_MAX}"><i style="width:${(c.value / PERF_MAX) * 100}%"></i></span>
-  </a>`).join('');
+  </a>`).join(''); };
+drawIC();
 
-const person = (p, action) => `
+const person = (p, mine) => `
   <div class="box person-card">
-    <div class="pc-head"><div><b class="name">${p.name}</b><span class="muted">${p.nip}</span></div>${status(p.done)}</div>
-    ${action ? `<button type="button" class="btn-outline wide" data-missing>${p.done ? 'Lihat Penilaian' : 'Mulai Penilaian'}${icon('tabler:arrow-right')}</button>` : ''}
+    <div class="pc-head"><div><b class="name">${p.name}</b><span class="muted">${p.nip}</span></div>${status360(p.done, mine)}</div>
+    ${mine ? `<button type="button" class="btn-outline wide" data-missing>${p.done ? 'Lihat Penilaian' : 'Mulai Penilaian'}${icon('tabler:arrow-right')}</button>` : ''}
   </div>`;
 const emptyState = (ic, title, text, action = '') => `
   <div class="empty-state"><span class="es-ico">${icon(ic)}</span><b>${title}</b><p>${text}</p>${action}</div>`;
-// Figma "Homepage (empty state) (NEW)": Heru belum memilih Nominee 360, Oka belum diminta menilai BeS 360.
+// Figma "Homepage (empty state) (NEW)": Heru belum memilih Penilai 360, Oka belum diminta menilai rekan 360.
+// Teks tab Penilai 360 Anda atas permintaan user (tanpa kata "nominee").
 const myNominees = ME === PEOPLE.heru ? [] : nominees;
 const myBes = ME === PEOPLE.oka ? [] : besTargets;
 $('#tab-nominee').innerHTML = myNominees.map((p) => person(p, false)).join('')
-  || emptyState('fluent:people-error-24-filled', 'Tidak ditemukan data Pekerja<br>yang dipilih oleh Anda', 'Anda belum memilih Pekerja<br>untuk Nominee 360',
+  || emptyState('fluent:people-error-24-filled', 'Anda belum memilih Pekerja<br>sebagai Penilai 360 Anda', 'Mohon untuk memilih Penilai 360<br>di Nominate 360',
     `<a class="btn-outline" href="./Nominate%20360/index.html">Menuju Nominate 360${icon('tabler:arrow-right')}</a>`);
 $('#tab-bes').innerHTML = myBes.map((p) => person(p, true)).join('')
-  || emptyState('fluent:comment-error-24-regular', 'Tidak ditemukan data Pekerja yang<br>memilih Anda untuk menilai', 'Belum ada Pekerja yang memberikan permintaan Anda<br>untuk melakukan Penilaian 360');
+  || emptyState('fluent:comment-error-24-regular', 'Tidak ditemukan data Pekerja yang<br>memilih Anda untuk menilai', 'Belum ada Pekerja yang meminta Anda<br>menjadi Penilai 360');
 
 $('#greetName').textContent = `${ME.name}!`;
-$('#meBox').innerHTML = `<b>${ME.name}</b><span class="muted">${ME.nip} • ${ME.title}</span>`;
+// Kartu Data Diri + "Ubah Tipe Jabatan" (JABATAN & jabatan di atas). Budget Holder di Individual Goal Setting & Realisasi Target:
+// Cascading KPI diganti KPI Bisnis/Fungsi (hanya KPI Function), tanpa Project Control.
+const drawMe = () => { $('#meBox').innerHTML = `<b class="name">${ME.name}</b><span class="muted">${ME.nip}</span><small>${ME.title}</small><span class="chip chip-jb">${JABATAN[jabatan]}</span>`; };
+drawMe();
+$('#ubahJabatan').addEventListener('click', () => {
+  const sel = $('#jbSelect');
+  sel.value = jabatan;
+  sel.dispatchEvent(new Event('change', { bubbles: true })); // tombol dropdown (dropdown.js) ikut nilai terkini
+  $('#jabatanDlg').showModal();
+});
+$('#jabatanDlg form').addEventListener('submit', (e) => {
+  if (e.submitter?.value !== 'save') return;
+  jabatan = $('#jbSelect').value;
+  try { localStorage.setItem(`pr-jabatan-${window.PR_USER}`, jabatan); } catch { alert('Tipe jabatan gagal disimpan: penyimpanan browser penuh atau diblokir.'); }
+  drawMe();
+  drawIC();
+});
 $('#evalBox').innerHTML = `<b class="name">${ME.evaluator.name}</b><span class="muted">${ME.evaluator.nip}</span><small>${ME.evaluator.title}</small>`;
 $('#pLabel').textContent = ME.project.label;
 $('#pTotal').textContent = ME.project.total; $('#pDone').textContent = ME.project.done; $('#pProg').textContent = ME.project.prog;

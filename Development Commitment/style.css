@@ -425,6 +425,7 @@ a.btn, a.btn-outline { text-decoration: none; }
 /* Mode evaluator (../review.js) */
 .evaluee-pill { box-sizing: border-box; height: 40px; padding: 0 12px; font-weight: 500; color: var(--primary-dark); } /* setinggi pill alur di sebelahnya */
 .dev-foot[hidden] { display: none; }
+.dev-foot:has(.td-stats) { justify-content: space-between; align-items: center; } /* mode review Talent Development: ringkasan kiri, tombol kanan */
 
 /* Kartu IDP Development Commitment (Figma 978) & Talent Development (akun Evaluator, Figma 1839–1841). Ukuran = px Figma × --u, dengan --u = lebar main ÷ 1585
    (lebar main di Figma; 280px = lebar .sidebar), maksimal 1px: tata letaknya sama dengan Figma di layar laptop.

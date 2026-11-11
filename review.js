@@ -37,7 +37,7 @@ document.querySelectorAll('a[href="../Individual%20Goal/index.html"]').forEach((
 const REVIEW = (() => { try { return LOGIN !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
 
 // Talent Development (Figma "Talent Development – Khusus Evaluator yang ingin Realisasi Target", Desktop 1839–1841)
-// menggantikan Development Commitment untuk Evaluator: Beranda, Realisasi Target & halaman Development Commitment.
+// menggantikan Development Commitment untuk KPI Budget Holder: Beranda, Realisasi Target & halaman Development Commitment.
 // IDP (Individual Development Plan) per NIP: [skor %, plan, real] tiap IDP_PARTS + Realisasi Development (%).
 // Dipakai juga oleh Development Commitment Evaluee (Figma 978): komponen & kartunya sama.
 // shortcut: angka contoh (Oka, Putri, Fitria dari Figma 1839–1840, Platto 1841; Heru 100 = angka Development Commitment
@@ -56,19 +56,32 @@ const IDP = {
   777777: { name: 'Aryomekka Firdaus', rows: [[90, 5, 4], [70, 3, 2], [80, 5, 4], [4, 2, 1]], dev: 81 },
 };
 console.assert(IDP_PARTS.reduce((s, [, w]) => s + w, 0) === 100 && Object.values(IDP).every((p) => p.rows.length === IDP_PARTS.length), 'IDP: bobot 100% & satu baris per komponen');
-// NIP Evaluator + Evaluee-nya (urutan halaman Pilih Evaluee); harus sama dengan PEOPLE[...].evaluees di app.js.
+// NIP tiap akun demo + Evaluee-nya (urutan halaman Pilih Evaluee); harus sama dengan PEOPLE[...].evaluees di app.js.
 const TEAM = {
+  heru: { nip: '19050193', subs: [] },
   oka: { nip: '1905416', subs: ['19050193', '752579', '754933', '748958', '749285', '749291'] },
   aryo: { nip: '777777', subs: ['1905416', '751806', '753120'] },
 };
-// Mode review (Oka membuka milik Heru) tetap Development Commitment karena datanya milik Evaluee.
-const MANAGER = !REVIEW && Object.hasOwn(TEAM, LOGIN);
+// Tipe jabatan KPI (kartu Data Diri di Beranda, localStorage 'pr-jabatan-<user>'): 'bh' Budget Holder / 'nbh' Non-Budget Holder.
+// Bawaan sesuai tabel IG: Managerial Up (akun yang punya Evaluee) = Pemilik KPI/Budget Holder. Individual Goal Setting/app.js
+// memakai aturan bawaan yang sama (halaman itu tidak memuat file ini).
+const jabatanOf = (user) => {
+  let v = null;
+  try { v = localStorage.getItem(`pr-jabatan-${user}`); } catch {}
+  return v === 'bh' || v === 'nbh' ? v : TEAM[user]?.subs.length ? 'bh' : 'nbh';
+};
+// Pemilik data yang tampil: mode review (Oka membuka milik Heru) = Heru, jadi Individual Contributory ikut tipe jabatan Evaluee.
+const OWNER = REVIEW ? 'heru' : LOGIN;
+// Budget Holder → Talent Development 7% & Community Involvement 5%; Non-Budget Holder → Development Commitment 5% & 7%.
+const BUDGET = jabatanOf(OWNER) === 'bh';
 // Rumus tooltip Figma 1841: (Realisasi Development × 50%) + (Rata-rata Realisasi Development Subordinate × 50%).
+// Tanpa subordinate (mis. Heru sebagai Budget Holder) rata-ratanya dihitung 0, seperti periode kosong di performa().
 function talentDev(mine, subs) {
-  const avg = subs.reduce((s, d) => s + d, 0) / subs.length;
+  const avg = subs.length ? subs.reduce((s, d) => s + d, 0) / subs.length : 0;
   return { mine, avg, td: mine * 0.5 + avg * 0.5 };
 }
 console.assert(talentDev(20, [20, 62, 27, 70]).avg === 44.75 && talentDev(20, [20, 62, 27, 70]).td === 32.375, 'Figma 1840–1841: 44,75 & 32,38');
+console.assert(talentDev(100, []).avg === 0 && talentDev(100, []).td === 50, 'tanpa subordinate: rata-rata 0');
 const teamDev = (user) => talentDev(IDP[TEAM[user].nip].dev, TEAM[user].subs.map((nip) => IDP[nip].dev));
 
 // Header evaluator sesuai Figma section "Review & Approve Realisasi Target"; langkah sebelum `current` = done, sesudahnya disabled.
