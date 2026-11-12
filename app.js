@@ -173,7 +173,10 @@ $('#greetName').textContent = `${ME.name}!`;
 // Cascading KPI diganti KPI Bisnis/Fungsi (hanya KPI Function), tanpa Project Control.
 const drawMe = () => { $('#meBox').innerHTML = `<b class="name">${ME.name}</b><span class="muted">${ME.nip}</span><small>${ME.title}</small>`; $('#jbChip').textContent = JABATAN[jabatan]; };
 drawMe();
+// Evaluator dianggap sudah ditentukan hanya bila Evaluee sudah submit pilihannya di Settings Evaluator (bawaan tidak dihitung).
+const hasEvaluator = !!(myEvaluator?.submitted && myEvaluator.nopek);
 $('#ubahJabatan').addEventListener('click', () => {
+  if (!hasEvaluator) return $('#noEvalDlg').showModal();
   const sel = $('#jbSelect');
   sel.value = jabatan;
   sel.dispatchEvent(new Event('change', { bubbles: true })); // tombol dropdown (dropdown.js) ikut nilai terkini

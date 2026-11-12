@@ -24,7 +24,7 @@ const stored = (() => { try { return JSON.parse(localStorage.getItem(STORE_KEY))
 const DEFAULT_PICK = { heru: '1905416' }[LOGIN] ?? null;
 const state = list.some((e) => e.nopek === stored?.nopek)
   ? { pick: stored.nopek, submitted: !!stored.submitted }
-  : { pick: DEFAULT_PICK, submitted: !!DEFAULT_PICK };
+  : { pick: DEFAULT_PICK, submitted: false }; // bawaan sudah terpilih, tapi Evaluee tetap harus submit (syarat Ubah Tipe Jabatan di Beranda)
 // Tanpa pencarian/filter hanya kartu Evaluator ini yang tampil; tetap tampil (tombol Pilih) walau baru saja dihapus.
 let shown = state.pick;
 function persist() {
