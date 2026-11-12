@@ -68,7 +68,7 @@
             <!-- Figma Desktop 1672: kartu Data Diri + tipe jabatan KPI -->
             <div class="box me">
               <div id="meBox"></div>
-              <button type="button" class="btn-outline" id="ubahJabatan">Ubah Tipe Jabatan<i data-icon="tabler:arrow-right"></i></button>
+              <div class="me-act"><span class="chip chip-jb" id="jbChip"></span><button type="button" class="btn-outline" id="ubahJabatan">Ubah Tipe Jabatan<i data-icon="tabler:arrow-right"></i></button></div>
             </div>
             <h3>Evaluator Anda</h3>
             <div class="box evaluator">
@@ -258,6 +258,16 @@
         <select id="jbSelect"><option value="bh">KPI Budget Holder</option><option value="nbh">KPI Non-Budget Holder</option></select>
       </label>
       <div class="jb-foot"><button value="save" class="btn">Simpan</button></div>
+    </form>
+  </dialog>
+  <!-- Desktop 1844: konfirmasi ubah jenis jabatan (Ya → sasaran kerja Individual Goal Setting 'pr-igs-<user>' dihapus) -->
+  <dialog id="jbConfirmDlg" class="rk-dlg">
+    <form method="dialog">
+      <span class="rk-dlg-ico"><i data-icon="material-symbols:warning-outline-rounded"></i></span>
+      <h2>Apakah Anda yakin untuk mengubah jenis jabatan Anda?</h2>
+      <p class="muted">Sasaran kerja yang sudah Anda isi akan dihapus dan perlu disusun ulang.</p>
+      <button value="yes" class="btn">Ya</button>
+      <button value="no" class="btn-outline">Tidak</button>
     </form>
   </dialog>
 

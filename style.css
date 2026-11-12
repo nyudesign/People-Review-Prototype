@@ -149,7 +149,8 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .me { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 .me > div { align-items: flex-start; }
 /* Chip tipe jabatan (Figma: teks setara tombol, tanpa titik). */
-.chip-jb { margin-top: 4px; background: #e3eff6; color: var(--primary); font-size: inherit; padding: 6px 10px; }
+.chip-jb { background: #e3eff6; color: var(--primary); font-size: inherit; padding: 8px 12px; border: 1px solid transparent; }
+.me > .me-act { flex-direction: row; align-items: center; gap: clamp(14px, 1.04vw, 20px); } /* Figma 1672: chip di samping tombol, gap 20 */
 .chip-jb::before { content: none; }
 .evaluator { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .evaluator > div:first-child, .pc-head > div, .me > div { display: flex; flex-direction: column; gap: 4px; }

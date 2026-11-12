@@ -171,7 +171,7 @@ $('#tab-bes').innerHTML = myBes.map((p) => person(p, true)).join('')
 $('#greetName').textContent = `${ME.name}!`;
 // Kartu Data Diri + "Ubah Tipe Jabatan" (JABATAN & jabatan di atas). Budget Holder di Individual Goal Setting & Realisasi Target:
 // Cascading KPI diganti KPI Bisnis/Fungsi (hanya KPI Function), tanpa Project Control.
-const drawMe = () => { $('#meBox').innerHTML = `<b class="name">${ME.name}</b><span class="muted">${ME.nip}</span><small>${ME.title}</small><span class="chip chip-jb">${JABATAN[jabatan]}</span>`; };
+const drawMe = () => { $('#meBox').innerHTML = `<b class="name">${ME.name}</b><span class="muted">${ME.nip}</span><small>${ME.title}</small>`; $('#jbChip').textContent = JABATAN[jabatan]; };
 drawMe();
 $('#ubahJabatan').addEventListener('click', () => {
   const sel = $('#jbSelect');
@@ -180,9 +180,18 @@ $('#ubahJabatan').addEventListener('click', () => {
   $('#jabatanDlg').showModal();
 });
 $('#jabatanDlg form').addEventListener('submit', (e) => {
-  if (e.submitter?.value !== 'save') return;
+  if (e.submitter?.value !== 'save' || $('#jbSelect').value === jabatan) return;
+  e.preventDefault(); // jabatan berubah → konfirmasi dulu (Desktop 1844), dialog pilih tetap terbuka di belakang
+  $('#jbConfirmDlg').showModal();
+});
+$('#jbConfirmDlg form').addEventListener('submit', (e) => {
+  if (e.submitter?.value !== 'yes') return;
   jabatan = $('#jbSelect').value;
-  try { localStorage.setItem(`pr-jabatan-${window.PR_USER}`, jabatan); } catch { alert('Tipe jabatan gagal disimpan: penyimpanan browser penuh atau diblokir.'); }
+  try {
+    localStorage.setItem(`pr-jabatan-${window.PR_USER}`, jabatan);
+    localStorage.removeItem(`pr-igs-${window.PR_USER}`); // tipe KPI berubah → sasaran kerja disusun ulang
+  } catch { alert('Tipe jabatan gagal disimpan: penyimpanan browser penuh atau diblokir.'); }
+  $('#jabatanDlg').close();
   drawMe();
   drawIC();
 });
