@@ -580,7 +580,6 @@ $('#search').addEventListener('input', render);
 // Semua sasaran ikut rekap, termasuk Extramiles berbobot 0 (Figma).
 const JENIS = { 'Cascading KPI': 'Cascading KPI / IG' };
 const weighted = (it) => (it.weight * performa(it)) / 100;
-const amount = (it, key) => `${fmt(sum(it.periods.map((p) => p[key] || 0)))} ${it.unit}`;
 console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { target: 50, value: 50 }] }) === 60, 'bobot × performa');
 
 // Ringkasan untuk Sintesis Evaluator Final: Σ weighted performance per Jenis (satu baris per Jenis; Individual Contributory per item).
@@ -597,7 +596,7 @@ function saveSummary() {
 
 function renderRekap() {
   const rows = columns.flatMap((col) => col.items.map((it) => ({ it, cells: [it.name, JENIS[col.title] || col.title, it.polarity || 'MAX',
-    it.periodType || 'Annual', `${it.weight} %`, amount(it, 'target'), amount(it, 'value'), `${performa(it)} %`, `${fmt(+weighted(it).toFixed(2))} %`] })));
+    it.periodType || 'Annual', `${it.weight} %`, `${performa(it)} %`, `${fmt(+weighted(it).toFixed(2))} %`] })));
   const total = sum(rows.map(({ it }) => weighted(it)));
   $('#rkTotal').innerHTML = `${fmt(+total.toFixed(2))}<small>/${sum(rows.map(({ it }) => it.weight)) * PERF_MAX / 100} %</small>`;
   $('#rkSubmit').disabled = locked();
@@ -605,7 +604,7 @@ function renderRekap() {
   const shown = rows.filter(({ cells }) => !q || cells.join(' ').toLowerCase().includes(q));
   $('#rkRows').innerHTML = shown.length ? shown.map(({ it, cells }) => `<tr>${cells.map((c) => `<td>${esc(c)}</td>`).join('')}
     <td><button type="button" class="btn-outline" data-periods="${it.id}">Lihat ${it.periods.length} Realisasi</button></td></tr>`).join('')
-    : '<tr><td colspan="10" class="empty">Tidak ada hasil pencarian</td></tr>';
+    : '<tr><td colspan="8" class="empty">Tidak ada hasil pencarian</td></tr>';
 }
 function openRekap() {
   $('#rkSearch').value = '';

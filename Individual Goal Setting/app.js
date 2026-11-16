@@ -297,11 +297,11 @@ let rekap = [];
 const unitText = (n, unit) => `${fmt(n)} ${unit === 'Poin' ? 'Point' : unit}`;
 function renderRekap() {
   const q = $('#rekapSearch').value.trim().toLowerCase();
-  $('#rekapRows').innerHTML = rekap.map((r, i) => ({ r, i })).filter(({ r }) => !q || [r.name, r.kind, r.polarity, r.periodType, unitText(targetSum(r.periods, r.unit), r.unit)].join(' ').toLowerCase().includes(q))
+  $('#rekapRows').innerHTML = rekap.map((r, i) => ({ r, i })).filter(({ r }) => !q || [r.name, r.kind, r.polarity, r.periodType, ...r.periods.map((p) => unitText(p.target, r.unit))].join(' ').toLowerCase().includes(q))
     .map(({ r, i }) => `<tr><td>${esc(r.name)}</td><td>${esc(r.kind)}</td><td>${esc(r.polarity)}</td><td>${r.weight} %</td>
-      <td>${esc(unitText(targetSum(r.periods, r.unit), r.unit))}</td><td>${esc(r.periodType)}</td>
+      <td>${esc(r.periodType)}</td>
       <td><button type="button" class="btn-outline" data-periods="${i}">Lihat ${r.periods.length} Target</button></td></tr>`).join('')
-    || '<tr><td colspan="7" class="muted">Tidak ada sasaran kerja yang ditemukan</td></tr>';
+    || '<tr><td colspan="6" class="muted">Tidak ada sasaran kerja yang ditemukan</td></tr>';
 }
 $('#next').addEventListener('click', () => {
   rekap = rekapItems();
@@ -560,6 +560,10 @@ const syncType = () => {
   const off = gf.elements.type.value !== 'Project Control';
   $('#teamSet').disabled = off;
   $('#teamSet').hidden = off;
+  // Extramiles selalu berbobot 0% (default sistem), jadi kontrol bobot dimatikan.
+  const extra = gf.elements.type.value === 'Extramiles';
+  if (extra) gf.elements.weight.value = 0;
+  document.querySelectorAll('.weight input, .weight button').forEach((el) => { el.disabled = extra; });
   drawWeight();
 };
 gf.elements.type.addEventListener('change', syncType);
@@ -594,7 +598,7 @@ $('#addGoal').addEventListener('click', () => openGoal());
 gf.addEventListener('submit', (e) => {
   e.preventDefault();
   const v = Object.fromEntries(['name', 'desc', 'type', 'polarity', 'library', 'periodType', 'unit'].map((k) => [k, gf.elements[k].value.trim()]));
-  const weight = Number(gf.elements.weight.value);
+  const weight = v.type === 'Extramiles' ? 0 : Number(gf.elements.weight.value);
   const periods = cleanRows(goalRows.get(), PERIOD_LABELS[v.periodType] || []);
   const isProject = v.type === 'Project Control';
   const error = !v.name ? 'Nama Sasaran Kerja wajib diisi'
