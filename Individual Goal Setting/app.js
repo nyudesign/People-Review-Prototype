@@ -27,8 +27,8 @@ const personChip = (n, rm = '') => `<span class="pchip"><span class="avatar">${e
 const APPROVE = (() => { try { return sessionStorage.getItem('pr-login') !== 'heru' && sessionStorage.getItem('pr-review') === 'heru'; } catch { return false; } })();
 // Tipe jabatan KPI pemilik sasaran kerja (kartu Data Diri di Beranda, 'pr-jabatan-<user>'); bawaan sama dengan jabatanOf di
 // ../review.js: akun yang punya Evaluee (Oka, Aryo) = Budget Holder. Sesuai tabel IG, Budget Holder (Pemilik KPI): kolom
-// Cascading KPI diganti KPI Bisnis/Fungsi yang hanya berisi KPI Function (bobot 80%, tidak bisa diubah), tanpa Project Control,
-// dan Individual Contributory Talent Development 7% / HSSE 8% / Community Involvement 5%. Item Cascading KPI/Project Control
+// Cascading KPI diganti KPI Bisnis/Fungsi yang hanya berisi KPI Function (bobot 100%, tidak bisa diubah), tanpa Project Control,
+// dan Individual Contributory Talent Development 35% / HSSE 40% / Community Involvement 25%. Item Cascading KPI/Project Control
 // lama tetap tersimpan, hanya tidak ditampilkan/dihitung selama tipe Budget Holder.
 const BUDGET = (() => {
   try {
@@ -37,16 +37,17 @@ const BUDGET = (() => {
   } catch { return false; }
 })();
 const CONTRIBUTORY = BUDGET ? [
-  { name: 'HSSE Objective', weight: 8, target: 200, unit: 'Poin' },
+  { name: 'HSSE Objective', weight: 40, target: 200, unit: 'Poin' },
   // shortcut: target Talent Development belum ada di sumber data, sementara 100% seperti Development Commitment.
-  { name: 'Talent Development', weight: 7, target: 100, unit: '%' },
-  { name: 'Project & Community Involvement', weight: 5, target: 250, unit: 'Poin' },
+  { name: 'Talent Development', weight: 35, target: 100, unit: '%' },
+  { name: 'Project & Community Involvement', weight: 25, target: 250, unit: 'Poin' },
 ] : [
-  { name: 'Development Commitment', weight: 5, target: 110, unit: '%' },
-  { name: 'HSSE Objective', weight: 8, target: 200, unit: 'Poin' },
-  { name: 'Project & Community Involvement', weight: 7, target: 250, unit: 'Poin' },
+  // Bobot per item dalam kolom, total 100% (screenshot user 19 Nov: Community Involvement 25 / Development Commitment 35 / HSSE 40).
+  { name: 'Development Commitment', weight: 35, target: 110, unit: '%' },
+  { name: 'HSSE Objective', weight: 40, target: 200, unit: 'Poin' },
+  { name: 'Project & Community Involvement', weight: 25, target: 250, unit: 'Poin' },
 ];
-const KPI_TOTAL = 80; // total bobot Cascading KPI + Project Control (badge "x/80%" di Figma)
+const KPI_TOTAL = 100; // total bobot Cascading KPI + Project Control (badge "x/100 %", Figma Desktop 1846)
 const MIN_WEIGHT = 10;
 const MAX_PICK = 8; // maksimal item dicentang (Figma Desktop 1806: "Item melebihi batas! (maksimal 8 item)")
 const MIN_PICK = 4; // minimal item Cascading KPI dan/atau Project Control yang dicentang (Figma Desktop 1418: "1/4 Item")
@@ -80,7 +81,7 @@ const initials = (name) => name.split(' ').map((w) => w[0]).join('').slice(0, 2)
 const avatarsHTML = (names) => names.slice(0, 3).map((n) => `<span class="avatar" title="${esc(n)}">${esc(initials(n))}</span>`).join('')
   + (names.length > 3 ? `<span class="avatar more">${names.length - 3}+</span>` : '');
 const team = (it) => [...new Set([it.leader, ...it.members].filter(Boolean))];
-const isKpi = (it) => it.type !== 'Extramiles'; // Extramiles tidak dihitung ke total 80%
+const isKpi = (it) => it.type !== 'Extramiles'; // Extramiles tidak dihitung ke total 100%
 // Bobot Terisi hanya menghitung sasaran kerja/proyek yang dicentang (yang akan dikirim ke evaluator).
 const kpiTotal = (exceptId) => (BUDGET ? KPI_TOTAL : sum(state.items.filter((i) => i.selected && isKpi(i) && i.id !== exceptId).map((i) => i.weight)));
 // Status pengajuan ke evaluator (Figma Desktop 1810/1811/1820): draft → pending (Menunggu Persetujuan) → approved (Disetujui) / revisi (Revisi).
@@ -233,7 +234,7 @@ function render() {
   const fixed = (name) => !filter.applied.some((s) => s.size) && (!q || name.toLowerCase().includes(q));
   const contributory = CONTRIBUTORY.filter((c) => fixed(c.name));
   $('#board').innerHTML = [
-    col('Individual Contributory', fillChip('Bobot Terisi', sum(CONTRIBUTORY.map((c) => c.weight)), 20), contributory.map((c) => `
+    col('Individual Contributory', fillChip('Bobot Terisi', sum(CONTRIBUTORY.map((c) => c.weight)), 100), contributory.map((c) => `
       <article class="card"><span class="ribbon">Bobot ${c.weight}%</span><div class="card-body">
         <h3>${esc(c.name)}</h3><div class="perf"><span>Target Anda <small>(Year End)</small></span><span>${unitHTML(c.target, c.unit)}</span></div>
       </div></article>`).join(''), 'Tidak ada sasaran kerja yang ditemukan'),
@@ -243,11 +244,11 @@ function render() {
     // Extramiles tanpa batas bobot: desain "Bobot Terisi" tanpa pembagi, hijau seperti Individual Contributory.
     col('Extramiles', `<span class="chip fill chip-full">Bobot Terisi <b>${fmt(sum(extra.map((i) => i.weight)))}</b> %</span>`, typed('Extramiles'), 'Tidak ada item yang ditambahkan di sini'),
   ].join('');
-  // Lanjut hanya bila bobot Cascading KPI + Project Control genap 80%, tiap proyek sudah punya proses,
+  // Lanjut hanya bila bobot Cascading KPI + Project Control genap 100%, tiap proyek sudah punya proses,
   // dan minimal 4 item Cascading KPI dan/atau Project Control dicentang untuk dikirim ke evaluator (Figma Desktop 1418).
   const picked = state.items.filter((i) => i.selected && isKpi(i)).length;
   $('#pickCount').firstElementChild.innerHTML = `<b>${picked}</b><span>/${MIN_PICK}</span> Item`;
-  // Budget Holder: KPI Function sudah mengisi 80%, syarat jumlah item tidak berlaku.
+  // Budget Holder: KPI Function sudah mengisi 100%, syarat jumlah item tidak berlaku.
   const blocker = BUDGET ? '' : total !== KPI_TOTAL ? `Total bobot Cascading KPI dan Project Control harus ${KPI_TOTAL}% (saat ini ${total}%)`
     : picked < MIN_PICK ? `Pilih minimal ${MIN_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})`
     : picked > MAX_PICK ? `Maksimal ${MAX_PICK} item Cascading KPI dan/atau Project Control (saat ini ${picked})` : '';
@@ -537,7 +538,7 @@ const members = makePicker($('#memberPicker'), { source: () => PEOPLE, placehold
 let editing = null;
 let file = null;
 
-// Total boleh melebihi 80% (Figma Desktop 1806: badge "Bobot melebihi batas!"); Selanjutnya terkunci sampai genap 80%.
+// Total boleh melebihi 100% (Figma Desktop 1806: badge "Bobot melebihi batas!"); Selanjutnya terkunci sampai genap 100%.
 function drawWeight() {
   const r = gf.elements.weight;
   r.style.setProperty('--p', `${(r.value / KPI_TOTAL) * 100}%`);
@@ -549,7 +550,7 @@ function drawWeight() {
       + ` (minimum ${MIN_WEIGHT}% per item, kelipatan 5%)` : '';
 }
 gf.elements.weight.addEventListener('input', drawWeight);
-// Ketik bobot langsung: slider membulatkan ke kelipatan 5 & batas 0–80, lalu nilainya ditulis balik ke kotak.
+// Ketik bobot langsung: slider membulatkan ke kelipatan 5 & batas 0–100, lalu nilainya ditulis balik ke kotak.
 $('#weightNum').addEventListener('change', (e) => { gf.elements.weight.value = e.target.value || 0; drawWeight(); });
 document.querySelectorAll('[data-step]').forEach((b) => b.addEventListener('click', () => {
   gf.elements.weight.value = Math.max(0, Number(gf.elements.weight.value) + Number(b.dataset.step));

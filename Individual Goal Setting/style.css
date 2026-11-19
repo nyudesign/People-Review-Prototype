@@ -240,7 +240,7 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 .board-head h1, #processView .board-head h1 { flex: none; }
 .add-btn { padding: 8px 16px; }
 .add-btn .ico, .card-actions .ico { font-size: clamp(14px, 1.125vw, 18px); }
-.chip-full { background: #16a34a; color: #fff; } /* bobot genap 80% (Figma Desktop 1427) */
+.chip-full { background: #16a34a; color: #fff; } /* bobot genap 100/100 % (Figma Desktop 1427, 1846) */
 .chip-alert { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; background: var(--danger); color: #fff; margin-right: 80px; }
 .perf { align-items: center; }
 .card-body:not(:has(> .toggle)) { padding-bottom: 16px; }
