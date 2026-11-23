@@ -198,17 +198,18 @@
     </div>
   </dialog>
 
-  <!-- Rekap Penetapan Sasaran Kerja (Figma Desktop 1429) -->
+  <!-- Rekap Penetapan Sasaran Kerja (Figma Desktop 1429; rumus Skor Akhir & Persentase Individual Goal: Frame 1321318895) -->
   <dialog id="rekapDialog" class="rekap-dlg">
     <div class="dlg-head"><h2>Rekap Penetapan Sasaran Kerja Anda</h2><button type="button" class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
     <div class="rekap-body">
+      <p class="score-note"><i data-icon="material-symbols:info-outline-rounded"></i><span>Skor Akhir = <b class="pct pct-kpi">70%</b> x Cascading KPI atau KPI Function + <b class="pct pct-ic">10%</b> x Individual Contributory + <b class="pct pct-bs">20%</b> x Behavior Survey</span></p>
       <label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rekapSearch" type="search" placeholder="Cari sasaran kerja, jenis, target, atau lainnya" aria-label="Cari sasaran kerja"></label>
       <div class="table-scroll"><table class="rekap">
-        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th>Polaritas</th><th>Bobot</th><th>Periode Monitor Target</th><th>Target Per Periode</th></tr></thead>
+        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th class="pct-col">Persentase Individual Goal</th><th>Polaritas</th><th>Bobot</th><th>Periode Monitor Target</th><th>Target Per Periode</th></tr></thead>
         <tbody id="rekapRows"></tbody>
       </table></div>
     </div>
-    <div class="dlg-actions"><button type="button" class="btn" id="submitGoals"><i data-icon="material-symbols:send-rounded"></i>Submit</button></div>
+    <div class="dlg-actions"><p class="rekap-total">Total Persentase Individual Goal <b>100%</b></p><button type="button" class="btn" id="submitGoals"><i data-icon="material-symbols:send-rounded"></i>Submit</button></div>
   </dialog>
 
   <!-- Target Per Periode (Figma Desktop 1428) -->

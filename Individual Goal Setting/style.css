@@ -401,6 +401,20 @@ table.rekap { width: 100%; border-collapse: collapse; font-size: clamp(11px, 0.8
 .rekap tbody tr:nth-child(even) { background: #fff; }
 .rekap td:first-child { max-width: 200px; }
 .rekap .btn-outline { padding: 8px 14px; white-space: nowrap; font-weight: 400; }
+/* Rumus Skor Akhir & kolom Persentase Individual Goal (Figma Frame 1321318895); warna per grup dari Figma */
+.score-note { display: flex; align-items: center; gap: 12px; margin: 16px 24px 0; padding: 8px 12px; border: 1px solid var(--primary); border-radius: 8px; background: var(--side); font-size: clamp(11px, 0.833vw, 16px); font-weight: 500; line-height: 1.5; }
+.score-note .ico { font-size: clamp(16px, 1.25vw, 24px); color: var(--primary); }
+.pct { border-left: 3px solid var(--pct-bar); background: var(--pct-bg); color: var(--pct-ink); font-weight: 700; }
+.score-note .pct { display: inline-block; padding: 0 8px; border-radius: 4px; }
+.pct-kpi { --pct-bar: var(--primary); --pct-bg: var(--soft-blue); --pct-ink: var(--primary-dark); }
+td.pct-kpi { --pct-ink: var(--ribbon); }
+.pct-ic { --pct-bar: #2e9f4f; --pct-bg: #e7f4ea; --pct-ink: #1f7a3c; }
+.pct-bs { --pct-bar: #f0a030; --pct-bg: #fff2db; --pct-ink: #9a6200; }
+.pct-none { --pct-bar: #b7c2ce; --pct-bg: #f1f3f6; --pct-ink: #6b7a89; font-weight: 400; }
+.rekap th.pct-col { width: 11.5%; } /* 170 dari 1483 */
+.rekap-dlg .dlg-actions { justify-content: space-between; align-items: center; gap: 12px; }
+.rekap-total { display: flex; align-items: center; gap: 12px; margin: 0; font-size: clamp(13px, 0.9375vw, 18px); font-weight: 500; }
+.rekap-total b { padding: 6px 16px; border-radius: 8px; background: var(--soft-blue); color: var(--primary-dark); font-size: clamp(11px, 0.833vw, 16px); }
 dialog.period-dlg { width: min(680px, calc(100vw - 32px)); }
 .period-dlg .dlg-body h3 { font-size: clamp(14px, 1.042vw, 20px); font-weight: 500; margin-bottom: 12px; }
 .period-list { display: flex; flex-direction: column; gap: 12px; }

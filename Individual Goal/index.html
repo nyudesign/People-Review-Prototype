@@ -110,19 +110,36 @@
     </form>
   </dialog>
 
-  <!-- Rekap realisasi sasaran kerja (Figma "Cek Hasil KPI new version") -->
-  <dialog id="rekapDialog" class="rekap-dlg">
+  <!-- Rekap realisasi sasaran kerja, 2 langkah: tabel (.rk-s1) → Skor Akhir (.rk-s2) (Figma "Rekap Realisasi Sasaran Kerja") -->
+  <dialog id="rekapDialog" class="rekap-dlg" data-step="1">
     <div class="dlg-head"><h2>Rekap Realisasi Sasaran Kerja</h2><button class="x" data-close aria-label="Tutup"><i data-icon="material-symbols:close-rounded"></i></button></div>
-    <div class="rk-search"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rkSearch" type="search" placeholder="Cari sasaran kerja, jenis, target, atau lainnya" aria-label="Cari rekap"></label></div>
-    <div class="rk-table-wrap">
+    <p class="score-note rk-s1"><i data-icon="material-symbols:info-outline-rounded"></i><span>Skor Akhir = <b class="pct pct-kpi">70%</b> x Cascading KPI atau KPI Function + <b class="pct pct-ic">10%</b> x Individual Contributory + <b class="pct pct-bs">20%</b> x Behavior Survey</span></p>
+    <div class="rk-search rk-s1"><label class="search"><i data-icon="material-symbols:search-rounded"></i><input id="rkSearch" type="search" placeholder="Cari sasaran kerja, jenis, target, atau lainnya" aria-label="Cari rekap"></label></div>
+    <div class="rk-table-wrap rk-s1">
       <table class="rk-table">
-        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th>Polaritas</th><th>Periode Monitor Target</th><th>Bobot</th><th>Performa</th><th>Weighted Performance</th><th>Realisasi Per Periode</th></tr></thead>
+        <thead><tr><th>Sasaran Kerja</th><th>Jenis</th><th>Persentase<br>Individual Goal</th><th>Polaritas</th><th>Periode<br>Monitor Target</th><th>Bobot</th><th>Performa</th><th>Weighted Performance</th><th>Realisasi<br>Per Periode</th></tr></thead>
         <tbody id="rkRows"></tbody>
       </table>
     </div>
-    <div class="rk-foot">
-      <span class="rk-total">Total Weighted Performance <b id="rkTotal"></b></span>
-      <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Submit</button>
+    <div class="rk-foot rk-s1">
+      <div class="rk-totals">
+        <div><span class="rk-label">Total Weighted Performance</span><div class="rk-chips" id="rkTotal"></div></div>
+        <div><span class="rk-label">Realisasi</span><div class="rk-chips" id="rkBs"></div></div>
+      </div>
+      <button type="button" class="btn" id="rkNext">Selanjutnya <i data-icon="tabler:arrow-right"></i></button>
+    </div>
+    <div class="rk-score rk-s2">
+      <div class="rk-card">
+        <p class="score-note"><i data-icon="material-symbols:info-outline-rounded"></i><span>Skor Akhir = <b class="pct pct-kpi">70%</b> x Cascading KPI atau KPI Function + <b class="pct pct-ic">10%</b> x Individual Contributory + <b class="pct pct-bs">20%</b> x Behavior Survey</span></p>
+        <h3>Skor Akhir Anda</h3>
+        <p class="rk-warn" id="rkWarn" hidden><i data-icon="carbon:warning-filled"></i><span>Behavior Survey belum selesai dinilai (Penilai 360 dan atasan). Realisasi dapat dikirim setelah nilai Behavior Survey tersedia.</span></p>
+        <!-- Donut + Rincian (Figma Frame 1321318990/991): hover irisan atau baris Rincian → irisan terpisah keluar -->
+        <div class="rk-pie-row" id="rkPie"></div>
+      </div>
+    </div>
+    <div class="rk-foot rk-s2">
+      <button type="button" class="btn-outline" id="rkBack"><i data-icon="tabler:arrow-left"></i>Sebelumnya</button>
+      <button type="button" class="btn" id="rkSubmit"><i data-icon="material-symbols:send-rounded"></i>Kirim</button>
     </div>
   </dialog>
   <dialog id="periodDialog" class="period-dlg">

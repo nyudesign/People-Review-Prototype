@@ -315,22 +315,84 @@ dialog.confirm { width: min(400px, calc(100vw - 32px)); } /* ukuran sama dengan 
 /* Rekap realisasi sasaran kerja (Figma "Finalisasi Hasil KPI") */
 .status-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: clamp(11px, 0.875vw, 14px); }
 .status-chip::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-/* Modal rekap: tabel 10 kolom (Figma "Cek Hasil KPI new version", lebar 1480px di layar 1920). */
-dialog.rekap-dlg { width: min(1480px, calc(100vw - 32px)); }
-.rk-search { padding: 16px 24px; }
-.rk-search .search { width: 100%; }
+/* Modal rekap 2 langkah (Figma "Rekap Realisasi Sasaran Kerja", 1483×918 di layar 1920, diskalakan proporsional); data-step memilih tabel (1) atau Skor Akhir (2). */
+dialog.rekap-dlg { width: min(77.2vw, calc(100vw - 32px)); height: min(47.8vw, calc(100vh - 32px)); }
+.rekap-dlg[data-step="1"] .rk-s2, .rekap-dlg[data-step="2"] .rk-s1 { display: none; }
+.score-note { display: flex; align-items: center; gap: 12px; margin: 16px 24px 0; padding: 8px 12px; border: 1px solid #b2d3e6; border-radius: 8px; background: var(--side); font-size: clamp(11px, 0.833vw, 16px); font-weight: 500; line-height: 1.5; }
+.score-note .ico { flex: none; font-size: clamp(16px, 1.25vw, 24px); color: var(--primary); }
+.score-note .pct { display: inline-block; padding: 0 8px; border-radius: 4px; }
+/* Warna grup Persentase Individual Goal (Figma; sama dengan Individual Goal Setting): bar kiri 3px + latar */
+.pct { background: var(--pct-bg); box-shadow: inset 3px 0 var(--pct-bar); color: var(--pct-ink); font-weight: 700; }
+.pct-kpi { --pct-bar: var(--primary); --pct-bg: var(--soft-blue); --pct-ink: var(--primary-dark); }
+.pct-ic { --pct-bar: #2e9f4f; --pct-bg: #e7f4ea; --pct-ink: #1f7a3c; }
+.pct-bs { --pct-bar: #f0a030; --pct-bg: #fff2db; --pct-ink: #9a6200; }
+.pct-none { --pct-bar: #b7c2ce; --pct-bg: #f1f3f6; }
+.rk-table td.pct { color: var(--ribbon); }
+.rk-search { padding: 12px 24px; }
+.rk-search .search { width: 100%; height: clamp(36px, 2.5vw, 48px); border-radius: 12px; font-size: clamp(12px, 0.833vw, 16px); }
 .rk-table-wrap { flex: 1; min-height: 0; overflow: auto; }
-.rk-table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: center; font-size: clamp(12px, 0.938vw, 15px); }
-.rk-table th { position: sticky; top: 0; background: #fff; padding: 14px 8px; font-weight: 500; }
-.rk-table td { padding: 20px 8px; color: var(--ink-2); }
-.rk-table tbody tr:nth-child(odd) { background: #eef3f6; }
-.rk-table tbody tr:nth-child(even) { background: #f8fbfb; }
-.rk-table .btn-outline { font-size: clamp(11px, 0.75vw, 13px); }
-.rk-foot { display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 16px 24px; }
-.rk-total { display: inline-flex; align-items: center; gap: 16px; font-weight: 500; }
-.rk-total b { background: var(--primary-dark); color: #fff; border-radius: 8px; padding: 8px 12px; font-size: clamp(16px, 1.25vw, 20px); font-weight: 500; }
-.rk-total small { font-size: clamp(11px, 0.75vw, 12px); }
-.rk-foot .btn { display: inline-flex; align-items: center; gap: 8px; }
+.rk-table { width: 100%; border-collapse: collapse; table-layout: fixed; text-align: center; font-size: clamp(11px, 0.833vw, 16px); line-height: 1.5; }
+/* Figma: header 62px, baris 120px, tombol Lihat Realisasi 2 baris selebar sel dikurangi 24px kiri-kanan */
+.rk-table th { position: sticky; top: 0; z-index: 1; height: clamp(46px, 3.23vw, 62px); padding: 0 12px; background: #fcfefe; box-shadow: inset 0 -1px var(--line); font-weight: 500; }
+.rk-table td { height: clamp(88px, 6.25vw, 120px); padding: 8px clamp(8px, 0.625vw, 12px); color: var(--ink); }
+.rk-table td:first-child { padding-left: clamp(16px, 1.25vw, 24px); }
+.rk-table td:last-child { padding-inline: clamp(12px, 1.25vw, 24px); }
+.rk-table tbody tr:nth-child(odd) { background: #eef2f6; }
+.rk-table tbody tr:nth-child(even) { background: #fcfefe; }
+.rk-table .btn-outline { width: 100%; padding: clamp(8px, 0.625vw, 12px) 8px; border-radius: 8px; background: none; font-size: clamp(11px, 0.729vw, 14px); }
+.rk-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 28px 28px; } /* Figma: tombol di y14 dari footer 90px */
+.rk-foot.rk-s2 { border-top: 1px solid var(--line); }
+.rk-foot .btn, .rk-foot .btn-outline { gap: 8px; padding: 12px 20px; border-radius: 8px; font-size: clamp(12px, 0.833vw, 16px); }
+.rk-foot .ico { font-size: clamp(16px, 1.25vw, 24px); }
+.rk-totals { display: flex; flex-wrap: wrap; gap: 20px; }
+.rk-totals > div { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; } /* label sebaris di kiri chip (Figma) */
+.rk-label { font-size: clamp(11px, 0.729vw, 14px); font-weight: 500; }
+.rk-chips { display: flex; flex-wrap: wrap; gap: 12px; }
+.rk-chip { display: inline-flex; align-items: center; gap: 12px; padding: 4px 12px; border-radius: 8px; background: var(--pct-bg); box-shadow: inset 3px 0 var(--pct-bar); font-size: clamp(12px, 0.833vw, 16px); font-weight: 500; }
+.rk-chip b { font-size: clamp(16px, 1.198vw, 23px); font-weight: 500; }
+.rk-chip small { font-size: clamp(11px, 0.729vw, 14px); font-weight: 400; color: var(--muted); }
+/* Langkah 2: Skor Akhir Anda (donut per komponen + Rincian) */
+.rk-score { flex: 1; min-height: 0; overflow: auto; display: grid; place-items: center; padding: 20px clamp(16px, 10.42vw, 200px); background: #f4f8fb; } /* Figma: kartu 1083 dari 1483 */
+.rk-card { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: clamp(20px, 1.9vw, 36px); background: #feffff; border: 1px solid var(--line); border-radius: 20px; }
+.rk-card .score-note { margin: 0; }
+.rk-card h3 { font-size: clamp(14px, 1.042vw, 20px); font-weight: 500; }
+/* Ukuran = px Figma × --u (modal 1483 dari layar 1920 → --u = 100vw/1920). Judul→konten 12px (gap kartu 16 − 4). */
+.rk-card { --u: clamp(0.62px, 100vw / 1920, 1px); }
+.rk-card h3 { margin-bottom: calc(-4 * var(--u)); }
+.rk-pie-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: calc(36 * var(--u)); color: var(--ink); }
+.rk-pie { position: relative; flex: none; width: calc(260 * var(--u)); aspect-ratio: 1; display: grid; place-items: center; }
+.rk-pie svg { position: absolute; inset: 0; overflow: visible; }
+.rk-pie path { cursor: pointer; transition: transform .2s, fill-opacity .2s; }
+.rk-pie path.on { transform: translate(var(--dx), var(--dy)); }
+.rk-pie-row.hl path:not(.on) { fill-opacity: .3; }
+.rk-pie b { position: relative; pointer-events: none; font-size: calc(40 * var(--u)); font-weight: 600; }
+.rk-rincian { flex: 0 1 calc(600 * var(--u)); display: flex; flex-direction: column; gap: calc(4 * var(--u)); }
+.rk-rincian h4 { padding-bottom: calc(4 * var(--u)); border-bottom: 1px solid var(--line); font-size: calc(18 * var(--u)); font-weight: 500; }
+/* Kolom Figma: titik 10 · Komponen · Persentase 80 · × 16 · Skor Realisasi 96 · = 16 · Kontribusi 88, jarak 10, padding 12 */
+.rk-ri { display: grid; grid-template-columns: calc(10 * var(--u)) 1fr calc(80 * var(--u)) calc(16 * var(--u)) calc(96 * var(--u)) calc(16 * var(--u)) calc(88 * var(--u));
+  align-items: center; column-gap: calc(10 * var(--u)); padding: calc(12 * var(--u)); border-radius: 8px; font-size: calc(16 * var(--u)); line-height: 1.2; text-align: right; transition: background .2s; }
+.rk-ri > :nth-child(2) { text-align: left; }
+.rk-ri > :nth-child(4), .rk-ri > :nth-child(6) { text-align: center; color: #9fb0c4; }
+.rk-ri i { width: calc(10 * var(--u)); aspect-ratio: 1; border-radius: 50%; }
+.rk-ri b { font-weight: 600; }
+.rk-ri[data-head] { padding-block: calc(8 * var(--u)); color: #466386; font-size: calc(14 * var(--u)); }
+/* Header "Persentase Individual Goal" satu baris (permintaan user): lebih lebar dari kolom 80, meluber ke kiri ke ruang kosong kolom Komponen */
+.rk-ri[data-head] > :nth-child(3) { justify-self: end; white-space: nowrap; }
+.rk-ri.on { background: var(--side); }
+/* Figma hover: baris komponen lain lebih samar (teks #7996b9, termasuk × =; titik pucat ≈ #ceeafd / #d7f4e0) */
+.rk-pie-row.hl .rk-ri[data-g]:not(.on) > * { color: #7996b9; }
+.rk-pie-row.hl .rk-ri[data-g]:not(.on) i { opacity: .2; }
+.rk-ri[data-total] { margin-top: calc(4 * var(--u)); padding-block: calc(12 * var(--u)) calc(4 * var(--u)); border-top: 1px solid var(--line); border-radius: 0; font-weight: 500; }
+.rk-ri[data-total] > :nth-child(2) { grid-column: 2 / 7; }
+.rk-ri[data-total] b { font-size: calc(18 * var(--u)); font-weight: 700; }
+/* Figma kondisi Behavior Survey belum dinilai: banner kuning, donut abu, teks kuning tua, Kirim nonaktif */
+.rk-warn { display: flex; align-items: center; gap: calc(8 * var(--u)); margin: 0 0 calc(-4 * var(--u)); padding: calc(8 * var(--u)) calc(12 * var(--u)); border-radius: 8px; background: #f7fed9; color: #866b02; font-size: calc(16 * var(--u)); line-height: 1.5; }
+.rk-warn .ico { font-size: calc(24 * var(--u)); color: #fab300; }
+.rk-pie path:not([data-g]) { cursor: default; }
+.rk-ri .rk-wait { color: #cc9200; font-weight: 500; white-space: nowrap; }
+.rk-ri[data-total] b.rk-wait { grid-column: 5 / 8; font-weight: 700; }
+.rk-ri[data-total]:has(.rk-wait) > :nth-child(2) { grid-column: 2 / 5; }
+#rkSubmit:disabled { background: #bccadc; color: #466386; }
 dialog.period-dlg { width: min(680px, calc(100vw - 32px)); }
 .pp-row { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 8px; }
 .pp-row small { color: var(--muted); }

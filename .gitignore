@@ -1,3 +1,5 @@
 graphify-out/
 .DS_Store
 .claude/
+chrome-prof/
+ka_*.bin

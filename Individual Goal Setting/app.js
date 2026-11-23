@@ -285,24 +285,33 @@ $('#board').addEventListener('change', (e) => {
   render();
 });
 /* ---------- Rekap → konfirmasi → terkirim (Figma Desktop 1429, 1808, 1809) ---------- */
-// Isi rekap: sasaran kerja/proyek yang dicentang + Individual Contributory (tetap, target tahunan).
+// Isi rekap: Individual Contributory (tetap, target tahunan) + sasaran kerja/proyek yang dicentang + Behavior Survey,
+// dikelompokkan sesuai kolom Persentase Individual Goal (rumus Skor Akhir di banner rekap).
+const IG_PCT = { ic: '10%', kpi: '70%', none: '–', bs: '20%' }; // urutan kunci = urutan baris di Figma
+const IG_ORDER = Object.keys(IG_PCT);
 const rekapItems = () => [
   // Budget Holder: KPI Function (jenis KPI Bisnis/Fungsi, ditetapkan sistem) menggantikan Cascading KPI & Project Control.
-  ...(BUDGET ? [{ name: 'KPI Function', kind: 'KPI Bisnis/Fungsi', polarity: 'MAX', weight: KPI_TOTAL, unit: '%', periodType: 'Annual', periods: [{ label: 'Annual', target: FN_TARGET }] }] : []),
-  ...state.items.filter((i) => i.selected && !(BUDGET && isKpi(i))).map((i) => ({ name: i.name, kind: i.type === 'Cascading KPI' ? 'Cascading KPI / IG' : i.type, polarity: i.polarity,
+  ...(BUDGET ? [{ group: 'kpi', name: 'KPI Function', kind: 'KPI Bisnis/Fungsi', polarity: 'MAX', weight: KPI_TOTAL, unit: '%', periodType: 'Annual', periods: [{ label: 'Annual', target: FN_TARGET }] }] : []),
+  ...state.items.filter((i) => i.selected && !(BUDGET && isKpi(i))).map((i) => ({ group: isKpi(i) ? 'kpi' : 'none', name: i.name, kind: i.type === 'Cascading KPI' ? 'Cascading KPI / IG' : i.type, polarity: i.polarity,
     weight: i.weight, unit: i.unit, periodType: i.periodType, periods: i.periods })),
-  ...CONTRIBUTORY.map((c) => ({ name: c.name, kind: 'Individual Contributory', polarity: 'MAX', weight: c.weight, unit: c.unit,
+  ...CONTRIBUTORY.map((c) => ({ group: 'ic', name: c.name, kind: 'Individual Contributory', polarity: 'MAX', weight: c.weight, unit: c.unit,
     periodType: 'Annual', periods: [{ label: 'Annual', target: c.target }] })),
-];
+  { group: 'bs', name: 'Behavior Survey', kind: 'Behavior Survey', polarity: '–', weight: null, periodType: '–', periods: [] },
+].sort((a, b) => IG_ORDER.indexOf(a.group) - IG_ORDER.indexOf(b.group));
 let rekap = [];
 const unitText = (n, unit) => `${fmt(n)} ${unit === 'Poin' ? 'Point' : unit}`;
 function renderRekap() {
   const q = $('#rekapSearch').value.trim().toLowerCase();
   $('#rekapRows').innerHTML = rekap.map((r, i) => ({ r, i })).filter(({ r }) => !q || [r.name, r.kind, r.polarity, r.periodType, ...r.periods.map((p) => unitText(p.target, r.unit))].join(' ').toLowerCase().includes(q))
-    .map(({ r, i }) => `<tr><td>${esc(r.name)}</td><td>${esc(r.kind)}</td><td>${esc(r.polarity)}</td><td>${r.weight} %</td>
+    .map(({ r, i }, k, rows) => {
+      // Sel Persentase Individual Goal digabung (rowspan) untuk baris berurutan dalam grup yang sama.
+      const span = rows.slice(k).findIndex((x) => x.r.group !== r.group);
+      const pct = rows[k - 1]?.r.group === r.group ? '' : `<td class="pct pct-${r.group}" rowspan="${span < 0 ? rows.length - k : span}">${IG_PCT[r.group]}</td>`;
+      return `<tr><td>${esc(r.name)}</td><td>${esc(r.kind)}</td>${pct}<td>${esc(r.polarity)}</td><td>${r.weight == null ? '–' : `${r.weight} %`}</td>
       <td>${esc(r.periodType)}</td>
-      <td><button type="button" class="btn-outline" data-periods="${i}">Lihat ${r.periods.length} Target</button></td></tr>`).join('')
-    || '<tr><td colspan="6" class="muted">Tidak ada sasaran kerja yang ditemukan</td></tr>';
+      <td>${r.periods.length ? `<button type="button" class="btn-outline" data-periods="${i}">Lihat ${r.periods.length} Target</button>` : '–'}</td></tr>`;
+    }).join('')
+    || '<tr><td colspan="7" class="muted">Tidak ada sasaran kerja yang ditemukan</td></tr>';
 }
 $('#next').addEventListener('click', () => {
   rekap = rekapItems();

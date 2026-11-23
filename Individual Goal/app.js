@@ -16,27 +16,28 @@ const processes = () => [
 }));
 
 const columns = [
-  { title: 'Individual Contributory', badge: '20%', items: [
+  // Bobot sama dengan Individual Goal Setting: total 100% di Individual Contributory dan 100% di Cascading KPI + Project Control (atau KPI Function).
+  { title: 'Individual Contributory', badge: '100%', items: [
     // Target Year End dari sistem lama; realisasi = total poin yang disimpan halaman HSSE / PCI (lihat loadPoin di bawah).
-    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 8, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
+    item({ id: 'hsse', file: null, name: 'HSSE Objective', weight: 40, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.hsse, value: null }],
       href: '../HSSE%20Objective/index.html' }),
     // KPI Budget Holder (BUDGET di ../review.js): Talent Development menggantikan Development Commitment, bobot sama dengan Individual Goal Setting.
-    item({ id: 'pci', name: 'Community Involvement', weight: BUDGET ? 5 : 7, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
+    item({ id: 'pci', name: 'Community Involvement', rekapName: 'Project & Community Involvement', weight: 25, unit: 'Poin', periods: [{ label: 'Year End', target: YEAR_END_TARGET.pci, value: null }],
       href: '../Project%20Community%20Involvement/index.html' }),
     // Development Commitment = Realisasi Development IDP pemilik data (Heru 100).
-    item({ id: 'dev', ...(BUDGET ? { name: 'Talent Development', weight: 7 } : { name: 'Development Commitment', weight: 5 }),
+    item({ id: 'dev', name: BUDGET ? 'Talent Development' : 'Development Commitment', weight: 35,
       periods: [{ label: 'Year End', target: 100, value: IDP[TEAM[OWNER].nip].dev }], href: '../Development%20Commitment/index.html' }),
   ] },
-  { title: 'Cascading KPI', badge: '80/80%', evidence: true, file: null, items: [
+  { title: 'Cascading KPI', badge: '100/100%', evidence: true, file: null, items: [
     item({ id: 'rbf', name: 'Remodelling Business Flow People Review', desc: 'Model ulang bisnis proses dalam People Review sebagai dasar Re-engineering',
       library: 'Enhancement HC-IT System', type: 'Fully Cascade', polarity: 'MAX', periodType: 'Semester', weight: 60 }),
     item({ id: 'fin', name: 'Finance Efficiency', desc: 'Efisiensi biaya operasional unit', library: 'Improving Finance Policy',
-      type: 'Fully Cascade', polarity: 'MAX', periodType: 'Triwulan', weight: 10, unit: 'USD',
+      type: 'Fully Cascade', polarity: 'MAX', periodType: 'Triwulan', weight: 20, unit: 'USD',
       periods: [3000, 2000, 2000, 8000].map((target, i) => ({ label: `Triwulan ${i + 1}`, target, value: null })) }),
   ] },
-  { title: 'Project Control', badge: '80/80%', items: [
+  { title: 'Project Control', badge: '100/100%', items: [
     item({ id: 'rdmp', project: true, file: null, name: 'Proyek Optimasi RDMP', desc: 'Model ulang bisnis proses dalam People Review sebagai dasar Re-engineering',
-      library: 'Building Innovation', type: 'Fully Cascade', polarity: 'MIN', periodType: 'Bulanan', weight: 10,
+      library: 'Building Innovation', type: 'Fully Cascade', polarity: 'MIN', periodType: 'Bulanan', weight: 20,
       leader: person('Oka Fitrio'), members: ['Heru Kautsar', 'Hamim Tohari', 'Aceng Koswara', 'Dede Rukmana'].map(person),
       periods: ['Januari', 'Februari'].map((label) => ({ label, target: 50, value: null, processes: processes() })) }),
   ] },
@@ -46,11 +47,11 @@ const columns = [
   ] },
 ];
 // KPI Budget Holder (BUDGET di ../review.js), sama dengan Individual Goal Setting: kolom Cascading KPI diganti KPI Bisnis/Fungsi
-// (juga jenis di rekap & ringkasan Dialog Day) yang hanya berisi KPI Function (bobot 80%), dan tidak ada Project Control.
+// (juga jenis di rekap & ringkasan Dialog Day) yang hanya berisi KPI Function (bobot 100%), dan tidak ada Project Control.
 // shortcut: target KPI Function belum ada di sumber data; sementara 1 periode Year End 100% (sama dengan Individual Goal Setting).
 if (BUDGET) {
   Object.assign(columns.find((c) => c.title === 'Cascading KPI'), { title: 'KPI Bisnis/Fungsi', items: [item({ id: 'kpif', name: 'KPI Function',
-    polarity: 'MAX', weight: 80, periods: [{ label: 'Year End', target: 100, value: null }] })] });
+    polarity: 'MAX', weight: 100, periods: [{ label: 'Year End', target: 100, value: null }] })] });
   columns.splice(columns.findIndex((c) => c.title === 'Project Control'), 1);
 }
 
@@ -576,11 +577,26 @@ document.querySelectorAll('dialog').forEach((d) => d.addEventListener('click', (
 $('#search').addEventListener('input', render);
 // Tombol Tampilkan/Sembunyikan Alur: lihat ../profile.js (pilihan diingat lintas halaman).
 
-/* ---------- Rekap realisasi sasaran kerja (modal tabel, Figma "Cek Hasil KPI new version") ---------- */
+/* ---------- Rekap realisasi sasaran kerja (modal 2 langkah, Figma "Rekap Realisasi Sasaran Kerja": tabel → Skor Akhir) ---------- */
 // Semua sasaran ikut rekap, termasuk Extramiles berbobot 0 (Figma).
 const JENIS = { 'Cascading KPI': 'Cascading KPI / IG' };
 const weighted = (it) => (it.weight * performa(it)) / 100;
 console.assert(weighted({ weight: 60, periods: [{ target: 50, value: 50 }, { target: 50, value: 50 }] }) === 60, 'bobot × performa');
+// Grup kolom Persentase Individual Goal (rumus Skor Akhir); kolom lain (Cascading KPI / KPI Bisnis/Fungsi, Project Control) = KPI.
+const GROUP = { 'Individual Contributory': 'ic', Extramiles: 'none' };
+const groupOf = (col) => GROUP[col.title] || 'kpi';
+const IG_PCT = { ic: 10, kpi: 70, bs: 20 };
+const KPI_LABEL = BUDGET ? 'KPI Function' : 'Cascading KPI';
+// shortcut: skor Behavior Survey belum dihitung dari jawaban survey (../behavior-survey.js); sementara nilai Figma 67,5%.
+const BS_SCORE = 67.5;
+// Figma kondisi "Behavior Survey belum selesai dinilai": skor BS kosong, Kirim nonaktif. Tombol Shift = ganti normal ↔ error.
+// shortcut: status penilaian (Penilai 360 & atasan) belum dibaca dari halaman Behavior Survey; ganti dengan data asli saat ada.
+let bsPending = false;
+const num = (n) => fmt(+n.toFixed(2));
+// Skor grup = Σ weighted performance / Σ bobot, dalam skala Performa (maks PERF_MAX), mis. Figma Cascading KPI 110/110 %.
+const score = (its) => { const w = sum(its.map((it) => it.weight)); return w ? (sum(its.map(weighted)) / w) * 100 : 0; };
+console.assert(score([{ weight: 60, periods: [{ target: 50, value: 55 }, { target: 50, value: 55 }] }, { weight: 20, periods: [{ target: 10, value: 5 }] }]) === 95, 'skor grup ternormalisasi bobot');
+const groupScore = (g) => score(columns.filter((c) => groupOf(c) === g).flatMap((c) => c.items));
 
 // Ringkasan untuk Sintesis Evaluator Final: Σ weighted performance per Jenis (satu baris per Jenis; Individual Contributory per item).
 const SUMMARY_KEY = `pr-realisasi-summary-${REVIEW ? 'heru' : LOGIN}`;
@@ -594,20 +610,77 @@ function saveSummary() {
   try { localStorage.setItem(SUMMARY_KEY, JSON.stringify(total)); } catch {}
 }
 
+const chip = (g, label, v, max) => `<span class="rk-chip pct-${g}">${label}<span>${v == null ? '<b>-</b>' : `<b>${num(v)}</b><small>${max ? `/${max}` : ''} %</small>`}</span></span>`;
 function renderRekap() {
-  const rows = columns.flatMap((col) => col.items.map((it) => ({ it, cells: [it.name, JENIS[col.title] || col.title, it.polarity || 'MAX',
-    it.periodType || 'Annual', `${it.weight} %`, `${performa(it)} %`, `${fmt(+weighted(it).toFixed(2))} %`] })));
-  const total = sum(rows.map(({ it }) => weighted(it)));
-  $('#rkTotal').innerHTML = `${fmt(+total.toFixed(2))}<small>/${sum(rows.map(({ it }) => it.weight)) * PERF_MAX / 100} %</small>`;
-  $('#rkSubmit').disabled = locked();
+  // cells = kolom setelah Persentase Individual Goal: Polaritas, Periode, Bobot, Performa; Behavior Survey tanpa sasaran (Figma "-").
+  const rows = [...columns.flatMap((col) => col.items.map((it) => ({ it, g: groupOf(col), name: it.rekapName || it.name, jenis: JENIS[col.title] || col.title,
+    cells: [it.polarity || 'MAX', it.periodType || 'Annual', `${it.weight} %`, `${performa(it)} %`], wp: `${num(weighted(it))} %` }))),
+    { g: 'bs', name: 'Behavior Survey', jenis: 'Behavior Survey', cells: ['-', '-', '-', '-'], wp: '-' }];
+  $('#rkTotal').innerHTML = chip('kpi', KPI_LABEL, groupScore('kpi'), PERF_MAX) + chip('ic', 'Individual Contributory', groupScore('ic'), PERF_MAX);
+  $('#rkBs').innerHTML = chip('bs', 'Behavior Survey', bsPending ? null : BS_SCORE);
+  $('#rkSubmit').disabled = locked() || bsPending;
   const q = $('#rkSearch').value.trim().toLowerCase();
-  const shown = rows.filter(({ cells }) => !q || cells.join(' ').toLowerCase().includes(q));
-  $('#rkRows').innerHTML = shown.length ? shown.map(({ it, cells }) => `<tr>${cells.map((c) => `<td>${esc(c)}</td>`).join('')}
-    <td><button type="button" class="btn-outline" data-periods="${it.id}">Lihat ${it.periods.length} Realisasi</button></td></tr>`).join('')
-    : '<tr><td colspan="8" class="empty">Tidak ada hasil pencarian</td></tr>';
+  const shown = rows.filter((r) => !q || [r.name, r.jenis, ...r.cells, r.wp].join(' ').toLowerCase().includes(q));
+  $('#rkRows').innerHTML = shown.length ? shown.map(({ it, g, name, jenis, cells, wp }, k) => {
+    // Sel Persentase Individual Goal digabung (rowspan) untuk baris berurutan dalam grup yang sama, seperti Figma.
+    const n = shown.slice(k).findIndex((r) => r.g !== g);
+    const pct = shown[k - 1]?.g === g ? '' : `<td class="pct pct-${g}" rowspan="${n < 0 ? shown.length - k : n}">${IG_PCT[g] ? `${IG_PCT[g]} %` : '-'}</td>`;
+    return `<tr><td>${esc(name)}</td><td>${esc(jenis)}</td>${pct}${cells.map((c) => `<td>${esc(c)}</td>`).join('')}
+      ${it ? `<td class="pct pct-${g}">${wp}</td><td><button type="button" class="btn-outline" data-periods="${it.id}"><span>Lihat ${it.periods.length}<br>Realisasi</span></button></td>`
+        : `<td>-</td><td class="pct pct-bs">${bsPending ? '-' : `${num(BS_SCORE)} %`}</td>`}</tr>`;
+  }).join('') : '<tr><td colspan="9" class="empty">Tidak ada hasil pencarian</td></tr>';
 }
+// Langkah 2 (Figma "Skor Akhir Anda"): kontribusi = persentase × skor realisasi; irisan donut sebanding kontribusi terhadap total.
+const PIE_COLOR = { kpi: '#0765a5', ic: '#2e9f4f', bs: '#f0a030' };
+const dec2 = (n) => n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); // Figma: 70,00 / 5,55
+// Cincin seperti Figma: viewBox 260, pusat 130, r luar 118, r dalam 82; sudut 0 = jam 12, searah jarum jam.
+const pt = (r, a) => `${(130 + r * Math.sin(a)).toFixed(2)} ${(130 - r * Math.cos(a)).toFixed(2)}`;
+const arc = (a, b) => { const big = b - a > Math.PI ? 1 : 0; return `M${pt(118, a)}A118 118 0 ${big} 1 ${pt(118, b)}L${pt(82, b)}A82 82 0 ${big} 0 ${pt(82, a)}Z`; };
+console.assert(arc(0, Math.PI / 2) === 'M130.00 12.00A118 118 0 0 1 248.00 130.00L212.00 130.00A82 82 0 0 0 130.00 48.00Z', 'busur kuadran pertama');
+function renderScore() {
+  const parts = [['kpi', KPI_LABEL, groupScore('kpi')], ['ic', 'Individual Contributory', groupScore('ic')], ['bs', 'Behavior Survey', BS_SCORE]]
+    .map(([g, label, s]) => ({ g, label, s, v: (IG_PCT[g] * s) / 100 }));
+  const total = sum(parts.map((p) => p.v));
+  $('#rkWarn').hidden = !bsPending;
+  let a = Math.PI; // Figma "Diputar": irisan pertama mulai dari jam 6
+  // Behavior Survey belum dinilai (Figma): cincin abu penuh tanpa angka tengah, tanpa hover.
+  const slices = bsPending ? `<path d="${arc(0, 2 * Math.PI - 1e-4)}" fill="#eef2f6"/>` : parts.map(({ g, v }) => {
+    const b = a + (total ? (v / total) * 2 * Math.PI : 0), mid = (a + b) / 2;
+    // Irisan hover bergeser 12 unit keluar searah garis tengahnya (Figma Donut hover: Behavior Survey); 100% dikurangi sedikit agar busur tidak hilang.
+    const d = v > 0 ? `<path d="${arc(a, Math.min(b, a + 2 * Math.PI - 1e-4))}" fill="${PIE_COLOR[g]}" data-g="${g}" data-v="${dec2(v)}" style="--dx:${(12 * Math.sin(mid)).toFixed(2)}px;--dy:${(-12 * Math.cos(mid)).toFixed(2)}px"/>` : '';
+    a = b;
+    return d;
+  }).join('');
+  const row = (cells, attrs = '') => `<div class="rk-ri"${attrs}>${cells.join('')}</div>`;
+  const val = bsPending ? '' : dec2(total);
+  const wait = (g) => bsPending && g === 'bs';
+  $('#rkPie').innerHTML = `<div class="rk-pie"><svg viewBox="0 0 260 260" aria-hidden="true">${slices}</svg><b id="rkPieVal" data-v="${val}">${val}</b></div>
+    <div class="rk-rincian"><h4>Rincian</h4>
+      ${row(['<span></span>', '<span>Komponen</span>', '<span>Persentase Individual Goal</span>', '<span>×</span>', '<span>Skor Realisasi</span>', '<span>=</span>', '<span>Kontribusi</span>'], ' data-head')}
+      ${parts.map(({ g, label, s, v }) => row([`<i style="background:${PIE_COLOR[g]}"></i>`, `<span>${esc(label)}</span>`, `<span>${IG_PCT[g]}%</span>`, '<span>×</span>',
+        wait(g) ? '<span class="rk-wait">Belum Dinilai</span>' : `<span>${dec2(s)}</span>`, '<span>=</span>', `<b>${wait(g) ? '-' : dec2(v)}</b>`],
+        bsPending ? '' : ` data-g="${g}" data-v="${dec2(v)}"`)).join('')}
+      ${row(['<span></span>', '<span>Total</span>', bsPending ? '<b class="rk-wait">Menunggu Behavior Survey</b>' : `<b>${dec2(total)}</b>`], ' data-total')}
+    </div>`;
+}
+// Hover irisan atau baris Rincian → irisan itu keluar, irisan lain pudar, angka tengah = kontribusinya.
+function hlPie(el) {
+  const g = el?.dataset.g, val = $('#rkPieVal');
+  $('#rkPie').classList.toggle('hl', !!g);
+  $('#rkPie').querySelectorAll('[data-g]').forEach((x) => x.classList.toggle('on', x.dataset.g === g));
+  val.textContent = g ? el.dataset.v : val.dataset.v;
+}
+$('#rkPie').addEventListener('pointerover', (e) => hlPie(e.target.closest('[data-g]')));
+$('#rkPie').addEventListener('pointerleave', () => hlPie(null));
+const rkStep = (n) => {
+  $('#rekapDialog').dataset.step = n;
+  if (n === 2) renderScore();
+};
+$('#rkNext').addEventListener('click', () => rkStep(2));
+$('#rkBack').addEventListener('click', () => rkStep(1));
 function openRekap() {
   $('#rkSearch').value = '';
+  rkStep(1);
   renderRekap();
   if (!$('#rekapDialog').open) $('#rekapDialog').showModal();
 }
@@ -719,6 +792,17 @@ document.addEventListener('keydown', (e) => {
   enterCount = e.timeStamp - enterAt < 1000 ? enterCount + 1 : 1;
   enterAt = e.timeStamp;
   if (enterCount === 4) { enterCount = 0; completeAll(); }
+});
+// Shortcut demo: Shift ditekan sendirian (bukan Shift+huruf/Tab, bukan di isian) = Behavior Survey normal ↔ belum dinilai.
+let shiftAlone = false;
+document.addEventListener('keydown', (e) => { if (e.key !== 'Shift') shiftAlone = false; else if (!e.repeat) shiftAlone = true; });
+document.addEventListener('keyup', (e) => {
+  if (e.key !== 'Shift' || !shiftAlone || e.target.closest('input, textarea')) return;
+  shiftAlone = false;
+  bsPending = !bsPending;
+  if (!$('#rekapDialog').open) return;
+  renderRekap();
+  if ($('#rekapDialog').dataset.step === '2') renderScore();
 });
 
 // Evaluator hanya melihat data yang sudah disubmit; draft Evaluee (tanpa status) tidak ditampilkan.

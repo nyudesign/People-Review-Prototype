@@ -7,12 +7,13 @@ const DD_ROOT = new URL('.', document.currentScript.src).href; // folder root, u
 // Nilai = Σ weighted performance item per Jenis, ditulis halaman Realisasi Target (saveSummary di Individual Goal/app.js).
 // Cadangan bila halaman itu belum pernah dibuka: data demo Realisasi Target (semua item performa 110%).
 // Jenis ikut tipe jabatan Heru (kartu Data Diri di Beranda; bawaan Non-Budget Holder), sama dengan Realisasi Target:
-// Budget Holder → KPI Bisnis/Fungsi 80% (ganti Cascading KPI & Project Control), Talent Development 7%, Community Involvement 5%.
+// Bobot sama dengan Individual Goal Setting (100% per kelompok): HSSE 40%, Community Involvement 25%, Development Commitment/Talent
+// Development 35%; Cascading KPI 80% + Project Control 20%, atau Budget Holder → KPI Bisnis/Fungsi 100% (ganti Cascading KPI & Project Control).
 function renderHasilKinerja() {
   const bh = (() => { try { return localStorage.getItem('pr-jabatan-heru') === 'bh'; } catch { return false; } })();
   const GOAL_DEMO = bh
-    ? { 'KPI Bisnis/Fungsi': 88, Extramiles: 0, 'HSSE Objective': 8.8, 'Community Involvement': 5.5, 'Talent Development': 7.7 }
-    : { 'Cascading KPI': 77, 'Project Control': 11, Extramiles: 0, 'HSSE Objective': 8.8, 'Community Involvement': 7.7, 'Development Commitment': 5.5 };
+    ? { 'KPI Bisnis/Fungsi': 110, Extramiles: 0, 'HSSE Objective': 44, 'Community Involvement': 27.5, 'Talent Development': 38.5 }
+    : { 'Cascading KPI': 88, 'Project Control': 22, Extramiles: 0, 'HSSE Objective': 44, 'Community Involvement': 27.5, 'Development Commitment': 38.5 };
   const summary = (() => { try { return JSON.parse(localStorage.getItem('pr-realisasi-summary-heru')); } catch { return null; } })() || GOAL_DEMO;
   const goals = Object.keys(GOAL_DEMO).map((jenis) => [jenis, summary[jenis] || 0]);
   const STRENGTHS = ['Komunikasi efektif dengan tim lintas fungsi', 'Analisis data kinerja yang tajam'];
