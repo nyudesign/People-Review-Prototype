@@ -63,7 +63,10 @@ nav a .ico { font-size: clamp(16px, 1.25vw, 20px); }
 .btn-white .ico { font-size: clamp(13px, 1vw, 16px); }
 .stepper li { display: inline-flex; align-items: center; gap: 8px; position: relative; }
 .stepper li .ico { font-size: clamp(14px, 1.125vw, 18px); }
-.stepper li + li::before { content: ''; position: absolute; left: -12px; width: 4px; height: 4px; border-radius: 50%; background: var(--ink-2); }
+/* Separator <li class="sep"> mengisi sisa lebar supaya alur rata kiri–kanan; titik tetap di tengah jarak. */
+.stepper .sep { flex: 1 0 20px; padding: 0; }
+.stepper .sep::before { content: ''; margin: auto; width: 4px; height: 4px; border-radius: 50%; background: var(--ink-2); }
+.stepper [hidden] + .sep { display: none; }
 .chip-icon { display: inline-flex; align-items: center; gap: 6px; }
 .chip-icon .ico { font-size: clamp(13px, 1vw, 16px); }
 .with-ico { display: inline-flex; align-items: center; gap: 6px; }
@@ -92,7 +95,7 @@ main { --pad-y: clamp(16px, 2.35vh, 24px); --pad-l: clamp(24px, 2.5vw, 48px); --
 .flow-pill { background: var(--soft-blue); border-radius: 8px; padding: 6px 8px 6px 12px; font-size: clamp(11px, 0.75vw, 12px); display: flex; gap: 8px; align-items: center; }
 .btn-white { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; font-size: clamp(11px, 0.75vw, 12px); }
 
-.stepper { list-style: none; margin: 0; padding: 0 0 4px; display: flex; gap: 20px; overflow-x: auto; white-space: nowrap; }
+.stepper { list-style: none; margin: 0; padding: 0 0 4px; display: flex; gap: 0; overflow-x: auto; white-space: nowrap; }
 .stepper li { padding: 8px 10px; flex-shrink: 0; font-size: clamp(11px, 0.812vw, 13px); border-radius: 6px; font-weight: 500; color: var(--ink-2); }
 .stepper li.current { background: var(--panel); color: var(--ink); }
 .stepper li.disabled { color: #bccadc; }

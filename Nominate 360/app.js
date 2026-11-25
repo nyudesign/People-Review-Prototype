@@ -71,7 +71,7 @@ if (APPROVE) {
     ['mingcute:target-fill', 'Review & Approve Realisasi Target', '../Individual%20Goal/index.html'],
     ['ri:survey-fill', 'Behaviour Survey', '../Behavior%20Survey/index.html'],
     ['mdi:graph-box-multiple', 'Sintesis Evaluator Final', '../Sintesis%20Evaluator/index.html'],
-  ].map(([ic, label, href, cls]) => `<li${cls ? ` class="${cls}"` : ''}>${href ? `<a href="${href}">${icon(ic)}${label}</a>` : `${icon(ic)}${label}`}</li>`).join('');
+  ].map(([ic, label, href, cls]) => `<li${cls ? ` class="${cls}"` : ''}>${href ? `<a href="${href}">${icon(ic)}${label}</a>` : `${icon(ic)}${label}`}</li>`).join('<li class="sep" aria-hidden="true"></li>');
   // Judul tanpa dropdown (Evaluator tidak punya tampilan Penilaian 360 di sini).
   $('[data-switch]').outerHTML = '<h1 class="view-switch">Pemilihan Nominee 360</h1>';
   $('#lihatBtn').lastChild.textContent = 'Lihat Pilihan Penilai 360';

@@ -105,5 +105,5 @@ function initReviewUI(title, current = 'Review & Approve Realisasi Target') {
     const body = `<i class="ico">${ICONS[ic]}</i>${label}`;
     if (i === at) return `<li class="current">${body}</li>`;
     return href ? `<li${i < at ? ' class="done"' : ''}><a href="${href}">${body}</a></li>` : `<li class="${i < at ? 'done' : 'disabled'}">${body}</li>`;
-  }).join('');
+  }).join('<li class="sep" aria-hidden="true"></li>');
 }
