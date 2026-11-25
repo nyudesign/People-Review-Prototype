@@ -168,7 +168,7 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .person-card { display: flex; flex-direction: column; gap: 20px; align-self: start; }
 .wide { width: 100%; padding: 12px; }
 
-.home-right { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; }
+.home-right { display: flex; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden auto; }
 .home-right h2 { font-size: clamp(14px, 1.125vw, 18px); margin-top: 6px; }
 /* Isi sisa tinggi supaya Project Progress sejajar dengan bawah panel Data Diri Anda. */
 #icList { flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -185,6 +185,15 @@ body.is-home main { background: url(assets/lines-top.svg) no-repeat left top / 1
 .stat.wide { grid-column: 1 / -1; }
 .stat > .ico { position: absolute; left: -10px; top: -16px; font-size: clamp(35px, 2.75vw, 44px); color: var(--primary); opacity: .2; }
 .stat b { font-size: clamp(19px, 1.5vw, 24px); color: var(--ink); }
+/* Layar pendek (mis. 1440×730 dengan bookmark bar): rapatkan kolom kanan agar Project Progress tidak terpotong. Di bawah ±710px kolom ini scroll. */
+@media (max-height: 780px) {
+  .home-right { gap: 4px; }
+  .home-right h2 { margin-top: 0; }
+  #icList { gap: 4px; }
+  .ic { padding: 2px 0; }
+  .proj { gap: 8px; }
+  .stat { padding-block: 8px; }
+}
 
 /* PWTT — Pilih Role */
 .role-card { flex: 1; min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); overflow: hidden; }
